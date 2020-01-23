@@ -2,7 +2,7 @@
   "name": "SeedClient",
   "version": "0.1.0",
   "description": "SeedVDI, SeedCloud",
-  "license": "NOLICENSE",
+  "license": "UNLICENSE",
   "private": true,
   "author": {
     "name": "Peter Han",
