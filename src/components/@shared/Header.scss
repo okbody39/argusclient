@@ -1,0 +1,29 @@
+.header {
+  background: rgb(255, 255, 255);
+
+  .logo {
+    // width: 120px;
+    height: 40px;
+    //background: rgba(255, 255, 255, 0.2);
+    margin: 16px 24px 16px 0;
+    float: left;
+  }
+
+  .menu {
+    line-height: 64px;
+  }
+
+  .menuitem {
+    //line-height: 64px;
+    // height: 54px;
+    //color: black;
+  }
+
+  .menusubitem {
+    //line-height: 64px;
+    //margin-top: 15px;
+    height: 54px;
+    color: black;
+  }
+}
+
