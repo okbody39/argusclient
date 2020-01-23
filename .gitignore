@@ -4,6 +4,8 @@ release/
 
 # Development folders and files #
 #################################
+.idea/
+@test/
 .tmp/
 dist/
 node_modules/
