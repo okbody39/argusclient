@@ -1,6 +1,6 @@
 // Libs
 import React, { Component } from "react";
-import { Layout, Menu, Badge, List, Notification, Avatar } from "antd";
+import { Layout, Menu, Badge, List, Notification, Avatar, Icon } from "antd";
 import { Link, withRouter } from 'react-router-dom';
 import { Settings, Bell, Triangle, User } from 'react-feather';
 
@@ -11,6 +11,21 @@ import styles from "./Header.scss";
 
 import logo from "@/assets/images/seedclient_logo.png"
 import { ISFULLSCREEN } from "@/config";
+
+const notifications = [
+  {
+    title: '시스템 점검 안내',
+    description: '1 hour ago',
+  },
+  {
+    title: '설연휴 특별 이벤트',
+    description: '1 hour ago',
+  },
+  {
+    title: '2020년 시스템 변경 사항 공지',
+    description: '2 hours ago',
+  },
+];
 
 /**
  * Header
@@ -47,15 +62,15 @@ class Header extends Component {
           selectedKeys={this.state.selectedKeys}
           // onClick={(e) => this.onChangeMenu(e.key)}
         >
-          <Menu.Item key="/history" >
-            <Link to="/">
-              신청이력
-            </Link>
+          <Menu.Item key="/history/change" >
+            <Link to="/history/change">변경이력</Link>
           </Menu.Item>
-          <Menu.Item key="/signin">
-            <Link to="/signin">장애이력</Link>
+          <Menu.Item key="/history/failure">
+            <Link to="/history/failure">장애이력</Link>
           </Menu.Item>
-          <Menu.Item key="menuitem3">로그확인</Menu.Item>
+          <Menu.Item key="/history/access">
+            <Link to="/history/access">접속이력</Link>
+          </Menu.Item>
         </Menu>
 
         <span className="mr-auto" />
@@ -75,28 +90,30 @@ class Header extends Component {
               </div>
 
             }
+            popupClassName={styles.popup}
           >
             <Menu.Item
               className="p-0 bg-transparent"
               style={{ height: 'auto' }}
             >
-              {/*<List*/}
-              {/*  className="header-notifications"*/}
-              {/*  itemLayout="horizontal"*/}
-              {/*  dataSource={notifications}*/}
-              {/*  footer={<div>5 Notifications</div>}*/}
-              {/*  renderItem={item => (*/}
-              {/*    <Notification>*/}
-              {/*      <List.Item>*/}
-              {/*        <List.Item.Meta*/}
-              {/*          avatar={item.avatar}*/}
-              {/*          title={<a href="javascript:;">{item.title}</a>}*/}
-              {/*          description={<small>{item.description}</small>}*/}
-              {/*        />*/}
-              {/*      </List.Item>*/}
-              {/*    </Notification>*/}
-              {/*  )}*/}
-              {/*/>*/}
+              <List
+                className="header-notifications"
+                itemLayout="horizontal"
+                dataSource={notifications}
+                // footer={<div>5 Notifications</div>}
+                renderItem={item => (
+                  <div className={styles.inner}>
+                    <List.Item>
+                      <List.Item.Meta
+                        // avatar={item.avatar}
+                        title={<a>{item.title}</a>}
+                        description={<small>{item.description}</small>}
+                      />
+                    </List.Item>
+                  </div>
+                )}
+              />
+
             </Menu.Item>
           </SubMenu>
 
@@ -106,22 +123,73 @@ class Header extends Component {
                 <Settings size={22} strokeWidth={1} />
               </div>
             }
+            popupClassName={styles.popup}
           >
+
             <Menu.Item>
-              <Link to="/signup">
-                설정
+              <Link to="/notice">
+                <Icon type="notification" />
+                <span>공지사항</span>
+
               </Link>
             </Menu.Item>
-            <Menu.Item>공지사항</Menu.Item>
+            <Menu.Item>
+              <Link to="/alarm">
+                <Icon type="bell" />
+                <span>알림목록</span>
+
+              </Link>
+            </Menu.Item>
+
             <Menu.Divider />
-            {/*<Menu.Item>*/}
-            {/*  <Link href="https://one-readme.fusepx.com">*/}
-            {/*    <a>Help?</a>*/}
-            {/*  </Link>*/}
-            {/*</Menu.Item>*/}
+
+            <SubMenu
+              key="sub1"
+              title={
+                <span>
+                  <Icon type="history" />
+                  <span>이력조회</span>
+                </span>
+              }
+              popupClassName={styles.popup}
+            >
+
+            <Menu.Item>
+              <Link to="/history/change">
+                변경이력
+              </Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link to="/history/failure">
+                장애이력
+              </Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link to="/history/access">
+                접속이력
+              </Link>
+            </Menu.Item>
+            </SubMenu>
+
+            <Menu.Divider />
+            <Menu.Item>
+              <Link to="/signup">
+                <Icon type="setting" />
+                <span>설정</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link to="/notice">
+                <Icon type="safety-certificate" />
+                <span>비밀번호 변경</span>
+
+              </Link>
+            </Menu.Item>
             <Menu.Item>
               <Link to="/signin">
-                로그아웃
+                <Icon type="logout" />
+                <span>로그아웃</span>
+
               </Link>
             </Menu.Item>
           </SubMenu>

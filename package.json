@@ -30,7 +30,8 @@
     "prebuild": "npm run build:clean && npm run build:copy",
     "prepackage:all": "rimraf -rf release",
     "postpackage": "electron-builder build",
-    "postpackage:all": "electron-builder build -mwl"
+    "postpackage:all": "electron-builder build -mwl",
+    "buildall": "npm run build && npm run prepackage:all &&  npm run postpackage"
   },
   "dependencies": {
     "antd": "^3.26.7",
@@ -40,6 +41,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-feather": "^2.0.3",
+    "react-highlight-words": "^0.16.0",
     "react-router-dom": "^5.1.2",
     "styled-components": "^5.0.0"
   },
@@ -66,7 +68,7 @@
     "css-hot-loader": "^1.4.4",
     "css-loader": "^2.1.1",
     "electron": "^7.1.9",
-    "electron-builder": "^22.2.0",
+    "electron-builder": "^22.3.2",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "enzyme-to-json": "^3.4.3",
@@ -107,25 +109,24 @@
       "main.js",
       "package.json"
     ],
+    "mac": {
+      "target": [
+        "default"
+      ],
+      "icon": "./src/assets/icons/seedclient_icon.icns"
+    },
     "dmg": {
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
+      "title": "SeedClient",
+      "icon": "./src/assets/icons/seedclient_icon.icns"
     },
     "win": {
       "target": [
         "nsis",
         "msi"
-      ]
+      ],
+      "icon": "./src/assets/icons/seedclient_icon.ico",
+      "certificateFile": "./www.dfocus.net.pfx",
+      "certificatePassword": "dfocus123!"
     },
     "linux": {
       "target": [
@@ -134,7 +135,18 @@
         "snap",
         "AppImage"
       ],
-      "category": "Development"
+      "category": "Utility",
+      "icon": "./src/assets/icons/256x256.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": false,
+      "installerLanguages": [
+        "en_US",
+        "ko_KR"
+      ]
     },
     "directories": {
       "buildResources": "resources",

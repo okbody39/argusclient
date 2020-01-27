@@ -67,11 +67,11 @@ class HelloWorld extends Component {
               onClick={this.showDrawer}
               cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
             >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
+              <Meta title="W10-INTERNETVM" description={<Badge status="processing" text="RUNNING" />} />
             </Card>
           </Col>
           <Col span={6}>
-            <Badge count={5}>
+            <Badge count={1}>
               <Card
                 hoverable
                 // style={{ width: 240 }}
@@ -166,7 +166,28 @@ class HelloWorld extends Component {
           onClose={this.onClose}
           visible={this.state.visible}
         >
-          <Alert message="에러발생... CPU" type="error" /><br/>
+          <Alert message="메모리 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
+
+          <Descriptions bordered title="VM 상태" size="small" column={2}>
+            <Descriptions.Item label="Status" span={2}>RUNNING</Descriptions.Item>
+            <Descriptions.Item label="CPU">15%</Descriptions.Item>
+            <Descriptions.Item label="Memory">56%</Descriptions.Item>
+            <Descriptions.Item label="Disk (OS)">20%</Descriptions.Item>
+            <Descriptions.Item label="Disk (DATA)">15%</Descriptions.Item>
+            <Descriptions.Item label="Uptime">15시간 31분</Descriptions.Item>
+            <Descriptions.Item label="마지막 접속">2020년 01월 26일</Descriptions.Item>
+          </Descriptions>
+
+          <div className={styles.btngroup}>
+            <Button type="danger" size="small">
+              재기동
+            </Button>
+            <Button type="primary" size="small">
+              장애신고
+            </Button>
+          </div>
+
+          <Divider />
 
           <Descriptions bordered title="VM 정보" size="small" column={2}>
             <Descriptions.Item label="Host name" span={2}>W10-INTERNAMEVM</Descriptions.Item>
@@ -191,27 +212,6 @@ class HelloWorld extends Component {
             </Button>
             <Button type="secondary" size="small">
               변경 이력
-            </Button>
-          </div>
-
-          <Divider />
-
-          <Descriptions bordered title="VM 상태" size="small" column={2}>
-            <Descriptions.Item label="Status" span={2}>RUNNING</Descriptions.Item>
-            <Descriptions.Item label="CPU">15%</Descriptions.Item>
-            <Descriptions.Item label="Memory">56%</Descriptions.Item>
-            <Descriptions.Item label="Disk (OS)">20%</Descriptions.Item>
-            <Descriptions.Item label="Disk (DATA)">15%</Descriptions.Item>
-            <Descriptions.Item label="Uptime">15시간 31분</Descriptions.Item>
-            {/*<Descriptions.Item label="Subnet">F.F.F.F</Descriptions.Item>*/}
-          </Descriptions>
-
-          <div className={styles.btngroup}>
-            <Button type="danger" size="small">
-              재기동
-            </Button>
-            <Button type="primary" size="small">
-              장애신고
             </Button>
           </div>
 

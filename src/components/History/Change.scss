@@ -1,0 +1,26 @@
+.historychange {
+  background: #fff;
+  padding: 24px;
+  height: calc(100vh - 110px);
+  overflow: scroll;
+}
+
+.cover {
+  max-width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+Button {
+  margin-right: 5px;
+}
+
+Alert {
+  margin-bottom: 5px;
+}
+
+.btngroup {
+  width: 450px;
+  margin-top: 10px;
+  text-align: center;
+}
