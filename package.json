@@ -37,6 +37,8 @@
     "antd": "^3.26.7",
     "classnames": "^2.2.6",
     "electron-is-dev": "^1.1.0",
+    "electron-log": "^4.0.4",
+    "electron-updater": "^4.2.0",
     "prop-types": "^15.7.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -113,19 +115,19 @@
       "target": [
         "default"
       ],
-      "icon": "./src/assets/icons/seedclient_icon.icns"
+      "icon": "./resources/icons/seedclient_icon.icns"
     },
     "dmg": {
       "title": "SeedClient",
-      "icon": "./src/assets/icons/seedclient_icon.icns"
+      "icon": "./resources/icons/seedclient_icon.icns"
     },
     "win": {
       "target": [
         "nsis",
         "msi"
       ],
-      "icon": "./src/assets/icons/seedclient_icon.ico",
-      "certificateFile": "./www.dfocus.net.pfx",
+      "icon": "./resources/icons/seedclient_icon.ico",
+      "certificateFile": "./resources/www.dfocus.net.pfx",
       "certificatePassword": "dfocus123!"
     },
     "linux": {
@@ -136,7 +138,7 @@
         "AppImage"
       ],
       "category": "Utility",
-      "icon": "./src/assets/icons/256x256.png"
+      "icon": "./resources/icons/256x256.png"
     },
     "nsis": {
       "oneClick": true,
