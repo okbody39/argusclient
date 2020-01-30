@@ -1,6 +1,6 @@
 {
   "name": "SeedClient",
-  "version": "0.1.0",
+  "version": "0.1.12",
   "description": "SeedVDI, SeedCloud",
   "license": "UNLICENSE",
   "private": true,
@@ -8,12 +8,6 @@
     "name": "Peter Han",
     "email": "yesjyhan@gmail.com"
   },
-  "engines": {
-    "node": ">=8.0.0",
-    "npm": ">=5.0.0",
-    "yarn": ">=1.0.0"
-  },
-  "main": "main.js",
   "scripts": {
     "start": "npm run env:dev -- webpack-dev-server",
     "build": "npm run env:prod -- webpack",
@@ -31,7 +25,7 @@
     "prepackage:all": "rimraf -rf release",
     "postpackage": "electron-builder build",
     "postpackage:all": "electron-builder build -mwl",
-    "buildall": "npm run build && npm run prepackage:all &&  npm run postpackage"
+    "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage"
   },
   "dependencies": {
     "antd": "^3.26.7",
@@ -69,7 +63,7 @@
     "cross-env": "^5.2.1",
     "css-hot-loader": "^1.4.4",
     "css-loader": "^2.1.1",
-    "electron": "^7.1.9",
+    "electron": "^7.1.11",
     "electron-builder": "^22.3.2",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
@@ -112,9 +106,17 @@
       "package.json"
     ],
     "mac": {
+      "category": "public.app-category.utilities",
       "target": [
-        "default"
+        "zip",
+        "dmg"
       ],
+      "type": "distribution",
+      "extendInfo": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      },
       "icon": "./resources/icons/seedclient_icon.icns"
     },
     "dmg": {

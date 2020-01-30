@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>New update!</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <script src="bootstrap.min.js"></script>
+    <script>
+      const { ipcRenderer } = require("electron");
+
+      ipcRenderer.on('progress-data', function (event, percent) {
+        let elem = document.getElementsByClassName('progress-bar').item(0);
+        // document.getElementById("data").value = percent;
+        elem.setAttribute('aria-valuenow',percent);
+        elem.setAttribute('style','width:'+percent+'%');
+        elem.innerHTML = parseInt(percent)+'%';
+      });
+
+      ipcRenderer.on('status-data', function (event, status) {
+        document.getElementById("message").innerHTML = status;
+      });
+
+      ipcRenderer.on('version-data', function (event, version) {
+        document.getElementById("version").innerHTML = 'new version :' + version.version;
+      });
+
+      // function cancel() {
+      //   // ipcRenderer.send("closeDialog", "");
+      //   this.close();
+      // }
+      //
+      // function response() {
+      //   // ipcRenderer.send("closeDialog", document.getElementById("data").value);
+      //   this.close();
+      // }
+
+      // window.onload=function() {
+      //   let options = ipcRenderer.sendSync("openDialog", "");
+      //   let params = JSON.parse(options);
+      //   document.getElementById("label").innerHTML = params.label;
+      //   document.getElementById("data").value = params.value;
+      //   document.getElementById("ok").value = params.ok;
+      // }
+    </script>
+  </head>
+  <body>
+  <div class="container-fluid">
+    <div class="text-center" style="margin-top: 15px;">
+      <img src="seedclient_logo_l.png" style="width: 50%">
+      <h6 id="version"></h6>
+    </div>
+    <div class="progress">
+      <div class="progress-bar progress-bar-striped active" role="progressbar"
+           aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+        0%
+      </div>
+    </div>
+    <div class="alert alert-light" role="alert" id="message">Loading...</div>
+  </div>
+  </body>
+</html>

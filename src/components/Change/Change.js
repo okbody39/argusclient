@@ -64,11 +64,15 @@ class Change extends Component {
         title: '유형 선택',
         content: (
           <div className={styles.inner}>
-            <Button block onClick={this.next.bind(this)}>자원 변경 신청</Button>
-            <Button block>OS 변경 신청</Button>
+            <Button block onClick={this.next.bind(this)}>자원 증설 신청</Button>
+            <Button block>OS 재설치 신청</Button>
+            <Button block>인수인계 신청</Button>
+            <Button block>사용기간 연장</Button>
+            <Button block>반납 신청</Button>
             <Button block>백업 신청</Button>
-            <Button block>USB 사용 권한 신청</Button>
-            <Button block>Printer 사용 권한 신청</Button>
+            <Button block>보안 예외 신청</Button>
+            {/*<Button block>USB 사용 권한 신청</Button>*/}
+            {/*<Button block>Printer 사용 권한 신청</Button>*/}
           </div>
         ),
       },

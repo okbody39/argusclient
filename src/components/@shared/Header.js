@@ -63,10 +63,10 @@ class Header extends Component {
           // onClick={(e) => this.onChangeMenu(e.key)}
         >
           <Menu.Item key="/history/change" >
-            <Link to="/history/change">변경이력</Link>
+            <Link to="/history/change">변경관리</Link>
           </Menu.Item>
           <Menu.Item key="/history/failure">
-            <Link to="/history/failure">장애이력</Link>
+            <Link to="/history/failure">장애신고</Link>
           </Menu.Item>
           <Menu.Item key="/history/access">
             <Link to="/history/access">접속이력</Link>

@@ -179,10 +179,13 @@ class HelloWorld extends Component {
           </Descriptions>
 
           <div className={styles.btngroup}>
-            <Button type="danger" size="small">
-              재기동
-            </Button>
             <Button type="primary" size="small">
+              리셋
+            </Button>
+            <Button type="secondary" size="small">
+              전원켜기
+            </Button>
+            <Button type="danger" size="small">
               장애신고
             </Button>
           </div>
@@ -201,14 +204,17 @@ class HelloWorld extends Component {
             <Descriptions.Item label="Config Info" span={2}>
               생성 일자: 2019. 02. 24
               <br />
-              최종 변경 일자: 2019. 03. 03
+              반납 일자: 2020. 03. 03
               <br />
             </Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>
             <Button type="primary" size="small">
-              자원 변경
+              용량 증설
+            </Button>
+            <Button type="secondary" size="small">
+              사용기간 연장
             </Button>
             <Button type="secondary" size="small">
               변경 이력
