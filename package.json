@@ -1,6 +1,6 @@
 {
   "name": "SeedClient",
-  "version": "0.1.14",
+  "version": "0.1.16",
   "description": "SeedVDI, SeedCloud",
   "license": "UNLICENSE",
   "private": true,
@@ -32,9 +32,9 @@
     "postpackage:all": "electron-builder build -mwl",
 
     "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage:all",
-    "build:mac": "npm run build && npm run prepackage:all &&  npm run postpackage:mac",
-    "build:win": "npm run build && npm run prepackage:all &&  npm run postpackage:win",
-    "build:linux": "npm run build && npm run prepackage:all &&  npm run postpackage:linux"
+    "build:mac": "npm run prepackage:all &&  npm run postpackage:mac",
+    "build:win": "npm run prepackage:all &&  npm run postpackage:win",
+    "build:linux": "npm run prepackage:all &&  npm run postpackage:linux"
   },
   "dependencies": {
     "antd": "^3.26.7",
@@ -110,8 +110,10 @@
   "build": {
     "productName": "SeedClient",
     "appId": "net.dfocus.seedclient",
+    "asar": false,
     "files": [
       "dist",
+      "app",
       "main.js",
       "package.json"
     ],

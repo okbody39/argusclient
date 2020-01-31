@@ -170,7 +170,6 @@ class Header extends Component {
               </Link>
             </Menu.Item>
             </SubMenu>
-
             <Menu.Divider />
             <Menu.Item>
               <Link to="/signup">
@@ -182,14 +181,12 @@ class Header extends Component {
               <Link to="/notice">
                 <Icon type="safety-certificate" />
                 <span>비밀번호 변경</span>
-
               </Link>
             </Menu.Item>
             <Menu.Item>
               <Link to="/signin">
                 <Icon type="logout" />
                 <span>로그아웃</span>
-
               </Link>
             </Menu.Item>
           </SubMenu>
