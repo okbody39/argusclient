@@ -12,8 +12,12 @@ const { autoUpdater } = require("electron-updater");
 const server = 'http://211.232.94.233:1337';
 const platform = `${os.platform()}_${os.arch()}`;
 const feed = `${server}/update/${platform}`;
+// const feed = `${server}/update/${platform}/${app.getVersion()}`;
+
+Menu.setApplicationMenu(null);
 
 autoUpdater.setFeedURL(feed);
+
 autoUpdater.logger = require("electron-log");
 autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoInstallOnAppQuit = true;
@@ -179,11 +183,11 @@ autoUpdater.on('checking-for-update', () => {
 });
 autoUpdater.on('update-available', (info) => {
   updateModal(mainWindow);
-  // autoUpdater.logger.info('Update available.' + JSON.stringify(info));
+  autoUpdater.logger.info('Update available.' + JSON.stringify(info));
   setTimeout(() => {
     modalWindow.webContents.send('status-data', "Update available.");
     modalWindow.webContents.send('version-data', info);
-  }, 1000);
+  }, 2000);
 
 });
 
@@ -191,14 +195,20 @@ autoUpdater.on('update-not-available', () => {
   // autoUpdater.logger.info('Update not available.');
   // modalWindow.webContents.send('status-data', "Update not available.");
 });
-autoUpdater.on('error', () => {
-  // autoUpdater.logger.info('Error in auto-updater.');
-  modalWindow.webContents.send('status-data', "Error in auto-updater.");
+
+autoUpdater.on('error', (err) => {
+  if(modalWindow) {
+    modalWindow.webContents.send('status-data', "Error in auto-updater.");
+  } else {
+    autoUpdater.logger.info('Error in auto-updater... ' + JSON.stringify(err));
+  }
 });
+
 autoUpdater.on('download-progress', (progressObj) => {
   // autoUpdater.logger.info('Download progress... ' + progressObj.percent + '%');
   modalWindow.webContents.send('progress-data', progressObj.percent);
 });
+
 // autoUpdater.on('update-downloaded', (info) => {
 //   // autoUpdater.logger.info('Update downloaded; will install in 5 seconds');
 //   modalWindow.webContents.send('status-data', "Update downloaded; will restart in 5 seconds");
@@ -212,7 +222,10 @@ autoUpdater.on('download-progress', (progressObj) => {
 //   }, 5000);
 // });
 
-autoUpdater.on('update-downloaded', (ev, info) => {
+autoUpdater.on('update-downloaded', (info) => {
+
+  autoUpdater.logger.info('Downloaded ... ' + JSON.stringify(info));
+
   modalWindow.webContents.send('status-data', "Update downloaded; will restart in 5 seconds");
   setTimeout(() => {
     autoUpdater.quitAndInstall();

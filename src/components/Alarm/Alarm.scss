@@ -2,6 +2,9 @@
   background: #fff;
   padding: 24px;
   height: calc(100vh - 110px);
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
+.container::-webkit-scrollbar {
+  display: none;
+}

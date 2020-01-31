@@ -1,6 +1,6 @@
 {
   "name": "SeedClient",
-  "version": "0.1.12",
+  "version": "0.1.14",
   "description": "SeedVDI, SeedCloud",
   "license": "UNLICENSE",
   "private": true,
@@ -8,6 +8,7 @@
     "name": "Peter Han",
     "email": "yesjyhan@gmail.com"
   },
+  "main": "main.js",
   "scripts": {
     "start": "npm run env:dev -- webpack-dev-server",
     "build": "npm run env:prod -- webpack",
@@ -23,13 +24,22 @@
     "build:copy": "copyfiles -u 1 public/* public/**/* dist -e public/index.html",
     "prebuild": "npm run build:clean && npm run build:copy",
     "prepackage:all": "rimraf -rf release",
-    "postpackage": "electron-builder build",
+
+    "postpackage:mac": "electron-builder build",
+    "postpackage:pack": "electron-builder --win --x64 --dir",
+    "postpackage:win": "electron-builder build --win --x64",
+    "postpackage:linux": "electron-builder build --linux --x64",
     "postpackage:all": "electron-builder build -mwl",
-    "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage"
+
+    "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage:all",
+    "build:mac": "npm run build && npm run prepackage:all &&  npm run postpackage:mac",
+    "build:win": "npm run build && npm run prepackage:all &&  npm run postpackage:win",
+    "build:linux": "npm run build && npm run prepackage:all &&  npm run postpackage:linux"
   },
   "dependencies": {
     "antd": "^3.26.7",
     "classnames": "^2.2.6",
+    "electron-builder-squirrel-windows": "^22.3.3",
     "electron-is-dev": "^1.1.0",
     "electron-log": "^4.0.4",
     "electron-updater": "^4.2.0",
@@ -126,7 +136,7 @@
     "win": {
       "target": [
         "nsis",
-        "msi"
+        "zip"
       ],
       "icon": "./resources/icons/seedclient_icon.ico",
       "certificateFile": "./resources/www.dfocus.net.pfx",
@@ -136,21 +146,22 @@
       "target": [
         "deb",
         "rpm",
-        "snap",
+        "zip",
         "AppImage"
       ],
       "category": "Utility",
       "icon": "./resources/icons/256x256.png"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": false,
       "installerLanguages": [
         "en_US",
         "ko_KR"
-      ]
+      ],
+      "language": "1042"
     },
     "directories": {
       "buildResources": "resources",

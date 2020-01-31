@@ -2,8 +2,13 @@
   background: #fff;
   padding: 24px;
   height: calc(100vh - 110px);
-  overflow: scroll;
+  overflow-y: scroll;
 }
+
+.historychange::-webkit-scrollbar {
+  display: none;
+}
+
 
 .cover {
   max-width: 100%;

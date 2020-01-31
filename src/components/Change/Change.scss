@@ -2,7 +2,11 @@
   background: #fff;
   padding: 35px 80px 35px 80px;
   height: calc(100vh - 110px);
-  overflow: scroll;
+  overflow-y: scroll;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 .inner {
