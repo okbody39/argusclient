@@ -2,18 +2,22 @@
 import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
-  Upload, Icon, message, Badge, Alert,
+  Upload, Icon, message, Badge, Alert, Typography,
 } from 'antd';
-
+const { Title, Text } = Typography;
 const { Dragger } = Upload;
+const { Meta } = Card;
+
+import FileBrowser from 'react-keyed-file-browser';
+
 
 import { Plus } from 'react-feather';
 
-const { Meta } = Card;
+
 const props = {
   name: 'file',
   multiple: true,
-  action: 'https://',
+  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
   onChange(info) {
     const { status } = info.file;
     if (status !== 'uploading') {
@@ -26,6 +30,10 @@ const props = {
     }
   },
 };
+
+window.ipcRenderer.on("pong", (event, arg) => {
+  alert("async: " + arg);
+});
 
 // Styles
 import styles from "./HelloWorld.scss";
@@ -40,7 +48,24 @@ class HelloWorld extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      visible: false
+      files: [
+        {
+          key: 'cat.png',
+          modified: new Date(),
+          size: 1.5 * 1024 * 1024,
+        },
+        {
+          key: 'kitten.png',
+          modified: new Date(),
+          size: 545 * 1024,
+        },
+        {
+          key: 'elephant.png',
+          modified: new Date(),
+          size: 52 * 1024,
+        },
+      ],
+      visible: false,
     };
   }
 
@@ -48,13 +73,37 @@ class HelloWorld extends Component {
     this.setState({
       visible: true,
     });
-  }
+  };
 
   onClose = () => {
     this.setState({
       visible: false,
     });
-  }
+  };
+
+  onReset = () => {
+    let result = window.ipcRenderer.sendSync("vm-reset", "WIN10-INTERNETVM");
+    alert(result);
+
+    this.setState({
+      visible: false,
+    });
+  };
+
+  onConnect = () => {
+    window.ipcRenderer.send("ping", "What's up?");
+    this.setState({
+      visible: false,
+    });
+  };
+
+  connectVM = (vmName) => {
+    // e.stopPropagation();
+    // e.nativeEvent.stopImmediatePropagation();
+
+    let result = window.ipcRenderer.sendSync("vm-connect", vmName);
+    alert(result);
+  };
 
   render() {
     return (
@@ -62,23 +111,78 @@ class HelloWorld extends Component {
         <Row gutter={[16, 16]}>
           <Col span={6}>
             <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
+              bodyStyle={{padding: 12}}
+              cover={
+                <>
+                  <div style={{
+                    // backgroundColor: 'rgba(255,255,255,0.5)',
+                    position: 'absolute', top: 40, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                    }}>
+                      <Text strong>W10-INTERNETVM</Text>
+                    </div>
+                  </div>
+                  <img className={styles.cover}
+                       src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                </>
+              }
+              actions={[
+                <div key="play-square" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
+                  <Icon type="play-square" /> 접속
+                </div>,
+                <div key="setting" onClick={this.showDrawer}>
+                  <Icon type="setting" /> 정보
+                </div>,
+              ]}
             >
-              <Meta title="W10-INTERNETVM" description={<Badge status="processing" text="RUNNING" />} />
+              <Badge status="processing" text="RUNNING" />
+
+              {/*<Meta title="W10-INTERNETVM"*/}
+              {/*      description={<Badge status="processing" text="RUNNING" />}*/}
+              {/*/>*/}
             </Card>
           </Col>
           <Col span={6}>
             <Badge count={1}>
               <Card
-                hoverable
-                // style={{ width: 240 }}
-                onClick={this.showDrawer}
-                cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
+                bodyStyle={{padding: 12}}
+                cover={
+                  <>
+                    <div style={{
+                      // backgroundColor: 'rgba(255,255,255,0.5)',
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        borderRadius: 20,
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        padding: 5,
+                        margin: 10,
+                      }}>
+                        <Text strong>W10-INTERNETVM</Text>
+                      </div>
+                    </div>
+                    <img className={styles.cover}
+                         src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                  </>
+                }
+                actions={[
+                  <div key="play-square" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
+                    <Icon type="play-square" /> 접속
+                  </div>,
+                  <div key="setting" onClick={this.showDrawer}>
+                    <Icon type="setting" /> 정보
+                  </div>,
+                ]}
               >
-                <Meta title="W10-INTERNETVM" description="RUNNING" />
+                <Badge status="processing" text="RUNNING" />
+
+                {/*<Meta title="W10-INTERNETVM"*/}
+                {/*      description={<Badge status="processing" text="RUNNING" />}*/}
+                {/*/>*/}
               </Card>
             </Badge>
           </Col>
@@ -165,6 +269,7 @@ class HelloWorld extends Component {
           closable={false}
           onClose={this.onClose}
           visible={this.state.visible}
+          bodyStyle={{ overflow: "auto", height: "calc(100vh - 110px)" }}
         >
           <Alert message="메모리 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
 
@@ -179,7 +284,7 @@ class HelloWorld extends Component {
           </Descriptions>
 
           <div className={styles.btngroup}>
-            <Button type="primary" size="small">
+            <Button type="primary" size="small" onClick={this.onReset}>
               리셋
             </Button>
             <Button type="secondary" size="small">
@@ -222,22 +327,22 @@ class HelloWorld extends Component {
           </div>
 
           <Divider />
+          <div style={{height: 200}}>
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <Icon type="inbox" />
+              </p>
+              <p className="ant-upload-text">파일 업로더</p>
+              <p className="ant-upload-hint">
+                VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.
+              </p>
+            </Dragger>
+          </div>
 
-          <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
-              <Icon type="inbox" />
-            </p>
-            <p className="ant-upload-text">파일 업로더</p>
-            <p className="ant-upload-hint">
-              VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.
-            </p>
-          </Dragger>
-
-          <br />
-          <br />
-          <br />
-
-
+          <FileBrowser
+            files={this.state.files}
+            canFilter={false}
+          />
 
           <div
             style={{
@@ -254,7 +359,7 @@ class HelloWorld extends Component {
           >
             기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-            <Button onClick={this.onClose} type="secondary">
+            <Button onClick={this.onConnect} type="danger" style={{width: 100}}>
               접속
             </Button>
 

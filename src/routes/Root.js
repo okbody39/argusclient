@@ -8,7 +8,11 @@ import Signup from "@/screens/Signup/Signup";
 import Failure from "@/screens/Failure/Failure";
 import Notice from "@/screens/Notice/Notice";
 import Alarm from "@/screens/Alarm/Alarm";
+
 import Change from "@/screens/Change/Change";
+import ChangePassword from "@/screens/Change/Password";
+
+import Settings from "@/screens/Settings/Settings";
 
 import HistoryChange from "@/screens/History/Change";
 import HistoryFailure from "@/screens/History/Failure";
@@ -24,7 +28,11 @@ const Routes = () => (
       <Route path="/failure" component={Failure} />
       <Route path="/notice" component={Notice} />
       <Route path="/alarm" component={Alarm} />
+
+      <Route path="/change/password" component={ChangePassword} />
       <Route path="/change" component={Change} />
+
+      <Route path="/settings" component={Settings} />
 
       <Route path="/history/change" component={HistoryChange} />
       <Route path="/history/failure" component={HistoryFailure} />

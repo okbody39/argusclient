@@ -1,19 +1,19 @@
 // Libs
 import React, { Component } from "react";
 // Styles
-import styles from "./Change.scss";
+import styles from "./Password.scss";
 // Layouts
 import Layout from "@/layouts/App";
 // Components
-import ChangeCompo from "@/components/Change/Change";
+import PasswordCompo from "@/components/Change/Password";
 
 /**
- * Change
+ * Password
  *
- * @class Change
+ * @class Password
  * @extends {Component}
  */
-class Change extends Component {
+class Password extends Component {
   constructor(props) {
     super(props);
   }
@@ -22,11 +22,11 @@ class Change extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <ChangeCompo />
+          <PasswordCompo />
         </div>
       </Layout>
     );
   }
 }
 
-export default Change;
+export default Password;

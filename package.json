@@ -24,13 +24,11 @@
     "build:copy": "copyfiles -u 1 public/* public/**/* dist -e public/index.html",
     "prebuild": "npm run build:clean && npm run build:copy",
     "prepackage:all": "rimraf -rf release",
-
     "postpackage:mac": "electron-builder build",
     "postpackage:pack": "electron-builder --win --x64 --dir",
     "postpackage:win": "electron-builder build --win --x64",
     "postpackage:linux": "electron-builder build --linux --x64",
     "postpackage:all": "electron-builder build -mwl",
-
     "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage:all",
     "build:mac": "npm run prepackage:all &&  npm run postpackage:mac",
     "build:win": "npm run prepackage:all &&  npm run postpackage:win",
@@ -48,6 +46,7 @@
     "react-dom": "^16.12.0",
     "react-feather": "^2.0.3",
     "react-highlight-words": "^0.16.0",
+    "react-keyed-file-browser": "^1.7.0",
     "react-router-dom": "^5.1.2",
     "styled-components": "^5.0.0"
   },

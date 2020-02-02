@@ -1,19 +1,19 @@
 // Libs
 import React, { Component } from "react";
 // Styles
-import styles from "./Change.scss";
+import styles from "./Settings.scss";
 // Layouts
 import Layout from "@/layouts/App";
 // Components
-import ChangeCompo from "@/components/Change/Change";
+import SettingsCompo from "@/components/Settings/Settings";
 
 /**
- * Change
+ * Settings
  *
- * @class Change
+ * @class Settings
  * @extends {Component}
  */
-class Change extends Component {
+class Settings extends Component {
   constructor(props) {
     super(props);
   }
@@ -22,11 +22,11 @@ class Change extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <ChangeCompo />
+          <SettingsCompo />
         </div>
       </Layout>
     );
   }
 }
 
-export default Change;
+export default Settings;

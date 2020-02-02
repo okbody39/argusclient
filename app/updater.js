@@ -22,12 +22,21 @@ let modalWindow;
 
 function init(mainWindow) {
 
+  if(isDev) {
+    updateModal(mainWindow);
+
+    setTimeout(() => {
+      modalWindow.webContents.send('version-data', {version: "1.1.16"});
+    }, 2000);
+
+    return;
+  }
+
   autoUpdater.on('update-available', (info) => {
 
     updateModal(mainWindow);
 
     // autoUpdater.logger.info('Update available.' + JSON.stringify(info));
-
     setTimeout(() => {
       if(modalWindow) {
         modalWindow.webContents.send('status-data', "Update available.");
@@ -76,7 +85,7 @@ function init(mainWindow) {
 
 function updateModal(parent) {
   modalWindow = new BrowserWindow({
-    width: 500, height: 250,
+    width: 500, height: 170,
     'parent': parent,
     'show': false,
     // 'modal': true,

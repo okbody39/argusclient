@@ -42,6 +42,18 @@ class Header extends Component {
     }
   }
 
+  checkUpdate() {
+    // window.api.receive("fromMain", (data) => {
+    //   console.log(`Received ${data} from main process`);
+    // });
+
+    // window.api.send("check-update", "some data");
+    window.ipcRenderer.send("check-update");
+    // ipcRenderer.send("check-update", "");
+
+    // console.log("check-update");
+  }
+
   render() {
 
     if(ISFULLSCREEN(this.props.location.pathname)) {
@@ -126,7 +138,7 @@ class Header extends Component {
             popupClassName={styles.popup}
           >
 
-            <Menu.Item>
+            <Menu.Item  style={{width: 200}}>
               <Link to="/notice">
                 <Icon type="notification" />
                 <span>공지사항</span>
@@ -170,15 +182,21 @@ class Header extends Component {
               </Link>
             </Menu.Item>
             </SubMenu>
+
             <Menu.Divider />
+
             <Menu.Item>
-              <Link to="/signup">
+              <Link to="/settings">
                 <Icon type="setting" />
                 <span>설정</span>
               </Link>
             </Menu.Item>
+            <Menu.Item onClick={this.checkUpdate.bind(this)}>
+                <Icon type="download" />
+                <span>업데이트 확인</span>
+            </Menu.Item>
             <Menu.Item>
-              <Link to="/notice">
+              <Link to="/change/password">
                 <Icon type="safety-certificate" />
                 <span>비밀번호 변경</span>
               </Link>

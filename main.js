@@ -2,14 +2,25 @@
 
 // Import parts of electron to use
 const os = require('os');
-const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
+// const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
+const {
+  app,
+  Menu,
+  BrowserWindow,
+  ipcMain
+} = require("electron");
+
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
 
-const autoUpdater = require('./app/updater');
+// const autoUpdater = require('./app/updater');
+const apis = require('./app/apis');
 
-Menu.setApplicationMenu(null);
+if(!isDev) {
+    Menu.setApplicationMenu(null);
+    Menu.setApplicationMenu(null);
+}
 
 let mainWindow;
 
@@ -25,6 +36,10 @@ function createWindow() {
     height: 768,
     show: false,
     icon: path.join(__dirname, 'src/assets/icons/128x128.png'),
+    webPreferences: {
+      nodeIntegration: true,
+      preload: path.join(__dirname, 'preload.js'),
+    }
   });
 
   let indexPath;
@@ -66,13 +81,23 @@ function createWindow() {
       });
     }
 
-    autoUpdater.init(mainWindow);
+    // apis.autoUpdateCheck();
+    // autoUpdater.init(mainWindow);
+
+    apis.init(mainWindow);
 
   });
 
   mainWindow.on("closed", function() {
     mainWindow = null;
   });
+
+  // mainWindow.webContents.on('check-update', function() {
+  //   // mainWindow.webContents.send('ping', '🤘');
+  //   console.log("check-update");
+  //
+  //   // autoUpdater.init(mainWindow);
+  // });
 }
 
 app.on("ready", () => {
@@ -90,3 +115,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+
