@@ -64,13 +64,33 @@ class Change extends Component {
         title: '유형 선택',
         content: (
           <div className={styles.inner}>
-            <Button block onClick={this.next.bind(this)}>자원 증설 신청</Button>
-            <Button block>OS 재설치 신청</Button>
-            <Button block>인수인계 신청</Button>
-            <Button block>사용기간 연장</Button>
-            <Button block>반납 신청</Button>
-            <Button block>백업 신청</Button>
-            <Button block>보안 예외 신청</Button>
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>자원 증설 신청</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>OS 재설치 신청</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>인수인계 신청</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>사용기간 연장</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>반납 신청</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>백업 신청</Button>
+              </Col>
+              <Col span={6}>
+                <Button block onClick={this.next.bind(this)} style={{height: 100}}>보안 예외 신청</Button>
+              </Col>
+            </Row>
+            {/*<Button block>사용기간 연장</Button>*/}
+            {/*<Button block>반납 신청</Button>*/}
+            {/*<Button block>백업 신청</Button>*/}
+            {/*<Button block>보안 예외 신청</Button>*/}
             {/*<Button block>USB 사용 권한 신청</Button>*/}
             {/*<Button block>Printer 사용 권한 신청</Button>*/}
           </div>

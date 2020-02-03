@@ -225,8 +225,6 @@ class HelloWorld extends Component {
               <Meta title="W10-INTERNETVM" description="RUNNING" />
             </Card>
           </Col>
-        </Row>
-        <Row gutter={[16, 16]}>
           <Col span={6}>
             <Card
               hoverable
@@ -268,8 +266,6 @@ class HelloWorld extends Component {
               <Meta title="W10-DBVM" description="STOPPED" />
             </Card>
           </Col>
-        </Row>
-        <Row gutter={[16, 16]}>
           <Col span={6}>
             <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
               <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>

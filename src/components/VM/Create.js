@@ -76,9 +76,15 @@ class Create extends Component {
               <Radio.Button value="l">Linux</Radio.Button>
             </Radio.Group>
 
-            <Radio.Group defaultValue="6" buttonStyle="solid" style={{marginLeft: 10}}>
+            <Radio.Group defaultValue="6" buttonStyle="solid" style={{marginLeft: 20}}>
               <Radio.Button value="3">32bit</Radio.Button>
               <Radio.Button value="6">64bit</Radio.Button>
+            </Radio.Group>
+
+            <Radio.Group defaultValue="a" buttonStyle="solid" style={{marginLeft: 20}}>
+              <Radio.Button value="a">All</Radio.Button>
+              <Radio.Button value="s">SSD</Radio.Button>
+              <Radio.Button value="h">HDD</Radio.Button>
             </Radio.Group>
 
             <Divider />
@@ -88,7 +94,7 @@ class Create extends Component {
               <Col span={12}>
                 <Card
                   hoverable
-                  // onClick={this.showDrawer}
+                  onClick={this.next.bind(this)}
                   // cover={<div className={styles.cover}><img src={vm_ubuntu} /></div>}
                 >
                   <Meta avatar={<Avatar src={vm_windows} />}
