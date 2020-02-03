@@ -1,6 +1,6 @@
 {
   "name": "SeedClient",
-  "version": "0.1.16",
+  "version": "0.1.18",
   "description": "SeedVDI, SeedCloud",
   "license": "UNLICENSE",
   "private": true,
@@ -114,6 +114,7 @@
       "dist",
       "app",
       "main.js",
+      "preload.js",
       "package.json"
     ],
     "mac": {

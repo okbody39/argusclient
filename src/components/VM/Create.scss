@@ -1,0 +1,41 @@
+.container {
+  background: #fff;
+  padding: 35px 80px 35px 80px;
+  height: calc(100vh - 110px);
+  overflow-y: scroll;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+.inner {
+  margin: 20px;
+  padding: 40px;
+
+}
+
+.inner Button {
+  margin-bottom: 15px;
+
+}
+
+.cover {
+  height: 100px;
+  padding: 20px;
+}
+
+.cover img {
+  max-width: 100%;
+   object-fit: cover;
+}
+
+Alert {
+  margin-bottom: 5px;
+}
+
+.btngroup {
+  width: 450px;
+  margin-top: 10px;
+  text-align: center;
+}

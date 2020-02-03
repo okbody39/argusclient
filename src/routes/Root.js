@@ -18,6 +18,8 @@ import HistoryChange from "@/screens/History/Change";
 import HistoryFailure from "@/screens/History/Failure";
 import HistoryAccess from "@/screens/History/Access";
 
+import VMCreate from "@/screens/VM/Create";
+
 const Routes = () => (
   <HashRouter>
     <Switch>
@@ -37,6 +39,8 @@ const Routes = () => (
       <Route path="/history/change" component={HistoryChange} />
       <Route path="/history/failure" component={HistoryFailure} />
       <Route path="/history/access" component={HistoryAccess} />
+
+      <Route path="/vm/create" component={VMCreate} />
     </Switch>
   </HashRouter>
 );

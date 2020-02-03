@@ -4,10 +4,10 @@ import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Typography,
 } from 'antd';
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Dragger } = Upload;
 const { Meta } = Card;
-
+import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
 
 
@@ -66,6 +66,7 @@ class HelloWorld extends Component {
         },
       ],
       visible: false,
+      vmName: 'W10-INETRNETVM',
     };
   }
 
@@ -103,6 +104,11 @@ class HelloWorld extends Component {
 
     let result = window.ipcRenderer.sendSync("vm-connect", vmName);
     alert(result);
+  };
+
+  onChangeVmName = vmName => {
+    // console.log('Content change:', str);
+    this.setState({ vmName });
   };
 
   render() {
@@ -188,12 +194,25 @@ class HelloWorld extends Component {
           </Col>
           <Col span={6}>
             <Card
-              hoverable
+              // hoverable
               // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
+              // onClick={this.showDrawer}
+              cover={
+                <a href="#" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
+                  <img alt="example" className={styles.cover}
+                       src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                </a>
+               }
             >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
+              <Meta title={
+                      <a href="#" onClick={this.showDrawer}>
+                        <Text strong>W10-INTERNETVM</Text>
+                      </a>
+                    }
+                    description={
+                      <Badge status="processing" text="RUNNING" />
+                    }  />
+
             </Card>
           </Col>
           <Col span={6}>
@@ -252,7 +271,7 @@ class HelloWorld extends Component {
         </Row>
         <Row gutter={[16, 16]}>
           <Col span={6}>
-            <Card hoverable>
+            <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
               <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
                 <Plus size={100} color="lightgrey" />
               </div>
@@ -263,7 +282,9 @@ class HelloWorld extends Component {
 
 
         <Drawer
-          title="W10-INTERNETVM"
+          title={
+            <Text editable={{ onChange: this.onChangeVmName }}>{this.state.vmName}</Text>
+          }
           width={520}
           placement="right"
           closable={false}
@@ -374,4 +395,4 @@ class HelloWorld extends Component {
   }
 }
 
-export default HelloWorld;
+export default withRouter(HelloWorld);

@@ -6,6 +6,7 @@ const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
 
+const aboutThis = require('./about');
 const autoUpdater = require('./updater');
 
 function autoUpdateCheck(mainWindow) {
@@ -13,6 +14,10 @@ function autoUpdateCheck(mainWindow) {
 }
 
 function init(mainWindow) {
+
+  ipcMain.on("about-this", (event, arg) => {
+    aboutThis.run(mainWindow);
+  });
 
   ipcMain.on("check-update", (event, arg) => {
     autoUpdateCheck(mainWindow);

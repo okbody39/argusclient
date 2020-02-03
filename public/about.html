@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SeedClient</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <script src="bootstrap.min.js"></script>
+    <script>
+      const { ipcRenderer } = require("electron");
+
+      ipcRenderer.on('version-data', function (event, version) {
+        document.getElementById("version").innerHTML = 'version : ' + version.version + ' (' + version.platform + ')';
+      });
+
+      // function cancel() {
+      //   // ipcRenderer.send("closeDialog", "");
+      //   this.close();
+      // }
+      //
+      // function response() {
+      //   // ipcRenderer.send("closeDialog", document.getElementById("data").value);
+      //   this.close();
+      // }
+
+      // window.onload=function() {
+      //   let options = ipcRenderer.sendSync("openDialog", "");
+      //   let params = JSON.parse(options);
+      //   document.getElementById("label").innerHTML = params.label;
+      //   document.getElementById("data").value = params.value;
+      //   document.getElementById("ok").value = params.ok;
+      // }
+    </script>
+  </head>
+  <body>
+  <div class="container-fluid">
+    <div class="text-center" style="margin-top: 20px;">
+      <img src="seedclient_logo_l.png" style="width: 50%">
+      <h5 id="version">version : - ()</h5>
+    </div>
+<!--    <div class="alert alert-light" role="alert" id="message">Loading...</div>-->
+  </div>
+  </body>
+</html>

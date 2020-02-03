@@ -53,7 +53,7 @@ class Failure extends Component {
 
     const steps = [
       {
-        title: '유형 선택',
+        title: '장애 유형 선택',
         content: (
           <div className={styles.inner}>
             <Button block onClick={this.next.bind(this)}>접속 문제</Button>
@@ -74,7 +74,7 @@ class Failure extends Component {
         ),
       },
       {
-        title: '장애조치',
+        title: '장애 조치 가이드',
         content: (
           <Result
             // status="success"

@@ -54,6 +54,18 @@ class Header extends Component {
     // console.log("check-update");
   }
 
+  about() {
+    // window.api.receive("fromMain", (data) => {
+    //   console.log(`Received ${data} from main process`);
+    // });
+
+    // window.api.send("check-update", "some data");
+    window.ipcRenderer.send("about-this");
+    // ipcRenderer.send("check-update", "");
+
+    // console.log("check-update");
+  }
+
   render() {
 
     if(ISFULLSCREEN(this.props.location.pathname)) {
@@ -184,6 +196,11 @@ class Header extends Component {
             </SubMenu>
 
             <Menu.Divider />
+
+            <Menu.Item onClick={this.about.bind(this)}>
+              <Icon type="download" />
+              <span>About SeedClient</span>
+            </Menu.Item>
 
             <Menu.Item>
               <Link to="/settings">

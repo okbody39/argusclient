@@ -85,7 +85,7 @@ function init(mainWindow) {
 
 function updateModal(parent) {
   modalWindow = new BrowserWindow({
-    width: 500, height: 170,
+    width: 500, height: 180,
     'parent': parent,
     'show': false,
     // 'modal': true,
