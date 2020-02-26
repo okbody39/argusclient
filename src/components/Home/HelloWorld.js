@@ -10,8 +10,9 @@ const { Meta } = Card;
 import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
 
-
 import { Plus } from 'react-feather';
+
+import win7preview from '@/assets/images/preview/windows7.gif';
 
 
 const props = {
@@ -67,7 +68,19 @@ class HelloWorld extends Component {
       ],
       visible: false,
       vmName: 'W10-INETRNETVM',
+      vmlist: props.vmlist,
     };
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      let result = window.ipcRenderer.sendSync("vm-list", "all");
+      console.log(result)
+      this.setState({
+        vmlist: result,
+      });
+    }, 500);
+
   }
 
   showDrawer = () => {
@@ -132,7 +145,7 @@ class HelloWorld extends Component {
                     </div>
                   </div>
                   <img className={styles.cover}
-                       src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                       src={win7preview} />
                 </>
               }
               actions={[
@@ -172,7 +185,7 @@ class HelloWorld extends Component {
                       </div>
                     </div>
                     <img className={styles.cover}
-                         src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                         src={win7preview} />
                   </>
                 }
                 actions={[
@@ -200,7 +213,7 @@ class HelloWorld extends Component {
               cover={
                 <a href="#" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
                   <img alt="example" className={styles.cover}
-                       src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />
+                       src={win7preview} />
                 </a>
                }
             >
@@ -215,57 +228,24 @@ class HelloWorld extends Component {
 
             </Card>
           </Col>
-          <Col span={6}>
-            <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
-            >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
-            >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
-            >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
-            </Card>
-          </Col>
 
-          <Col span={6}>
-            <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="https://www.samsungsvc.co.kr/proxy?isAttach=true&faqFlag=true&fileInfo=KTllLV9rTGNCS0JsMEJDLksvfERfK3kjQC5lKi9fQ0sybmVYWlwkLSE1bDN8XHwqISkzTDRNPTRra3oxLk0tKjJEM2NEKyVtXzt6XyoyIywhTio3N0BlfUROZSpFa05ea0VKMSspaj8pJm5YJmskW2tfWmNjM055OjcxNDQhJCp__B__Xmw0K19beTI6ZUw6fm4jTX1lXWtAajNNTkw__C__&fileName=1-1.gif&fromNamo=true" />}
-            >
-              <Meta title="W10-INTERNETVM" description="RUNNING" />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card
-              hoverable
-              // style={{ width: 240 }}
-              onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src="http://techg.kr/wp-content/uploads/2015/06/windows10.jpg" />}
-            >
-              <Meta title="W10-DBVM" description="STOPPED" />
-            </Card>
-          </Col>
+          {
+            this.state.vmlist.map((vm, i) => {
+              return (
+                <Col key={i} span={6}>
+                  <Card
+                    hoverable
+                    // style={{ width: 240 }}
+                    onClick={this.showDrawer}
+                    cover={<img alt="example" className={styles.cover} src={win7preview} />}
+                  >
+                    <Meta title={vm.Name} description={vm.BasicState} />
+                  </Card>
+                </Col>
+              );
+            })
+          }
+
           <Col span={6}>
             <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
               <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
