@@ -2,7 +2,7 @@
 import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
-  Upload, Icon, message, Badge, Alert, Typography,
+  Upload, Icon, message, Badge, Alert, Typography, Spin,
 } from 'antd';
 const { Title, Text, Paragraph } = Typography;
 const { Dragger } = Upload;
@@ -67,8 +67,10 @@ class HelloWorld extends Component {
         },
       ],
       visible: false,
+      loading: true,
       vmName: 'W10-INETRNETVM',
       vmlist: props.vmlist,
+
     };
   }
 
@@ -78,6 +80,7 @@ class HelloWorld extends Component {
       console.log(result)
       this.setState({
         vmlist: result,
+        loading: false,
       });
     }, 500);
 
@@ -128,7 +131,7 @@ class HelloWorld extends Component {
     return (
       <div className={styles.helloWorld}>
         <Row gutter={[16, 16]}>
-          <Col span={6}>
+          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Card
               bodyStyle={{padding: 12}}
               cover={
@@ -164,7 +167,7 @@ class HelloWorld extends Component {
               {/*/>*/}
             </Card>
           </Col>
-          <Col span={6}>
+          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Badge count={1}>
               <Card
                 bodyStyle={{padding: 12}}
@@ -205,17 +208,18 @@ class HelloWorld extends Component {
               </Card>
             </Badge>
           </Col>
-          <Col span={6}>
+          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Card
               // hoverable
               // style={{ width: 240 }}
               // onClick={this.showDrawer}
-              cover={
-                <a href="#" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
-                  <img alt="example" className={styles.cover}
-                       src={win7preview} />
-                </a>
-               }
+              cover={<img alt="example" className={styles.cover} src={win7preview} style={{ cursor: 'pointer' }} onDoubleClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}/>}
+              // cover={
+              //   <a href="#" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
+              //     <img alt="example" className={styles.cover}
+              //          src={win7preview} onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')} />
+              //   </a>
+              //  }
             >
               <Meta title={
                       <a href="#" onClick={this.showDrawer}>
@@ -232,25 +236,27 @@ class HelloWorld extends Component {
           {
             this.state.vmlist.map((vm, i) => {
               return (
-                <Col key={i} span={6}>
+                <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
                   <Card
                     hoverable
                     // style={{ width: 240 }}
                     onClick={this.showDrawer}
                     cover={<img alt="example" className={styles.cover} src={win7preview} />}
                   >
-                    <Meta title={vm.Name} description={vm.BasicState} />
+                    <Meta title={ vm.VmName || vm.PoolDisplayName } description={ vm.BasicState || "공용VM" } />
                   </Card>
                 </Col>
               );
             })
           }
 
-          <Col span={6}>
+          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
+              <Spin spinning={this.state.loading}  size="large" tip="Loading...">
               <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
-                <Plus size={100} color="lightgrey" />
+                {this.state.loading ? null : <Plus size={100} color="lightgrey" />}
               </div>
+              </Spin>
             </Card>
           </Col>
 

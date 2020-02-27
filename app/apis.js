@@ -44,7 +44,10 @@ function init(mainWindow) {
 
     // http://192.168.15.17:8000/vcs/vm/all
 
-    let url = 'http://192.168.15.17:8000/vcs/vm/' + vmName;
+    // let url = 'http://192.168.15.17:8000/vcs/vm/' + vmName;
+    // let url = 'http://192.168.15.17:8000/vcs/user/mhkim';
+
+    let url = 'http://211.232.94.235:8000/vcs/user/mhkim';
 
     // console.log(url);
     //
