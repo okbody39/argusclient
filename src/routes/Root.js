@@ -2,6 +2,7 @@
 import React from "react";
 import { HashRouter, Switch, Route } from "react-router-dom";
 // Screens
+import Root from "@/screens/Root/Root";
 import Home from "@/screens/Home/Home";
 import Signin from "@/screens/Signin/Signin";
 import Signup from "@/screens/Signup/Signup";
@@ -23,7 +24,8 @@ import VMCreate from "@/screens/VM/Create";
 const Routes = () => (
   <HashRouter>
     <Switch>
-      <Route exact path="/" component={Home} />
+      <Route exact path="/" component={Root} />
+      <Route exact path="/home" component={Root} />
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
 

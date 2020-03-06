@@ -3,8 +3,9 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Typography, Spin,
+  Modal,
 } from 'antd';
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 const { Dragger } = Upload;
 const { Meta } = Card;
 
@@ -12,23 +13,15 @@ import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
 import { Plus } from 'react-feather';
 
+import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
+
 import win7preview from '@/assets/images/preview/windows7.gif';
 
 const props = {
   name: 'file',
   multiple: true,
   action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-  onChange(info) {
-    const { status } = info.file;
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList);
-    }
-    if (status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully.`);
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
-    }
-  },
+  
 };
 
 window.ipcRenderer.on("pong", (event, arg) => {
@@ -68,11 +61,24 @@ class HelloWorld extends Component {
         },
       ],
       visible: false,
+      fileUploadervisible: false,
+      fileList: [],
       loading: true,
       vmName: 'W10-INETRNETVM',
       vmlist: [],
-
+      isFlushed: false
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // console.log(this.props.location.state, nextProps.location.state);
+
+    if(nextProps.location.state === "Reset") {
+      window.ipcRenderer.send("vm-list-reset", "mhkim");
+      this.setState({
+        loading: true,
+      });
+    }
   }
 
   componentDidMount() {
@@ -84,6 +90,8 @@ class HelloWorld extends Component {
     //     loading: false,
     //   });
     // }, 500);
+
+    
 
     setTimeout(() => {
       window.ipcRenderer.send("vm-list", "mhkim");
@@ -110,10 +118,37 @@ class HelloWorld extends Component {
 
   componentWillUnmount() {
     clearInterval(_TIMER_);
+    
+    window.ipcRenderer.removeAllListeners('vm-list');
+    window.ipcRenderer.removeAllListeners('pong');
   }
 
-  showDrawer = () => {
+  fileUploader = (vmName) => {
     this.setState({
+      vmName: vmName,
+      fileUploadervisible: true,
+      fileList: [],
+    });
+  };
+
+  handleOk = e => {
+    // console.log(e);
+    // alert(JSON.stringify(this.state.fileList));
+    this.setState({
+      fileUploadervisible: false,
+    });
+  };
+
+  handleCancel = e => {
+    // console.log(e);
+    this.setState({
+      fileUploadervisible: false,
+    });
+  };
+
+  showDrawer = (vmName) => {
+    this.setState({
+      vmName: vmName,
       visible: true,
     });
   };
@@ -157,124 +192,69 @@ class HelloWorld extends Component {
     return (
       <div className={styles.helloWorld}>
         <Row gutter={[16, 16]}>
-          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-            <Card
-              bodyStyle={{padding: 12}}
-              cover={
-                <>
-                  <div style={{
-                    // backgroundColor: 'rgba(255,255,255,0.5)',
-                    position: 'absolute', top: 40, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                    }}>
-                      <Text strong>W10-INTERNETVM</Text>
-                    </div>
-                  </div>
-                  <img className={styles.cover}
-                       src={win7preview} />
-                </>
-              }
-              actions={[
-                <div key="play-square" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
-                  <Icon type="play-square" /> 접속
-                </div>,
-                <div key="setting" onClick={this.showDrawer}>
-                  <Icon type="setting" /> 정보
-                </div>,
-              ]}
-            >
-              <Badge status="processing" text="RUNNING" />
-
-              {/*<Meta title="W10-INTERNETVM"*/}
-              {/*      description={<Badge status="processing" text="RUNNING" />}*/}
-              {/*/>*/}
-            </Card>
-          </Col>
-          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-            <Badge count={1}>
-              <Card
-                bodyStyle={{padding: 12}}
-                cover={
-                  <>
-                    <div style={{
-                      // backgroundColor: 'rgba(255,255,255,0.5)',
-                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center',
-                      textAlign: 'center'
-                    }}>
-                      <div style={{
-                        borderRadius: 20,
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        padding: 5,
-                        margin: 10,
-                      }}>
-                        <Text strong>W10-INTERNETVM</Text>
-                      </div>
-                    </div>
-                    <img className={styles.cover}
-                         src={win7preview} />
-                  </>
-                }
-                actions={[
-                  <div key="play-square" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
-                    <Icon type="play-square" /> 접속
-                  </div>,
-                  <div key="setting" onClick={this.showDrawer}>
-                    <Icon type="setting" /> 정보
-                  </div>,
-                ]}
-              >
-                <Badge status="processing" text="RUNNING" />
-
-                {/*<Meta title="W10-INTERNETVM"*/}
-                {/*      description={<Badge status="processing" text="RUNNING" />}*/}
-                {/*/>*/}
-              </Card>
-            </Badge>
-          </Col>
-          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-            <Card
-              // hoverable
-              // style={{ width: 240 }}
-              // onClick={this.showDrawer}
-              cover={<img alt="example" className={styles.cover} src={win7preview} style={{ cursor: 'pointer' }} onDoubleClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}/>}
-              // cover={
-              //   <a href="#" onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')}>
-              //     <img alt="example" className={styles.cover}
-              //          src={win7preview} onClick={this.connectVM.bind(this, 'WIN10-INTERNETVM')} />
-              //   </a>
-              //  }
-            >
-              <Meta title={
-                      <a href="#" onClick={this.showDrawer}>
-                        <Text strong>W10-INTERNETVM</Text>
-                      </a>
-                    }
-                    description={
-                      <Badge status="processing" text="RUNNING" />
-                    }  />
-
-            </Card>
-          </Col>
-
           {
             this.state.vmlist.map((vm, i) => {
               return (
                 <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
                   <Card
-                    hoverable
+                    bodyStyle={{padding: 12}}
+                    // hoverable
                     // style={{ width: 240 }}
-                    onClick={this.showDrawer}
-                    cover={<img alt="example" className={styles.cover} src={win7preview} />}
+                    // onClick={this.showDrawer}
+                    cover={
+                      <Figure height={150} onClick={this.showDrawer.bind(this, vm.Name || vm.PoolName)}>
+                        <Image
+                          source={win7preview}
+                        />
+                        <Caption className={`header`}>
+                          <Title>{vm.Name || vm.PoolName}</Title>
+                          <SubTitle>{vm.OperatingSystem || "Unknown"}</SubTitle>
+                        </Caption>
+                      </Figure>
+                    }
+                    actions={[
+                      <div key="play-square" onClick={this.connectVM.bind(this, vm.Name || vm.PoolName)}>
+                        <Icon type="play-square" />
+                      </div>,
+                      <div key="play-square" onClick={this.fileUploader.bind(this, vm.Name || vm.PoolName)}>
+                        <Icon type="cloud-upload" />
+                      </div>,
+                      
+                      <div key="setting" onClick={this.showDrawer.bind(this, vm.Name || vm.PoolName)}>
+                        <Icon type="setting" />
+                      </div>,
+                    ]}
                   >
-                    <Meta title={ vm.VmName || vm.PoolDisplayName } description={ vm.BasicState || "공용VM" } />
+                    <Badge status="processing" text={vm.BasicState || "공용VM"} />
                   </Card>
                 </Col>
+                // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
+                //   <Card
+                //     hoverable
+                //     // style={{ width: 240 }}
+                //     onClick={this.showDrawer}
+                //     cover={<img alt="example" className={styles.cover} src={win7preview} />}
+                //   >
+                //     <Meta title={ vm.Name || vm.PoolName } description={ vm.BasicState || "공용VM" } />
+                //   </Card>
+                // </Col>
               );
             })
           }
+
+          
+
+          {/* <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
+            <Figure height={240}>
+              <Image
+                source={win7preview}
+              />
+              <Caption className={`header`}>
+                <Title>Grid tile</Title>
+                <SubTitle>Media</SubTitle>
+              </Caption>
+            </Figure>
+          </Col> */}
 
           <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
@@ -327,7 +307,7 @@ class HelloWorld extends Component {
           <Divider />
 
           <Descriptions bordered title="VM 정보" size="small" column={2}>
-            <Descriptions.Item label="Host name" span={2}>W10-INTERNAMEVM</Descriptions.Item>
+            <Descriptions.Item label="VM name" span={2}>{this.state.vmName}</Descriptions.Item>
             <Descriptions.Item label="CPU">2 Core</Descriptions.Item>
             <Descriptions.Item label="Memory">8 GB</Descriptions.Item>
             <Descriptions.Item label="Disk (OS)">200 GB</Descriptions.Item>
@@ -355,24 +335,6 @@ class HelloWorld extends Component {
             </Button>
           </div>
 
-          <Divider />
-          <div style={{height: 200}}>
-            <Dragger {...props}>
-              <p className="ant-upload-drag-icon">
-                <Icon type="inbox" />
-              </p>
-              <p className="ant-upload-text">파일 업로더</p>
-              <p className="ant-upload-hint">
-                VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.
-              </p>
-            </Dragger>
-          </div>
-
-          <FileBrowser
-            files={this.state.files}
-            canFilter={false}
-          />
-
           <div
             style={{
               position: 'absolute',
@@ -388,7 +350,7 @@ class HelloWorld extends Component {
           >
             기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-            <Button onClick={this.onConnect} type="danger" style={{width: 100}}>
+            <Button onClick={this.onConnect} type="success" style={{width: 100}}>
               접속
             </Button>
 
@@ -398,6 +360,50 @@ class HelloWorld extends Component {
           </div>
 
         </Drawer>
+
+        <Modal
+          title={`File Upload to ${this.state.vmName}`}
+          visible={this.state.fileUploadervisible}
+          onOk={this.handleOk.bind(this)}
+          onCancel={this.handleCancel.bind(this)}
+        >
+          {/* <div style={{height: 200}}> */}
+            <Dragger {...props} 
+                    fileList={this.state.fileList}
+                    onChange = {(info) => {
+                      const { status } = info.file;
+                      if (status !== 'uploading') {
+                        // console.log(info.file, info.fileList);
+                        
+                      }
+                      if (status === 'done') {
+                        
+                        // message.success(`${info.file.name} file uploaded successfully.`);
+                      } else if (status === 'error') {
+                        message.error(`${info.file.name} file upload failed.`);
+                      }
+
+                      this.setState({
+                        fileList: info.fileList,
+                      });
+                    }}
+                    >
+              <p className="ant-upload-drag-icon">
+                <Icon type="inbox" />
+              </p>
+              <p className="ant-upload-text">파일 업로더</p>
+              <p className="ant-upload-hint">
+                VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.
+              </p>
+            </Dragger>
+          {/* </div> */}
+          
+          {/* <FileBrowser
+            files={this.state.files}
+            canFilter={false}
+          /> */}
+          
+        </Modal>
       </div>
     );
   }

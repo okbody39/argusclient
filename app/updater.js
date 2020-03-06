@@ -84,8 +84,16 @@ function init(mainWindow) {
 }
 
 function updateModal(parent) {
+  let osver = process.platform;
+  let height = 180
+  if(osver === "darwin") {
+    //
+  } else if(osver === "win32") {
+    height = 200;
+  }
+
   modalWindow = new BrowserWindow({
-    width: 500, height: 180,
+    width: 500, height: height,
     'parent': parent,
     'show': false,
     // 'modal': true,

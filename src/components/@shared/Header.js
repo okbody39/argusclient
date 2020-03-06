@@ -1,8 +1,8 @@
 // Libs
 import React, { Component } from "react";
 import { Layout, Menu, Badge, List, Notification, Avatar, Icon } from "antd";
-import { Link, withRouter } from 'react-router-dom';
-import { Settings, Bell, Triangle, User } from 'react-feather';
+import { Link, withRouter, Router } from 'react-router-dom';
+import { Settings, Bell, Triangle, User, RefreshCcw } from 'react-feather';
 
 const { SubMenu } = Menu;
 
@@ -74,7 +74,10 @@ class Header extends Component {
 
     return (
       <Layout.Header className={styles.header}>
-        <Link to="/">
+        <Link to={{
+              pathname: "/",
+              state: ""
+            }}>
           <img className={styles.logo} src={logo}/>
         </Link>
 
@@ -101,9 +104,18 @@ class Header extends Component {
 
         <Menu mode="horizontal" className={styles.menu}>
 
-          {/*<Menu.Item onClick={() => dispatch({ type: 'options' })}>*/}
-          {/*  <Settings size={20} strokeWidth={1} />*/}
-          {/*</Menu.Item>*/}
+           
+          <Menu.Item>
+            <Link to={{
+              pathname: "/home",
+              state: "Reset"
+            }}>
+              <div className={styles.menusubitem}>
+                <RefreshCcw size={22} strokeWidth={1} />
+              </div>
+            </Link>
+          </Menu.Item> 
+          
 
           <SubMenu
             title={
@@ -178,21 +190,21 @@ class Header extends Component {
               popupClassName={styles.popup}
             >
 
-            <Menu.Item>
-              <Link to="/history/change">
-                변경이력
-              </Link>
-            </Menu.Item>
-            <Menu.Item>
-              <Link to="/history/failure">
-                장애이력
-              </Link>
-            </Menu.Item>
-            <Menu.Item>
-              <Link to="/history/access">
-                접속이력
-              </Link>
-            </Menu.Item>
+              <Menu.Item>
+                <Link to="/history/change">
+                  변경이력
+                </Link>
+              </Menu.Item>
+              <Menu.Item>
+                <Link to="/history/failure">
+                  장애이력
+                </Link>
+              </Menu.Item>
+              <Menu.Item>
+                <Link to="/history/access">
+                  접속이력
+                </Link>
+              </Menu.Item>
             </SubMenu>
 
             <Menu.Divider />

@@ -191,9 +191,22 @@ class Failure extends Component {
 
     return (
       <div className={styles.container}>
-        <Button onClick={this.handleApply} type="danger" style={{ marginBottom: 16 }}>
+        <Card
+          style={{marginBottom: 10 }}
+          // type="inner"
+          bodyStyle={{padding: 0}}
+          bordered={false}
+          title="장애신고"
+          extra={
+            <Button onClick={this.handleApply} type="link">
+              신고하기
+            </Button>
+          }
+        ></Card>
+
+        {/* <Button onClick={this.handleApply} type="danger" style={{ marginBottom: 16 }}>
           장애신고 하기
-        </Button>
+        </Button> */}
         <Table bordered
           columns={columns}
           dataSource={data}

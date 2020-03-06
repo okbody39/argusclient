@@ -99,6 +99,27 @@ function init(mainWindow) {
       });
   });
 
+  ipcMain.on("vm-list-reset", (event, arg) => {
+    let userId = arg;
+    let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
+    
+    axios.get(url, {
+      params: {
+        // ID: 12345
+      }
+    })
+      .then(function (response) {
+        // event.returnValue = response.data; // sync
+        store.set("vm-list", response.data);
+        event.reply('vm-list', response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+        // always executed
+      });
+  });
 
   setTimeout(() => {
     autoUpdateCheck(mainWindow);

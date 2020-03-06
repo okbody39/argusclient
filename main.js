@@ -34,6 +34,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
+    minWidth: 900,
+    minHeight: 500,
     show: false,
     icon: path.join(__dirname, 'src/assets/icons/128x128.png'),
     webPreferences: {
@@ -41,6 +43,10 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     }
   });
+
+  if (!isDev) {
+    mainWindow.setMenu(null);
+  }
 
   let indexPath;
 

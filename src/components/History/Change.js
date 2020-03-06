@@ -180,9 +180,19 @@ class Change extends Component {
 
     return (
       <div className={styles.historychange}>
-        <Button onClick={this.handleApply} type="primary" style={{ marginBottom: 16 }}>
-          변경신청 하기
-        </Button>
+        <Card
+          style={{marginBottom: 10 }}
+          // type="inner"
+          bodyStyle={{padding: 0}}
+          bordered={false}
+          title="변경관리"
+          extra={
+            <Button onClick={this.handleApply} type="link">
+              변경신청 하기
+            </Button>
+          }
+        ></Card>
+
         <Table bordered
           columns={columns}
           dataSource={data}
