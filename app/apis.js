@@ -1,12 +1,13 @@
-"use strict";
-
 const os = require('os');
 const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
-
 const axios = require('axios');
+const Store = require('electron-store');
+const store = new Store({
+  encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
+});
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
@@ -40,31 +41,38 @@ function init(mainWindow) {
   });
 
   ipcMain.on("vm-list", (event, arg) => {
-    let vmName = arg;
+    let userId = arg;
+    let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
+    let vmList = store.get("vm-list");
 
-    // http://192.168.15.17:8000/vcs/vm/all
+    if(vmList) {
+      // event.returnValue = vmList;
+      event.reply('vm-list', vmList);
+    } else {
+      axios.get(url, {
+        params: {
+          // ID: 12345
+        }
+      })
+        .then(function (response) {
+          // event.returnValue = response.data; // sync
+          store.set("vm-list", response.data);
+          event.reply('vm-list', response.data);
+        })
+        .catch(function (error) {
+          console.error(error);
+        })
+        .then(function () {
+          // always executed
+        });
+    }
+  });
 
-    // let url = 'http://192.168.15.17:8000/vcs/vm/' + vmName;
-    // let url = 'http://192.168.15.17:8000/vcs/user/mhkim';
-
-    let url = 'http://211.232.94.235:8000/vcs/user/mhkim';
-
-    // console.log(url);
-    //
-    // (async () => {
-    //   const body = await fetch(url, {type: 'text'});
-    //   console.log(body);
-    //   event.returnValue = body; // sync
-    //   //=> '170.56.15.35'
-    // })();
-
-    // fetch(url)
-    //   // .then(res => res.text())
-    //   .then(body => {
-    //     console.log(body);
-    //     event.returnValue = body; // sync
-    //   })
-    //   .catch(err => console.error(err));
+  ipcMain.on("vm-list-refresh", (event, arg) => {
+    let userId = arg;
+    let vmList = store.get("vm-list");
+    // let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
+    let url = 'http://211.232.94.235:8000/vcs/vm/all';
 
     axios.get(url, {
       params: {
@@ -72,8 +80,16 @@ function init(mainWindow) {
       }
     })
       .then(function (response) {
-        // console.log(response.data);
-        event.returnValue = response.data; // sync
+        // event.returnValue = response.data; // sync
+        vmList.map((vm) => {
+          let index = response.data.findIndex(obj => obj.Name === vm.VmName);
+          if(index != -1) {
+            vm.BasicState = response.data[index].BasicState;
+          }
+        });
+
+        store.set("vm-list", vmList);
+        event.reply('vm-list', vmList);
       })
       .catch(function (error) {
         console.error(error);
@@ -81,9 +97,8 @@ function init(mainWindow) {
       .then(function () {
         // always executed
       });
-
-
   });
+
 
   setTimeout(() => {
     autoUpdateCheck(mainWindow);

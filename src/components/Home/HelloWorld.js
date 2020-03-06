@@ -7,13 +7,12 @@ import {
 const { Title, Text, Paragraph } = Typography;
 const { Dragger } = Upload;
 const { Meta } = Card;
+
 import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
-
 import { Plus } from 'react-feather';
 
 import win7preview from '@/assets/images/preview/windows7.gif';
-
 
 const props = {
   name: 'file',
@@ -35,6 +34,8 @@ const props = {
 window.ipcRenderer.on("pong", (event, arg) => {
   alert("async: " + arg);
 });
+
+var _TIMER_ = null;
 
 // Styles
 import styles from "./HelloWorld.scss";
@@ -69,21 +70,46 @@ class HelloWorld extends Component {
       visible: false,
       loading: true,
       vmName: 'W10-INETRNETVM',
-      vmlist: props.vmlist,
+      vmlist: [],
 
     };
   }
 
   componentDidMount() {
+    // setTimeout(() => {
+    //   let result = window.ipcRenderer.sendSync("vm-list", "all");
+    //   console.log(result)
+    //   this.setState({
+    //     vmlist: result,
+    //     loading: false,
+    //   });
+    // }, 500);
+
     setTimeout(() => {
-      let result = window.ipcRenderer.sendSync("vm-list", "all");
-      console.log(result)
+      window.ipcRenderer.send("vm-list", "mhkim");
       this.setState({
-        vmlist: result,
-        loading: false,
+        loading: true,
       });
     }, 500);
 
+    _TIMER_ = setInterval(() => {
+      window.ipcRenderer.send("vm-list-refresh", "mhkim");
+      this.setState({
+        loading: true,
+      });
+    }, 1000 * 30);
+
+    window.ipcRenderer.on("vm-list", (event, arg) => {
+      this.setState({
+        vmlist: arg,
+        loading: false,
+      });
+    });
+
+  }
+
+  componentWillUnmount() {
+    clearInterval(_TIMER_);
   }
 
   showDrawer = () => {
