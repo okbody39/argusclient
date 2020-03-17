@@ -3,11 +3,16 @@ const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
+
 const axios = require('axios');
+const https = require('https');
+
 const Store = require('electron-store');
 const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
+
+const _SEED_GATE_ = "211.232.94.235:8000";
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
@@ -42,12 +47,13 @@ function init(mainWindow) {
 
   ipcMain.on("vm-list", (event, arg) => {
     let userId = arg;
-    let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
-    let vmList = store.get("vm-list");
+    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
+    let vmList = null; // store.get("vm-list");
 
     if(vmList) {
       // event.returnValue = vmList;
-      event.reply('vm-list', vmList);
+      let retJson = vmList;
+      event.reply('vm-list', retJson);
     } else {
       axios.get(url, {
         params: {
@@ -56,8 +62,12 @@ function init(mainWindow) {
       })
         .then(function (response) {
           // event.returnValue = response.data; // sync
-          store.set("vm-list", response.data);
-          event.reply('vm-list', response.data);
+          // console.log(response.data);
+
+          let retJson = response.data;
+          
+          store.set("vm-list", retJson);
+          event.reply('vm-list', retJson);
         })
         .catch(function (error) {
           console.error(error);
@@ -71,8 +81,7 @@ function init(mainWindow) {
   ipcMain.on("vm-list-refresh", (event, arg) => {
     let userId = arg;
     let vmList = store.get("vm-list");
-    // let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
-    let url = 'http://211.232.94.235:8000/vcs/vm/all';
+    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
 
     axios.get(url, {
       params: {
@@ -82,9 +91,10 @@ function init(mainWindow) {
       .then(function (response) {
         // event.returnValue = response.data; // sync
         vmList.map((vm) => {
-          let index = response.data.findIndex(obj => obj.Name === vm.VmName);
+          let index = response.data.findIndex(obj => obj.id === vm.id);
           if(index != -1) {
-            vm.BasicState = response.data[index].BasicState;
+            vm.basicState = response.data[index].basicState;
+            // vm.vmImage = 'http://' + _SEED_GATE_ + '/vms/image/' + vm.id + '?' + (new Date().getTime());
           }
         });
 
@@ -101,7 +111,7 @@ function init(mainWindow) {
 
   ipcMain.on("vm-list-reset", (event, arg) => {
     let userId = arg;
-    let url = 'http://211.232.94.235:8000/vcs/user/' + userId;
+    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
     
     axios.get(url, {
       params: {
@@ -110,8 +120,14 @@ function init(mainWindow) {
     })
       .then(function (response) {
         // event.returnValue = response.data; // sync
-        store.set("vm-list", response.data);
-        event.reply('vm-list', response.data);
+
+        let retJson = response.data;
+        // retJson.map((vm) =>{
+        //   vm.vmImage = 'http://' + _SEED_GATE_ + '/vms/image/' + vm.id + '?' + (new Date().getTime());
+        // });
+          
+        store.set("vm-list", retJson);
+        event.reply('vm-list', retJson);
       })
       .catch(function (error) {
         console.error(error);
@@ -119,6 +135,32 @@ function init(mainWindow) {
       .then(function () {
         // always executed
       });
+  });
+
+  ipcMain.on("vm-screenshot", (event, arg) => {
+    let url = 'http://' + _SEED_GATE_ + '/vms/image/';
+    let vmList = store.get("vm-list");
+
+    vmList.map((vm) => {
+      axios.get(url + vm.id, {})
+        .then(function (response) {
+          let retJson = {
+            id: vm.id,
+            image: response.data,
+          };
+
+          // console.log(response.data);
+          event.reply('vm-screenshot', retJson);
+
+        })
+        .catch(function (error) {
+          console.error(error);
+          res.status(501).send(error);
+        })
+        .then(function () {
+          // always executed
+        });
+    });
   });
 
   setTimeout(() => {

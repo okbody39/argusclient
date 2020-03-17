@@ -66,7 +66,8 @@ class HelloWorld extends Component {
       loading: true,
       vmName: 'W10-INETRNETVM',
       vmlist: [],
-      isFlushed: false
+      vmScreenShot: [],
+      isFlushed: false,
     };
   }
 
@@ -75,6 +76,7 @@ class HelloWorld extends Component {
 
     if(nextProps.location.state === "Reset") {
       window.ipcRenderer.send("vm-list-reset", "mhkim");
+      window.ipcRenderer.send("vm-screenshot");
       this.setState({
         loading: true,
       });
@@ -91,10 +93,11 @@ class HelloWorld extends Component {
     //   });
     // }, 500);
 
-    
 
     setTimeout(() => {
       window.ipcRenderer.send("vm-list", "mhkim");
+      window.ipcRenderer.send("vm-screenshot");
+      
       this.setState({
         loading: true,
       });
@@ -102,24 +105,40 @@ class HelloWorld extends Component {
 
     _TIMER_ = setInterval(() => {
       window.ipcRenderer.send("vm-list-refresh", "mhkim");
+      window.ipcRenderer.send("vm-screenshot");
+
       this.setState({
         loading: true,
       });
     }, 1000 * 30);
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
+
+      // console.log(arg);
+
       this.setState({
         vmlist: arg,
         loading: false,
       });
     });
 
+    window.ipcRenderer.on("vm-screenshot", (event, arg) => {
+      let vmScreenShot = this.state.vmScreenShot;
+
+      vmScreenShot[arg.id] = arg.image;
+
+      this.setState({
+        vmScreenShot: vmScreenShot,
+      });
+    });
+    
   }
 
   componentWillUnmount() {
     clearInterval(_TIMER_);
     
     window.ipcRenderer.removeAllListeners('vm-list');
+    window.ipcRenderer.removeAllListeners('vm-screenshot');
     window.ipcRenderer.removeAllListeners('pong');
   }
 
@@ -202,30 +221,30 @@ class HelloWorld extends Component {
                     // style={{ width: 240 }}
                     // onClick={this.showDrawer}
                     cover={
-                      <Figure height={150} onClick={this.showDrawer.bind(this, vm.Name || vm.PoolName)}>
+                      <Figure height={150} onClick={this.showDrawer.bind(this, vm.id)}>
                         <Image
-                          source={win7preview}
+                          source={this.state.vmScreenShot[vm.id]}
                         />
                         <Caption className={`header`}>
-                          <Title>{vm.Name || vm.PoolName}</Title>
-                          <SubTitle>{vm.OperatingSystem || "Unknown"}</SubTitle>
+                          <Title>{vm.displayName}</Title>
+                          <SubTitle>{vm.operatingSystem || "Unknown"}</SubTitle>
                         </Caption>
                       </Figure>
                     }
                     actions={[
-                      <div key="play-square" onClick={this.connectVM.bind(this, vm.Name || vm.PoolName)}>
+                      <div key="play-square" onClick={this.connectVM.bind(this, vm.id)}>
                         <Icon type="play-square" />
                       </div>,
-                      <div key="play-square" onClick={this.fileUploader.bind(this, vm.Name || vm.PoolName)}>
+                      <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
                         <Icon type="cloud-upload" />
                       </div>,
                       
-                      <div key="setting" onClick={this.showDrawer.bind(this, vm.Name || vm.PoolName)}>
+                      <div key="setting" onClick={this.showDrawer.bind(this, vm.id)}>
                         <Icon type="setting" />
                       </div>,
                     ]}
                   >
-                    <Badge status="processing" text={vm.BasicState || "공용VM"} />
+                    <Badge status="processing" text={vm.basicState.substr(0,20) || "-"} />
                   </Card>
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
@@ -350,7 +369,7 @@ class HelloWorld extends Component {
           >
             기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-            <Button onClick={this.onConnect} type="success" style={{width: 100}}>
+            <Button onClick={this.onConnect} type="success">
               접속
             </Button>
 
