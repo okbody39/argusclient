@@ -28,6 +28,30 @@ window.ipcRenderer.on("pong", (event, arg) => {
   alert("async: " + arg);
 });
 
+const displaySize = (size) => {
+  if(size) {
+    let displaySize = "";
+    let bytes = 0;
+    if(typeof size === "number") {
+      bytes = size;
+    } else {
+      bytes = parseInt(size)
+    }
+
+    if (bytes >= 1073741824)      { displaySize = (bytes / 1073741824).toFixed(2) + " GB"; }
+    else if (bytes >= 1048576)    { displaySize = (bytes / 1048576).toFixed(2) + " MB"; }
+    else if (bytes >= 1024)       { displaySize = (bytes / 1024).toFixed(2) + " KB"; }
+    else if (bytes > 1)           { displaySize = bytes + " bytes"; }
+    else if (bytes == 1)          { displaySize = bytes + " byte"; }
+    else                          { displaySize = "0 bytes"; }
+
+    return displaySize;
+
+  } else {
+    return "-";
+  }
+};
+
 var _TIMER_ = null;
 
 // Styles
@@ -65,6 +89,7 @@ class HelloWorld extends Component {
       fileList: [],
       loading: true,
       vmName: 'W10-INETRNETVM',
+      selectedVm:{},
       vmlist: [],
       vmScreenShot: [],
       isFlushed: false,
@@ -165,9 +190,10 @@ class HelloWorld extends Component {
     });
   };
 
-  showDrawer = (vmName) => {
+  showDrawer = (selectedVm) => {
     this.setState({
-      vmName: vmName,
+      selectedVm: selectedVm,
+      vmName: selectedVm.displayName,
       visible: true,
     });
   };
@@ -179,7 +205,8 @@ class HelloWorld extends Component {
   };
 
   onReset = () => {
-    let result = window.ipcRenderer.sendSync("vm-reset", "WIN10-INTERNETVM");
+    console.log(this.state.selectedVm);
+    let result = window.ipcRenderer.sendSync("vm-reset", this.state.selectedVm.machineId);
     alert(result);
 
     this.setState({
@@ -221,7 +248,7 @@ class HelloWorld extends Component {
                     // style={{ width: 240 }}
                     // onClick={this.showDrawer}
                     cover={
-                      <Figure height={150} onClick={this.showDrawer.bind(this, vm.id)}>
+                      <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
                         <Image
                           source={this.state.vmScreenShot[vm.id]}
                         />
@@ -239,12 +266,12 @@ class HelloWorld extends Component {
                         <Icon type="cloud-upload" />
                       </div>,
                       
-                      <div key="setting" onClick={this.showDrawer.bind(this, vm.id)}>
+                      <div key="setting" onClick={this.showDrawer.bind(this, vm)}>
                         <Icon type="setting" />
                       </div>,
                     ]}
                   >
-                    <Badge status="processing" text={vm.basicState.substr(0,20) || "-"} />
+                    <Badge status="processing" color={vm.statusColor || 'gray'} text={vm.basicState.substr(0,20) || "-"} />
                   </Card>
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
@@ -299,16 +326,18 @@ class HelloWorld extends Component {
           visible={this.state.visible}
           bodyStyle={{ overflow: "auto", height: "calc(100vh - 110px)" }}
         >
-          <Alert message="메모리 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
+          <Alert message="디스크 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
 
           <Descriptions bordered title="VM 상태" size="small" column={2}>
-            <Descriptions.Item label="Status" span={2}>RUNNING</Descriptions.Item>
-            <Descriptions.Item label="CPU">15%</Descriptions.Item>
-            <Descriptions.Item label="Memory">56%</Descriptions.Item>
-            <Descriptions.Item label="Disk (OS)">20%</Descriptions.Item>
-            <Descriptions.Item label="Disk (DATA)">15%</Descriptions.Item>
-            <Descriptions.Item label="Uptime">15시간 31분</Descriptions.Item>
-            <Descriptions.Item label="마지막 접속">2020년 01월 26일</Descriptions.Item>
+            <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "").toUpperCase()}</Descriptions.Item>
+            {
+              this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
+                return (
+                  <Descriptions.Item span={2} key={disk.diskPath} label={"Disk("+disk.diskPath.substr(0,2)+")"}>{((disk.capacity - disk.freeSpace) / disk.capacity * 100).toFixed(1)}%</Descriptions.Item>
+                );
+              })
+            }
+            <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.bootTime}</Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>
@@ -316,7 +345,7 @@ class HelloWorld extends Component {
               리셋
             </Button>
             <Button type="secondary" size="small">
-              전원켜기
+              재시작
             </Button>
             <Button type="danger" size="small">
               장애신고
@@ -326,20 +355,19 @@ class HelloWorld extends Component {
           <Divider />
 
           <Descriptions bordered title="VM 정보" size="small" column={2}>
-            <Descriptions.Item label="VM name" span={2}>{this.state.vmName}</Descriptions.Item>
-            <Descriptions.Item label="CPU">2 Core</Descriptions.Item>
-            <Descriptions.Item label="Memory">8 GB</Descriptions.Item>
-            <Descriptions.Item label="Disk (OS)">200 GB</Descriptions.Item>
-            <Descriptions.Item label="Disk (DATA)">200 GB</Descriptions.Item>
-            <Descriptions.Item label="Network" span={2}>172.18.1.123</Descriptions.Item>
+            <Descriptions.Item label="Host name" span={2}>{this.state.selectedVm.hostName}</Descriptions.Item>
+            <Descriptions.Item label="CPU">{this.state.selectedVm.numCore} Core</Descriptions.Item>
+            <Descriptions.Item label="Memory">{displaySize(this.state.selectedVm.memory * 1024 * 1024)}</Descriptions.Item>
+            {
+              this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
+                return (
+                  <Descriptions.Item key={disk.diskPath} label={"Disk("+disk.diskPath.substr(0,2)+")"}>{displaySize(disk.capacity)}</Descriptions.Item>
+                );
+              })
+            }
+            <Descriptions.Item label="Network" span={2}>{this.state.selectedVm.ipAddress}</Descriptions.Item>
             {/*<Descriptions.Item label="Subnet">F.F.F.F</Descriptions.Item>*/}
-            <Descriptions.Item label="OS ver" span={2}>Windows 10, 64-bit (Build 10586) 10.0.10586</Descriptions.Item>
-            <Descriptions.Item label="Config Info" span={2}>
-              생성 일자: 2019. 02. 24
-              <br />
-              반납 일자: 2020. 03. 03
-              <br />
-            </Descriptions.Item>
+            <Descriptions.Item label="OS ver" span={2}>{this.state.selectedVm.fullName}</Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>

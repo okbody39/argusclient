@@ -12,7 +12,7 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:8000";
+const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:3000"; //
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
@@ -36,8 +36,24 @@ function init(mainWindow) {
   });
 
   ipcMain.on("vm-reset", (event, arg) => {
-    let vmName = arg;
-    event.returnValue = 'reset: ' + vmName; // sync
+    let machineId = arg;
+    let url = 'http://' + _SEED_GATE_ + '/vms/reset';
+    // event.returnValue = 'reset: ' + machineId; // sync
+
+    axios({
+      url: url,
+      method: 'put',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: `machineId=${encodeURIComponent(machineId)}`,
+  })
+     .then((response) => {
+        let retJson = response.data;
+        event.returnValue = retJson;
+      })
+      .catch((err) => {
+          console.error(err);
+          event.returnValue = err;
+      });
   });
 
   ipcMain.on("vm-connect", (event, arg) => {
@@ -155,7 +171,7 @@ function init(mainWindow) {
         })
         .catch(function (error) {
           console.error(error);
-          res.status(501).send(error);
+          // res.status(501).send(error);
         })
         .then(function () {
           // always executed
