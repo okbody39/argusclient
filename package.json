@@ -43,6 +43,7 @@
     "electron-log": "^4.0.7",
     "electron-store": "^5.1.1",
     "electron-updater": "^2.2.4",
+    "event-emitter": "^0.3.5",
     "prop-types": "^15.7.2",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
@@ -50,7 +51,8 @@
     "react-highlight-words": "^0.16.0",
     "react-keyed-file-browser": "^1.7.0",
     "react-router-dom": "^5.1.2",
-    "styled-components": "^5.0.1"
+    "styled-components": "^5.0.1",
+    "ws": "^7.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.8.3",

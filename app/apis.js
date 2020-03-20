@@ -1,5 +1,5 @@
 const os = require('os');
-const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, remote, ipcMain, dialog } = require("electron");
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
@@ -12,7 +12,19 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:3000"; //
+const _SEED_GATE_ = "211.232.94.235:3000"; // "localhost:3000"; // 
+
+// Web socket
+
+const WebSocket = require('ws');
+var ws = null;
+
+const props = {
+  name: 'file',
+  multiple: true,
+  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+  
+};
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
@@ -22,6 +34,50 @@ function autoUpdateCheck(mainWindow) {
 }
 
 function init(mainWindow) {
+
+  try {
+    ws = new WebSocket('ws://' + _SEED_GATE_ + '/vms/' + 'mhkim');
+  } catch(e) {
+    console.error(e);  
+  }
+
+  ws.onopen = () => {
+    // console.log('OPEN....');
+    // ws.send('I connected.');
+  };
+  
+  ws.onclose = () => {
+    // console.log('CLOSE....');
+    // ws.send('I connected.');
+    dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      title: 'Server connection Error',
+      message: 'Disconnect Server, try again... ', // + err.error.errno,
+      buttons: ['Ok'],
+    }).then(() => {
+      process.exit(2);
+    });
+
+  };
+
+  ws.onerror = (err) => {
+    console.error(err);
+    
+    dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      title: 'Server connection Error',
+      message: 'Server is not ready, try again... ', // + err.error.errno,
+      buttons: ['Ok'],
+    }).then(() => {
+      process.exit(2);
+    });
+  };
+
+  ws.onmessage = (data, flags) => {
+    // console.log(data.data);
+    mainWindow.webContents.send("reload-sig", data.data);
+  };
+  
 
   ipcMain.on("about-this", (event, arg) => {
     aboutThis.run(mainWindow);

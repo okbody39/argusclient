@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Typography, Spin,
-  Modal,
+  Modal, notification,
 } from 'antd';
 const { Text, Paragraph } = Typography;
 const { Dragger } = Upload;
@@ -14,8 +14,7 @@ import FileBrowser from 'react-keyed-file-browser';
 import { Plus } from 'react-feather';
 
 import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
-
-import win7preview from '@/assets/images/preview/windows7.gif';
+// import win7preview from '@/assets/images/preview/windows7.gif';
 
 const props = {
   name: 'file',
@@ -52,7 +51,7 @@ const displaySize = (size) => {
   }
 };
 
-var _TIMER_ = null;
+// var _TIMER_ = null;
 
 // Styles
 import styles from "./HelloWorld.scss";
@@ -128,6 +127,7 @@ class HelloWorld extends Component {
       });
     }, 500);
 
+    /*
     _TIMER_ = setInterval(() => {
       window.ipcRenderer.send("vm-list-refresh", "mhkim");
       window.ipcRenderer.send("vm-screenshot");
@@ -136,10 +136,18 @@ class HelloWorld extends Component {
         loading: true,
       });
     }, 1000 * 30);
+    */
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
 
       // console.log(arg);
+
+      arg.map((vm) => {
+        vm.disk = JSON.parse(vm.disk);
+        if(vm.disk && vm.disk.length > 0) {
+          vm.disk.sort((a, b) => { return a.DiskPath > b.DiskPath ?  1 : -1 } )
+        }
+      });
 
       this.setState({
         vmlist: arg,
@@ -156,15 +164,52 @@ class HelloWorld extends Component {
         vmScreenShot: vmScreenShot,
       });
     });
+
+    window.ipcRenderer.on("reload-sig", (event, arg) => {
+
+      window.ipcRenderer.send("vm-screenshot");
+      
+      this.setState({
+      //  vmlist: JSON.parse(arg),
+        loading: false,
+      });
+
+      notification.info({
+        message: 'VM 상태 업데이트',
+        description:
+          '업데이트가 완료되었습니다.',
+        onClick: () => {
+          // console.log('Notification Clicked!');
+        },
+      });
+
+      /*
+      if(arg.indexOf("_EVENT_ALARM_") != -1) {
+        let args = arg.split("_EVENT_ALARM_");
+        let contents = args[1];
+
+        this.setState({
+        });
+
+      } else if(arg === "_VM_STATE_LIST_") {
+        window.ipcRenderer.send("vm-list-refresh", "mhkim");
+        window.ipcRenderer.send("vm-screenshot");
+        this.setState({
+          loading: true,
+        });
+      }
+      */
+    });
     
   }
 
   componentWillUnmount() {
-    clearInterval(_TIMER_);
+    // clearInterval(_TIMER_);
     
     window.ipcRenderer.removeAllListeners('vm-list');
     window.ipcRenderer.removeAllListeners('vm-screenshot');
     window.ipcRenderer.removeAllListeners('pong');
+    window.ipcRenderer.removeAllListeners('reload-sig');
   }
 
   fileUploader = (vmName) => {
@@ -191,6 +236,7 @@ class HelloWorld extends Component {
   };
 
   showDrawer = (selectedVm) => {
+    // console.log(selectedVm);
     this.setState({
       selectedVm: selectedVm,
       vmName: selectedVm.displayName,
@@ -205,7 +251,7 @@ class HelloWorld extends Component {
   };
 
   onReset = () => {
-    console.log(this.state.selectedVm);
+    //console.log(this.state.selectedVm);
     let result = window.ipcRenderer.sendSync("vm-reset", this.state.selectedVm.machineId);
     alert(result);
 
@@ -329,15 +375,15 @@ class HelloWorld extends Component {
           <Alert message="디스크 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
 
           <Descriptions bordered title="VM 상태" size="small" column={2}>
-            <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "").toUpperCase()}</Descriptions.Item>
+            <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
             {
               this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
                 return (
-                  <Descriptions.Item span={2} key={disk.diskPath} label={"Disk("+disk.diskPath.substr(0,2)+")"}>{((disk.capacity - disk.freeSpace) / disk.capacity * 100).toFixed(1)}%</Descriptions.Item>
+                  <Descriptions.Item span={2} key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)}%</Descriptions.Item>
                 );
               })
             }
-            <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.bootTime}</Descriptions.Item>
+            <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.bootTime || "-"}</Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>
@@ -361,7 +407,7 @@ class HelloWorld extends Component {
             {
               this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
                 return (
-                  <Descriptions.Item key={disk.diskPath} label={"Disk("+disk.diskPath.substr(0,2)+")"}>{displaySize(disk.capacity)}</Descriptions.Item>
+                  <Descriptions.Item key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{displaySize(disk.Capacity)}</Descriptions.Item>
                 );
               })
             }
