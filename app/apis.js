@@ -12,8 +12,9 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:3000"; // "localhost:3000"; // 
-
+const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:8000"; // "211.232.94.235:8000"; // 
+const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg=='; 
+          
 // Web socket
 
 const WebSocket = require('ws');
@@ -226,8 +227,12 @@ function init(mainWindow) {
 
         })
         .catch(function (error) {
-          console.error(error);
-          // res.status(501).send(error);
+          // console.error(error);
+          let retJson = {
+            id: vm.id,
+            image: BlackScreen,
+          };
+          event.reply('vm-screenshot', retJson);
         })
         .then(function () {
           // always executed
