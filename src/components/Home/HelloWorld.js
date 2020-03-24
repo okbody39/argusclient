@@ -174,14 +174,14 @@ class HelloWorld extends Component {
         loading: false,
       });
 
-      notification.info({
-        message: 'VM 상태 업데이트',
-        description:
-          '업데이트가 완료되었습니다.',
-        onClick: () => {
-          // console.log('Notification Clicked!');
-        },
-      });
+      // notification.info({
+      //   message: 'VM 상태 업데이트',
+      //   description:
+      //     '업데이트가 완료되었습니다.',
+      //   onClick: () => {
+      //     // console.log('Notification Clicked!');
+      //   },
+      // });
 
       /*
       if(arg.indexOf("_EVENT_ALARM_") != -1) {

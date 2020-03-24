@@ -1,6 +1,6 @@
 // Libs
 import React from "react";
-import { HashRouter, Switch, Route } from "react-router-dom";
+import { HashRouter, Switch, Route, Redirect } from "react-router-dom";
 // Screens
 import Root from "@/screens/Root/Root";
 import Home from "@/screens/Home/Home";
@@ -21,11 +21,31 @@ import HistoryAccess from "@/screens/History/Access";
 
 import VMCreate from "@/screens/VM/Create";
 
+function PrivateRoute ({component: Component, ...rest}) {
+  
+  let userToken = localStorage.getItem("ARGUS.USERTOKEN");
+
+  return (
+    <Route
+      {...rest}
+      render={(props) => userToken === "true"
+        ? <Component {...props} />
+        : <Redirect to={{pathname: '/signin', state: {from: props.location}}} />}
+    />
+  )
+}
+
 const Routes = () => (
   <HashRouter>
     <Switch>
+      <PrivateRoute exact path='/' component={Root} />
+      <PrivateRoute path='/home' component={Root} />
+      
+      {/* 
       <Route exact path="/" component={Root} />
-      <Route exact path="/home" component={Root} />
+      <Route exact path="/home" component={Root} /> 
+      */}
+
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
 

@@ -48,6 +48,8 @@ class Signin extends Component {
 
         // console.log(formData);
 
+        localStorage.setItem("ARGUS.USERTOKEN", "true");
+
         this.props.history.push("/");
 
       }

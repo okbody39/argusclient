@@ -4,6 +4,10 @@
   height: calc(100vh - 190px);
 }
 
+.hello-world::-webkit-scrollbar {
+  display: none;
+}
+
 .logo {
   height: 75px;
   margin-bottom: 20px;
