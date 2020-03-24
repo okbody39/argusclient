@@ -4,6 +4,9 @@ import { HashRouter, Switch, Route, Redirect } from "react-router-dom";
 // Screens
 import Root from "@/screens/Root/Root";
 import Home from "@/screens/Home/Home";
+
+import Admin from "@/screens/Admin/Admin";
+
 import Signin from "@/screens/Signin/Signin";
 import Signup from "@/screens/Signup/Signup";
 import Failure from "@/screens/Failure/Failure";
@@ -22,7 +25,7 @@ import HistoryAccess from "@/screens/History/Access";
 import VMCreate from "@/screens/VM/Create";
 
 function PrivateRoute ({component: Component, ...rest}) {
-  
+
   let userToken = localStorage.getItem("ARGUS.USERTOKEN");
 
   return (
@@ -40,10 +43,12 @@ const Routes = () => (
     <Switch>
       <PrivateRoute exact path='/' component={Root} />
       <PrivateRoute path='/home' component={Root} />
-      
-      {/* 
+
+      <PrivateRoute path='/admin' component={Admin} />
+
+      {/*
       <Route exact path="/" component={Root} />
-      <Route exact path="/home" component={Root} /> 
+      <Route exact path="/home" component={Root} />
       */}
 
       <Route path="/signin" component={Signin} />

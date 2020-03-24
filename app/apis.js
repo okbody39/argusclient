@@ -12,9 +12,9 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:8000"; // "211.232.94.235:8000"; // 
-const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg=='; 
-          
+const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:8000"; // "211.232.94.235:8000"; //
+const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
+
 // Web socket
 
 const WebSocket = require('ws');
@@ -24,7 +24,7 @@ const props = {
   name: 'file',
   multiple: true,
   action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-  
+
 };
 
 const aboutThis = require('./about');
@@ -39,14 +39,14 @@ function init(mainWindow) {
   try {
     ws = new WebSocket('ws://' + _SEED_GATE_ + '/vms/' + 'mhkim');
   } catch(e) {
-    console.error(e);  
+    console.error(e);
   }
 
   ws.onopen = () => {
     // console.log('OPEN....');
     // ws.send('I connected.');
   };
-  
+
   ws.onclose = () => {
     // console.log('CLOSE....');
     // ws.send('I connected.');
@@ -56,21 +56,21 @@ function init(mainWindow) {
       message: 'Disconnect Server, try again... ', // + err.error.errno,
       buttons: ['Ok'],
     }).then(() => {
-      process.exit(2);
+      // process.exit(2);
     });
 
   };
 
   ws.onerror = (err) => {
     console.error(err);
-    
+
     dialog.showMessageBox(mainWindow, {
       type: 'error',
       title: 'Server connection Error',
       message: 'Server is not ready, try again... ', // + err.error.errno,
       buttons: ['Ok'],
     }).then(() => {
-      process.exit(2);
+      // process.exit(2);
     });
   };
 
@@ -78,7 +78,7 @@ function init(mainWindow) {
     // console.log(data.data);
     mainWindow.webContents.send("reload-sig", data.data);
   };
-  
+
 
   ipcMain.on("about-this", (event, arg) => {
     aboutThis.run(mainWindow);
@@ -138,7 +138,7 @@ function init(mainWindow) {
           // console.log(response.data);
 
           let retJson = response.data;
-          
+
           store.set("vm-list", retJson);
           event.reply('vm-list', retJson);
         })
@@ -185,7 +185,7 @@ function init(mainWindow) {
   ipcMain.on("vm-list-reset", (event, arg) => {
     let userId = arg;
     let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
-    
+
     axios.get(url, {
       params: {
         // ID: 12345
@@ -198,7 +198,7 @@ function init(mainWindow) {
         // retJson.map((vm) =>{
         //   vm.vmImage = 'http://' + _SEED_GATE_ + '/vms/image/' + vm.id + '?' + (new Date().getTime());
         // });
-          
+
         store.set("vm-list", retJson);
         event.reply('vm-list', retJson);
       })

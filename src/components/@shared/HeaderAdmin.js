@@ -2,7 +2,7 @@
 import React, { Component } from "react";
 import { Layout, Menu, Badge, List, Notification, Avatar, Icon } from "antd";
 import { Link, withRouter, Router } from 'react-router-dom';
-import { Settings, Bell, Triangle, User, RefreshCcw } from 'react-feather';
+import { Settings, Bell, Triangle, User, RefreshCcw, LogOut } from 'react-feather';
 
 const { SubMenu } = Menu;
 
@@ -75,7 +75,7 @@ class Header extends Component {
     return (
       <Layout.Header className={styles.header}>
         <Link to={{
-              pathname: "/",
+              pathname: "/admin",
               state: ""
             }}>
           <img className={styles.logo} src={logo}/>
@@ -90,38 +90,34 @@ class Header extends Component {
           // onClick={(e) => this.onChangeMenu(e.key)}
         >
           <Menu.Item key="/history/change" >
-            <Link to="/history/change">변경관리</Link>
+            <Link to="/history/change">클라이언트</Link>
           </Menu.Item>
-          <Menu.Item key="/history/failure">
-            <Link to="/history/failure">장애신고</Link>
-          </Menu.Item>
-          <Menu.Item key="/history/access">
-            <Link to="/history/access">접속이력</Link>
-          </Menu.Item>
+          {/*<Menu.Item key="/history/failure">*/}
+          {/*  <Link to="/history/failure">장애신고</Link>*/}
+          {/*</Menu.Item>*/}
+          {/*<Menu.Item key="/history/access">*/}
+          {/*  <Link to="/history/access">접속이력</Link>*/}
+          {/*</Menu.Item>*/}
         </Menu>
 
         <span className="mr-auto" />
 
         <Menu mode="horizontal" className={styles.menu}>
 
-
           <Menu.Item>
             <Link to={{
-              pathname: "/admin",
-              state: "Reset"
+              pathname: "/",
+              // state: "Reset"
             }}>
               <div className={styles.menusubitem}>
-                {/*<Icon type="user" style={{ fontSize: 22 }} />*/}
-                {/*<Icon type="smile" theme="outlined" />*/}
-                {/*<UserSwitchOutlined style={{ fontSize: 22 }}/>*/}
-                <User size={22} strokeWidth={1} />
+                <LogOut size={22} strokeWidth={1} />
               </div>
             </Link>
           </Menu.Item>
 
           <Menu.Item>
             <Link to={{
-              pathname: "/home",
+              pathname: "/admin",
               state: "Reset"
             }}>
               <div className={styles.menusubitem}>

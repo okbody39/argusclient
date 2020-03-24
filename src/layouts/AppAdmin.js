@@ -9,7 +9,7 @@ import styles from "./App.scss";
 import Header from "@/components/@shared/Header";
 import HeaderAdmin from "@/components/@shared/HeaderAdmin";
 // import Footer from "@/components/@shared/Footer";
-import Logger from "../components/@shared/Logger";
+import Logger from "../components/@shared/LoggerAdmin";
 
 const LoggerPadding = 10;
 
@@ -82,7 +82,7 @@ class App extends Component {
 
     return (
       <Layout>
-        <Header />
+        <HeaderAdmin />
         <Resize handleWidth="20px" handleColor="#f0f2f5"
                 onResizeStop={this.onChangeMove}
                 onResizeWindow={this.onChangeWindow}>
