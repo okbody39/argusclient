@@ -89,7 +89,13 @@ class Admin extends Component {
       loading: true,
       vmName: 'W10-INETRNETVM',
       selectedVm:{},
-      vmlist: [],
+      vmlist: [
+        { id: "VM-002", displayName: "ADM001", basicState: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
+        { id: "VM-003", displayName: "EMP002", basicState: "DISCONNECTED", operatingSystem: "WIndows 7" },
+        { id: "VM-004", displayName: "EMP003", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-005", displayName: "USER1", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-006", displayName: "USER2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      ],
       vmScreenShot: [],
       isFlushed: false,
     };
@@ -287,37 +293,25 @@ class Admin extends Component {
           {
             this.state.vmlist.map((vm, i) => {
               return (
-                <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
+                <Col key={i} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:12}} >
                   <Card
                     bodyStyle={{padding: 12}}
                     // hoverable
                     // style={{ width: 240 }}
                     // onClick={this.showDrawer}
                     cover={
-                      <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
+                      <Figure height={80} onClick={this.showDrawer.bind(this, vm)}>
                         <Image
                           source={this.state.vmScreenShot[vm.id]}
                         />
                         <Caption className={`header`}>
-                          <Title>{vm.displayName}</Title>
+                          <Text strong style={{ color: "white" }}>{vm.displayName}</Text>
                           <SubTitle>{vm.operatingSystem || "Unknown"}</SubTitle>
                         </Caption>
                       </Figure>
                     }
-                    actions={[
-                      <div key="play-square" onClick={this.connectVM.bind(this, vm.id)}>
-                        <Icon type="play-square" />
-                      </div>,
-                      <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
-                        <Icon type="cloud-upload" />
-                      </div>,
-
-                      <div key="setting" onClick={this.showDrawer.bind(this, vm)}>
-                        <Icon type="setting" />
-                      </div>,
-                    ]}
                   >
-                    <Badge status="processing" color={vm.statusColor || 'gray'} text={vm.basicState.substr(0,20) || "-"} />
+                    <Badge status="processing" color={vm.statusColor || 'gray'} text={vm.basicState.substr(0,10) || "-"} />
                   </Card>
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
@@ -348,10 +342,10 @@ class Admin extends Component {
             </Figure>
           </Col> */}
 
-          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
+          <Col lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:12}} >
             <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
               <Spin spinning={this.state.loading}  size="large" tip="Loading...">
-                <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
+                <div style={{height: 78, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
                   {this.state.loading ? null : <Plus size={100} color="lightgrey" />}
                 </div>
               </Spin>

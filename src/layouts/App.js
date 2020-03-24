@@ -11,7 +11,13 @@ import HeaderAdmin from "@/components/@shared/HeaderAdmin";
 // import Footer from "@/components/@shared/Footer";
 import Logger from "../components/@shared/Logger";
 
+var InitHeight = 640;
+const InitLogHeight = 100;
 const LoggerPadding = 10;
+
+if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
+  InitHeight = 550;
+}
 
 /**
  * App
@@ -27,10 +33,10 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.upperHeight = 640 + LoggerPadding;
+    this.upperHeight = InitHeight + LoggerPadding;
 
     this.state = {
-      // upperHeight: 640,
+      // upperHeight: InitHeight,
       childHeight: window.innerHeight - this.upperHeight - 21,
     }
   }
@@ -86,13 +92,13 @@ class App extends Component {
         <Resize handleWidth="20px" handleColor="#f0f2f5"
                 onResizeStop={this.onChangeMove}
                 onResizeWindow={this.onChangeWindow}>
-          <ResizeVertical height="640px" minHeight="370px">
-              <div className={styles.app}>
-                <Layout.Content>{children}</Layout.Content>
-              </div>
+          <ResizeVertical height={ InitHeight + "px" } minHeight="370px">
+            <div className={styles.app}>
+              <Layout.Content>{children}</Layout.Content>
+            </div>
           </ResizeVertical >
           <ResizeVertical minHeight="100px">
-            <Logger height={this.state.childHeight < 100 - LoggerPadding ? 100 - LoggerPadding : this.state.childHeight} />
+            <Logger height={this.state.childHeight < InitLogHeight - LoggerPadding ? InitLogHeight - LoggerPadding : this.state.childHeight} />
           </ResizeVertical >
         </Resize>
 
