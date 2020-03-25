@@ -20,7 +20,7 @@ const props = {
   name: 'file',
   multiple: true,
   action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-  
+
 };
 
 window.ipcRenderer.on("pong", (event, arg) => {
@@ -121,7 +121,7 @@ class HelloWorld extends Component {
     setTimeout(() => {
       window.ipcRenderer.send("vm-list", "mhkim");
       window.ipcRenderer.send("vm-screenshot");
-      
+
       this.setState({
         loading: true,
       });
@@ -168,7 +168,7 @@ class HelloWorld extends Component {
     window.ipcRenderer.on("reload-sig", (event, arg) => {
 
       window.ipcRenderer.send("vm-screenshot");
-      
+
       this.setState({
       //  vmlist: JSON.parse(arg),
         loading: false,
@@ -200,12 +200,12 @@ class HelloWorld extends Component {
       }
       */
     });
-    
+
   }
 
   componentWillUnmount() {
     // clearInterval(_TIMER_);
-    
+
     window.ipcRenderer.removeAllListeners('vm-list');
     window.ipcRenderer.removeAllListeners('vm-screenshot');
     window.ipcRenderer.removeAllListeners('pong');
@@ -291,7 +291,7 @@ class HelloWorld extends Component {
                   <Card
                     bodyStyle={{padding: 12}}
                     // hoverable
-                    // style={{ width: 240 }}
+                    style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
                     // onClick={this.showDrawer}
                     cover={
                       <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
@@ -311,13 +311,14 @@ class HelloWorld extends Component {
                       <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
                         <Icon type="cloud-upload" />
                       </div>,
-                      
+
                       <div key="setting" onClick={this.showDrawer.bind(this, vm)}>
                         <Icon type="setting" />
                       </div>,
                     ]}
                   >
-                    <Badge status="processing" color={vm.statusColor || 'gray'} text={vm.basicState.substr(0,20) || "-"} />
+                    <Badge status="processing" color={vm.statusColor || 'gray'} />
+                    <Text style={{position: 'absolute'}}>{vm.basicState || "-"}</Text>
                   </Card>
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
@@ -334,7 +335,7 @@ class HelloWorld extends Component {
             })
           }
 
-          
+
 
           {/* <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
             <Figure height={240}>
@@ -461,16 +462,16 @@ class HelloWorld extends Component {
           onCancel={this.handleCancel.bind(this)}
         >
           {/* <div style={{height: 200}}> */}
-            <Dragger {...props} 
+            <Dragger {...props}
                     fileList={this.state.fileList}
                     onChange = {(info) => {
                       const { status } = info.file;
                       if (status !== 'uploading') {
                         // console.log(info.file, info.fileList);
-                        
+
                       }
                       if (status === 'done') {
-                        
+
                         // message.success(`${info.file.name} file uploaded successfully.`);
                       } else if (status === 'error') {
                         message.error(`${info.file.name} file upload failed.`);
@@ -490,12 +491,12 @@ class HelloWorld extends Component {
               </p>
             </Dragger>
           {/* </div> */}
-          
+
           {/* <FileBrowser
             files={this.state.files}
             canFilter={false}
           /> */}
-          
+
         </Modal>
       </div>
     );

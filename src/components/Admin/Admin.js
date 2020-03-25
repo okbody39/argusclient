@@ -13,7 +13,7 @@ import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
 import { Plus } from 'react-feather';
 
-import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
+import { Caption, Figure, Image, SubTitle, Title, Description } from '../@shared/TileAdmin';
 // import win7preview from '@/assets/images/preview/windows7.gif';
 
 const props = {
@@ -86,15 +86,20 @@ class Admin extends Component {
       visible: false,
       fileUploadervisible: false,
       fileList: [],
-      loading: true,
+      loading: false, //true,
       vmName: 'W10-INETRNETVM',
       selectedVm:{},
       vmlist: [
         { id: "VM-002", displayName: "ADM001", basicState: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
-        { id: "VM-003", displayName: "EMP002", basicState: "DISCONNECTED", operatingSystem: "WIndows 7" },
-        { id: "VM-004", displayName: "EMP003", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-005", displayName: "USER1", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-003", displayName: "EMP002", basicState: "DISCONNECTED", statusColor: "orange", operatingSystem: "WIndows 7" },
+        { id: "VM-004", displayName: "EMP003", basicState: "AVAILABLE", statusColor: "red", operatingSystem: "WIndows 10" },
+        { id: "VM-005", displayName: "USER1", basicState: "AVAILABLE", statusColor: "steelblue", operatingSystem: "WIndows 10" },
         { id: "VM-006", displayName: "USER2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-007", displayName: "INTERNET1", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-008", displayName: "INTERNET2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-009", displayName: "INTERNET3", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-010", displayName: "INTERNET4", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+        { id: "VM-011", displayName: "INTERNET5", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
       ],
       vmScreenShot: [],
       isFlushed: false,
@@ -129,7 +134,7 @@ class Admin extends Component {
       window.ipcRenderer.send("vm-screenshot");
 
       this.setState({
-        loading: true,
+        // loading: true,
       });
     }, 500);
 
@@ -289,30 +294,45 @@ class Admin extends Component {
   render() {
     return (
       <div className={styles.admin}>
-        <Row gutter={[16, 16]}>
+        <Row gutter={[8, 8]}>
           {
             this.state.vmlist.map((vm, i) => {
               return (
-                <Col key={i} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:12}} >
-                  <Card
-                    bodyStyle={{padding: 12}}
-                    // hoverable
-                    // style={{ width: 240 }}
-                    // onClick={this.showDrawer}
-                    cover={
-                      <Figure height={80} onClick={this.showDrawer.bind(this, vm)}>
-                        <Image
-                          source={this.state.vmScreenShot[vm.id]}
-                        />
-                        <Caption className={`header`}>
-                          <Text strong style={{ color: "white" }}>{vm.displayName}</Text>
-                          <SubTitle>{vm.operatingSystem || "Unknown"}</SubTitle>
-                        </Caption>
-                      </Figure>
-                    }
-                  >
-                    <Badge status="processing" color={vm.statusColor || 'gray'} text={vm.basicState.substr(0,10) || "-"} />
-                  </Card>
+                <Col key={i} xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
+
+                  {/*<Badge count={5}>*/}
+                    <Figure height={90} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
+                      <Caption className={`header`} >
+                        <Badge count={i * i%3} offset={[-3, 3]}>
+                        <Title>{vm.displayName}</Title>
+                        </Badge>
+                        <SubTitle>{vm.basicState || "-"}</SubTitle>
+                        <Description>{vm.operatingSystem || "Unknown"}</Description>
+                        <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
+                      </Caption>
+                    </Figure>
+                  {/*</Badge>*/}
+
+                  {/*<Card*/}
+                  {/*  bodyStyle={{padding: 12}}*/}
+                  {/*  // hoverable*/}
+                  {/*  style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}*/}
+                  {/*  // onClick={this.showDrawer}*/}
+                  {/*  cover={*/}
+                  {/*    <Figure height={80} onClick={this.showDrawer.bind(this, vm)}>*/}
+                  {/*      <Image*/}
+                  {/*        source={this.state.vmScreenShot[vm.id]}*/}
+                  {/*      />*/}
+                  {/*      <Caption className={`header`}>*/}
+                  {/*        <Text strong style={{ color: "white" }}>{vm.displayName}</Text>*/}
+                  {/*        <SubTitle>{vm.operatingSystem || "Unknown"}</SubTitle>*/}
+                  {/*      </Caption>*/}
+                  {/*    </Figure>*/}
+                  {/*  }*/}
+                  {/*>*/}
+                  {/*    <Badge status="processing" color={vm.statusColor || 'gray'} />*/}
+                  {/*    <Text style={{position: 'absolute'}}>{vm.basicState || "-"}</Text>*/}
+                  {/*</Card>*/}
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
                 //   <Card
@@ -342,14 +362,21 @@ class Admin extends Component {
             </Figure>
           </Col> */}
 
-          <Col lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:12}} >
-            <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
-              <Spin spinning={this.state.loading}  size="large" tip="Loading...">
-                <div style={{height: 78, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
-                  {this.state.loading ? null : <Plus size={100} color="lightgrey" />}
+          <Col xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
+            <Figure height={90} onClick={() => this.props.history.push("/vm/create")} color={'lightgray'} >
+              <Spin spinning={this.state.loading}  size="small" tip="Loading...">
+                <div style={{height: 90, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
+                  {this.state.loading ? null : <Plus size={60} color="gray" />}
                 </div>
               </Spin>
-            </Card>
+            </Figure>
+            {/*<Card hoverable onClick={() => this.props.history.push("/vm/create")}>*/}
+            {/*  <Spin spinning={this.state.loading}  size="large" tip="Loading...">*/}
+            {/*    <div style={{height: 78, display: 'flex', justifyContent: 'center', alignItems: "center"}}>*/}
+            {/*      {this.state.loading ? null : <Plus size={100} color="lightgrey" />}*/}
+            {/*    </div>*/}
+            {/*  </Spin>*/}
+            {/*</Card>*/}
           </Col>
 
         </Row>
