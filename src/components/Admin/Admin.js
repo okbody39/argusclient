@@ -150,7 +150,7 @@ class Admin extends Component {
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
 
-      console.log(arg);
+      // console.log(arg);
 
       arg.map((vm) => {
         if(vm.disk) {
@@ -307,7 +307,7 @@ class Admin extends Component {
                         <Badge count={0} offset={[-3, 3]}>
                           <Title>{vm.name}</Title>
                         </Badge>
-                        <SubTitle>{vm.state.toUpperCase() || "-"}</SubTitle>
+                        <SubTitle>{vm.state && vm.state.toUpperCase() || "-"}</SubTitle>
                         <Description>{vm.ipAddress || "-"}</Description>
                         <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
                       </Caption>

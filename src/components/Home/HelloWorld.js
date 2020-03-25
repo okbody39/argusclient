@@ -108,15 +108,6 @@ class HelloWorld extends Component {
   }
 
   componentDidMount() {
-    // setTimeout(() => {
-    //   let result = window.ipcRenderer.sendSync("vm-list", "all");
-    //   console.log(result)
-    //   this.setState({
-    //     vmlist: result,
-    //     loading: false,
-    //   });
-    // }, 500);
-
 
     setTimeout(() => {
       window.ipcRenderer.send("vm-list", "mhkim");
@@ -127,25 +118,16 @@ class HelloWorld extends Component {
       });
     }, 500);
 
-    /*
-    _TIMER_ = setInterval(() => {
-      window.ipcRenderer.send("vm-list-refresh", "mhkim");
-      window.ipcRenderer.send("vm-screenshot");
-
-      this.setState({
-        loading: true,
-      });
-    }, 1000 * 30);
-    */
-
     window.ipcRenderer.on("vm-list", (event, arg) => {
 
-      // console.log(arg);
-
       arg.map((vm) => {
-        vm.disk = JSON.parse(vm.disk);
-        if(vm.disk && vm.disk.length > 0) {
-          vm.disk.sort((a, b) => { return a.DiskPath > b.DiskPath ?  1 : -1 } )
+        if(vm.disk) {
+          vm.disk = JSON.parse(vm.disk);
+          if (vm.disk && vm.disk.length > 0) {
+            vm.disk.sort((a, b) => {
+              return a.DiskPath > b.DiskPath ? 1 : -1
+            })
+          }
         }
       });
 
@@ -157,6 +139,8 @@ class HelloWorld extends Component {
 
     window.ipcRenderer.on("vm-screenshot", (event, arg) => {
       let vmScreenShot = this.state.vmScreenShot;
+
+      console.log(":::SCREENSHOT:::", arg.id);
 
       vmScreenShot[arg.id] = arg.image;
 
@@ -170,7 +154,7 @@ class HelloWorld extends Component {
       window.ipcRenderer.send("vm-screenshot");
 
       this.setState({
-      //  vmlist: JSON.parse(arg),
+        vmlist: JSON.parse(arg),
         loading: false,
       });
 

@@ -222,7 +222,8 @@ function init(mainWindow) {
             image: response.data,
           };
 
-          // console.log(response.data);
+          console.log(vm.id);
+
           event.reply('vm-screenshot', retJson);
 
         })
