@@ -11,13 +11,13 @@ import HeaderAdmin from "@/components/@shared/HeaderAdmin";
 // import Footer from "@/components/@shared/Footer";
 import LoggerAdmin from "../components/@shared/LoggerAdmin";
 
-var InitHeight = 640;
 const InitLogHeight = 100;
 const LoggerPadding = 10;
+var InitHeight = 640;
 
-if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
-  InitHeight = 550;
-}
+// if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
+//   InitHeight = 550;
+// }
 /**
  * App
  *
@@ -32,6 +32,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
+    InitHeight = window.innerHeight - InitLogHeight - 21,
     this.upperHeight = InitHeight + LoggerPadding;
 
     this.state = {
@@ -84,7 +85,7 @@ class App extends Component {
 
   render() {
     const { children } = this.props;
-
+// childHeight: window.innerHeight - this.upperHeight - 21,
     return (
       <Layout>
         <HeaderAdmin />
@@ -92,7 +93,7 @@ class App extends Component {
                 onResizeStop={this.onChangeMove}
                 onResizeWindow={this.onChangeWindow}>
           <ResizeVertical height={ InitHeight + "px" } minHeight="370px">
-              <div className={styles.app}>
+              <div className={styles.app} >
                 <Layout.Content>{children}</Layout.Content>
               </div>
           </ResizeVertical >

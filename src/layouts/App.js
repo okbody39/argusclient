@@ -15,9 +15,9 @@ var InitHeight = 640;
 const InitLogHeight = 100;
 const LoggerPadding = 10;
 
-if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
-  InitHeight = 550;
-}
+// if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
+//   InitHeight = 550;
+// }
 
 /**
  * App
@@ -33,6 +33,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
+    InitHeight = window.innerHeight - InitLogHeight - 21,
     this.upperHeight = InitHeight + LoggerPadding;
 
     this.state = {

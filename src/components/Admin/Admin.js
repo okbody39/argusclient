@@ -89,18 +89,19 @@ class Admin extends Component {
       loading: false, //true,
       vmName: 'W10-INETRNETVM',
       selectedVm:{},
-      vmlist: [
-        { id: "VM-002", displayName: "ADM001", basicState: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
-        { id: "VM-003", displayName: "EMP002", basicState: "DISCONNECTED", statusColor: "orange", operatingSystem: "WIndows 7" },
-        { id: "VM-004", displayName: "EMP003", basicState: "AVAILABLE", statusColor: "red", operatingSystem: "WIndows 10" },
-        { id: "VM-005", displayName: "USER1", basicState: "AVAILABLE", statusColor: "steelblue", operatingSystem: "WIndows 10" },
-        { id: "VM-006", displayName: "USER2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-007", displayName: "INTERNET1", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-008", displayName: "INTERNET2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-009", displayName: "INTERNET3", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-010", displayName: "INTERNET4", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-        { id: "VM-011", displayName: "INTERNET5", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
-      ],
+      vmlist: [],
+      // vmlist: [
+      //   { id: "VM-002", displayName: "ADM001", basicState: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
+      //   { id: "VM-003", displayName: "EMP002", basicState: "DISCONNECTED", statusColor: "orange", operatingSystem: "WIndows 7" },
+      //   { id: "VM-004", displayName: "EMP003", basicState: "AVAILABLE", statusColor: "red", operatingSystem: "WIndows 10" },
+      //   { id: "VM-005", displayName: "USER1", basicState: "AVAILABLE", statusColor: "steelblue", operatingSystem: "WIndows 10" },
+      //   { id: "VM-006", displayName: "USER2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      //   { id: "VM-007", displayName: "INTERNET1", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      //   { id: "VM-008", displayName: "INTERNET2", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      //   { id: "VM-009", displayName: "INTERNET3", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      //   { id: "VM-010", displayName: "INTERNET4", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      //   { id: "VM-011", displayName: "INTERNET5", basicState: "AVAILABLE", operatingSystem: "WIndows 10" },
+      // ],
       vmScreenShot: [],
       isFlushed: false,
     };
@@ -110,8 +111,7 @@ class Admin extends Component {
     // console.log(this.props.location.state, nextProps.location.state);
 
     if(nextProps.location.state === "Reset") {
-      window.ipcRenderer.send("vm-list-reset", "mhkim");
-      window.ipcRenderer.send("vm-screenshot");
+      window.ipcRenderer.send("vm-list-reset", "all");
       this.setState({
         loading: true,
       });
@@ -130,11 +130,10 @@ class Admin extends Component {
 
 
     setTimeout(() => {
-      window.ipcRenderer.send("vm-list", "mhkim");
-      window.ipcRenderer.send("vm-screenshot");
+      window.ipcRenderer.send("vm-list", "all");
 
       this.setState({
-        // loading: true,
+        loading: true,
       });
     }, 500);
 
@@ -151,10 +150,12 @@ class Admin extends Component {
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
 
-      // console.log(arg);
+      console.log(arg);
 
       arg.map((vm) => {
-        vm.disk = JSON.parse(vm.disk);
+        if(vm.disk) {
+          vm.disk = JSON.parse(vm.disk);
+        }
         if(vm.disk && vm.disk.length > 0) {
           vm.disk.sort((a, b) => { return a.DiskPath > b.DiskPath ?  1 : -1 } )
         }
@@ -166,23 +167,23 @@ class Admin extends Component {
       });
     });
 
-    window.ipcRenderer.on("vm-screenshot", (event, arg) => {
-      let vmScreenShot = this.state.vmScreenShot;
+    // window.ipcRenderer.on("vm-screenshot", (event, arg) => {
+    //   let vmScreenShot = this.state.vmScreenShot;
 
-      vmScreenShot[arg.id] = arg.image;
+    //   vmScreenShot[arg.id] = arg.image;
 
-      this.setState({
-        vmScreenShot: vmScreenShot,
-      });
-    });
+    //   this.setState({
+    //     vmScreenShot: vmScreenShot,
+    //   });
+    // });
 
     window.ipcRenderer.on("reload-sig", (event, arg) => {
 
-      window.ipcRenderer.send("vm-screenshot");
+      // window.ipcRenderer.send("vm-screenshot");
 
       this.setState({
-        //  vmlist: JSON.parse(arg),
-        loading: false,
+         vmlist: JSON.parse(arg),
+         loading: false,
       });
 
       // notification.info({
@@ -218,7 +219,7 @@ class Admin extends Component {
     // clearInterval(_TIMER_);
 
     window.ipcRenderer.removeAllListeners('vm-list');
-    window.ipcRenderer.removeAllListeners('vm-screenshot');
+    // window.ipcRenderer.removeAllListeners('vm-screenshot');
     window.ipcRenderer.removeAllListeners('pong');
     window.ipcRenderer.removeAllListeners('reload-sig');
   }
@@ -303,11 +304,11 @@ class Admin extends Component {
                   {/*<Badge count={5}>*/}
                     <Figure height={90} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
                       <Caption className={`header`} >
-                        <Badge count={i * i%3} offset={[-3, 3]}>
-                        <Title>{vm.displayName}</Title>
+                        <Badge count={0} offset={[-3, 3]}>
+                          <Title>{vm.name}</Title>
                         </Badge>
-                        <SubTitle>{vm.basicState || "-"}</SubTitle>
-                        <Description>{vm.operatingSystem || "Unknown"}</Description>
+                        <SubTitle>{vm.state.toUpperCase() || "-"}</SubTitle>
+                        <Description>{vm.ipAddress || "-"}</Description>
                         <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
                       </Caption>
                     </Figure>

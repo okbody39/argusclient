@@ -13,6 +13,10 @@
     // transition: background-color 2s;
   }
 
+  .log_viewer::-webkit-scrollbar {
+    display: auto;
+  }
+
   ul {
     list-style: none;
     margin: 0px;
