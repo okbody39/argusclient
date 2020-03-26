@@ -17,6 +17,7 @@ import { Plus } from 'react-feather';
 import { Caption, Figure, SubTitle, Title, Description, Image } from '../@shared/TileAdmin';
 // import win7preview from '@/assets/images/preview/windows7.gif';
 
+const _NODE_HEIGHT_ = 70;
 const props = {
   name: 'file',
   multiple: true,
@@ -170,7 +171,7 @@ class Admin extends Component {
     });
 
     window.ipcRenderer.on("vm-screenshot", (event, arg) => {
-      
+
       this.setState({
         selectVmScreenShot: arg,
       });
@@ -250,7 +251,7 @@ class Admin extends Component {
     // console.log(selectedVm);
 
     window.ipcRenderer.send("vm-screenshot-admin", selectedVm.name);
-    
+
     // _TIMER_ = setTimeout(() => {
     //   window.ipcRenderer.send("vm-screenshot-admin", selectedVm.name);
     // }, 10000);
@@ -318,6 +319,7 @@ class Admin extends Component {
               <Radio.Button value="e">Error</Radio.Button>
               <Radio.Button value="r">Running</Radio.Button>
               <Radio.Button value="n">Not Running</Radio.Button>
+              <Radio.Button value="h">Hidden</Radio.Button>
             </Radio.Group>
           </Col>
           <Col>
@@ -343,7 +345,7 @@ class Admin extends Component {
                 <Col key={i} xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
 
                   {/*<Badge count={5}>*/}
-                    <Figure height={90} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
+                    <Figure height={_NODE_HEIGHT_} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
                       <Caption className={`header`} >
                         <Badge count={0} offset={[-3, 3]}>
                           <Title>{vm.name}</Title>
@@ -405,9 +407,9 @@ class Admin extends Component {
           </Col> */}
 
           <Col xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
-            <Figure height={90} onClick={() => this.props.history.push("/vm/create")} color={'lightgray'} >
+            <Figure height={_NODE_HEIGHT_} onClick={() => this.props.history.push("/vm/create")} color={'lightgray'} >
               <Spin spinning={this.state.loading}  size="small" tip="Loading...">
-                <div style={{height: 90, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
+                <div style={{height: _NODE_HEIGHT_, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
                   {this.state.loading ? null : <Plus size={60} color="gray" />}
                 </div>
               </Spin>
@@ -445,7 +447,7 @@ class Admin extends Component {
                 <Icon type="sync" />
               </Button>
             </div>
-          
+
 
           <Descriptions bordered title="VM 상태" size="small" column={2}>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
@@ -514,7 +516,9 @@ class Admin extends Component {
               borderRadius: '0 0 4px 4px',
             }}
           >
-            VIP 설정 <Switch defaultChecked className="mr-3"/>
+            VIP <Switch defaultChecked className="mr-3"/>
+
+            Hidden <Switch defaultChecked className="mr-3"/>
 
             <Button onClick={this.onConnect} type="success">
               접속

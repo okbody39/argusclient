@@ -5,8 +5,6 @@ import { HashRouter, Switch, Route, Redirect } from "react-router-dom";
 import Root from "@/screens/Root/Root";
 import Home from "@/screens/Home/Home";
 
-import Admin from "@/screens/Admin/Admin";
-
 import Signin from "@/screens/Signin/Signin";
 import Signup from "@/screens/Signup/Signup";
 import Failure from "@/screens/Failure/Failure";
@@ -23,6 +21,10 @@ import HistoryFailure from "@/screens/History/Failure";
 import HistoryAccess from "@/screens/History/Access";
 
 import VMCreate from "@/screens/VM/Create";
+
+// ADMIN
+import Admin from "@/screens/Admin/Admin";
+import AdminClient from "@/screens/Admin/Client";
 
 function PrivateRoute ({component: Component, ...rest}) {
 
@@ -44,7 +46,6 @@ const Routes = () => (
       <PrivateRoute exact path='/' component={Root} />
       <PrivateRoute path='/home' component={Root} />
 
-      <PrivateRoute path='/admin' component={Admin} />
 
       {/*
       <Route exact path="/" component={Root} />
@@ -68,6 +69,11 @@ const Routes = () => (
       <Route path="/history/access" component={HistoryAccess} />
 
       <Route path="/vm/create" component={VMCreate} />
+
+      {/* ADMIN */}
+      <PrivateRoute exact path='/admin' component={Admin} />
+      <Route path="/admin/client" component={AdminClient} />
+
     </Switch>
   </HashRouter>
 );

@@ -75,7 +75,7 @@ class Header extends Component {
     return (
       <Layout.Header className={styles.header}>
         <Link to={{
-              pathname: "/admin",
+              pathname: "/admin/client",
               state: ""
             }}>
           <img className={styles.logo} src={logo}/>
@@ -89,9 +89,14 @@ class Header extends Component {
           selectedKeys={this.state.selectedKeys}
           // onClick={(e) => this.onChangeMenu(e.key)}
         >
-          <Menu.Item key="/history/change" >
-            <Link to="/history/change">클라이언트</Link>
+          <Menu.Item key="/admin/client" >
+            <Link to="/admin/client">클라이언트</Link>
           </Menu.Item>
+
+          <Menu.Item key="/admin" >
+            <Link to="/admin">가상머신</Link>
+          </Menu.Item>
+
           {/*<Menu.Item key="/history/failure">*/}
           {/*  <Link to="/history/failure">장애신고</Link>*/}
           {/*</Menu.Item>*/}
