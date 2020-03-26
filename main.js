@@ -1,8 +1,6 @@
 "use strict";
 
-// Import parts of electron to use
 const os = require('os');
-// const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
 const {
   app,
   Menu,
@@ -14,7 +12,6 @@ const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
 
-// const autoUpdater = require('./app/updater');
 const apis = require('./app/apis');
 
 if(!isDev) {
@@ -30,7 +27,6 @@ if (process.platform === "win32") {
 }
 
 function createWindow() {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -71,7 +67,6 @@ function createWindow() {
     mainWindow.show();
 
     if (isDev) {
-      // mainWindow.webContents.openDevTools();
 
       mainWindow.webContents.on("context-menu", (e, props) => {
         const { x, y } = props;
@@ -87,9 +82,6 @@ function createWindow() {
       });
     }
 
-    // apis.autoUpdateCheck();
-    // autoUpdater.init(mainWindow);
-
     apis.init(mainWindow);
 
   });
@@ -98,12 +90,6 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // mainWindow.webContents.on('check-update', function() {
-  //   // mainWindow.webContents.send('ping', '🤘');
-  //   console.log("check-update");
-  //
-  //   // autoUpdater.init(mainWindow);
-  // });
 }
 
 app.on("ready", () => {
@@ -111,9 +97,7 @@ app.on("ready", () => {
 });
 
 app.on("window-all-closed", () => {
-  // if (process.platform !== "darwin") {
-    app.quit();
-  // }
+  app.quit();
 });
 
 app.on("activate", () => {

@@ -12,7 +12,7 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:8000"; // "localhost:8000"; // "211.232.94.235:8000"; //
+const _SEED_GATE_ = "211.232.94.235:8000";
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 
 // Web socket
@@ -43,39 +43,33 @@ function init(mainWindow) {
   }
 
   ws.onopen = () => {
-    // console.log('OPEN....');
-    // ws.send('I connected.');
+    //
   };
 
   ws.onclose = () => {
-    // console.log('CLOSE....');
-    // ws.send('I connected.');
     dialog.showMessageBox(mainWindow, {
       type: 'error',
       title: 'Server connection Error',
       message: 'Disconnect Server, try again... ', // + err.error.errno,
       buttons: ['Ok'],
     }).then(() => {
-      // process.exit(2);
+      process.exit(2);
     });
 
   };
 
   ws.onerror = (err) => {
-    console.error(err);
-
     dialog.showMessageBox(mainWindow, {
       type: 'error',
       title: 'Server connection Error',
-      message: 'Server is not ready, try again... ', // + err.error.errno,
+      message: 'Server is not ready, try again... ',
       buttons: ['Ok'],
     }).then(() => {
-      // process.exit(2);
+      process.exit(2);
     });
   };
 
   ws.onmessage = (data, flags) => {
-    // console.log(data.data);
     mainWindow.webContents.send("reload-sig", data.data);
   };
 
@@ -95,7 +89,6 @@ function init(mainWindow) {
   ipcMain.on("vm-reset", (event, arg) => {
     let machineId = arg;
     let url = 'http://' + _SEED_GATE_ + '/vms/reset';
-    // event.returnValue = 'reset: ' + machineId; // sync
 
     axios({
       url: url,
@@ -115,7 +108,7 @@ function init(mainWindow) {
 
   ipcMain.on("vm-connect", (event, arg) => {
     let vmName = arg;
-    event.returnValue = 'connect: ' + vmName; // sync
+    event.returnValue = 'connect: ' + vmName;
   });
 
   ipcMain.on("vm-list", (event, arg) => {
@@ -124,29 +117,28 @@ function init(mainWindow) {
     let vmList = null; // store.get("vm-list");
 
     if(vmList) {
-      // event.returnValue = vmList;
       let retJson = vmList;
       event.reply('vm-list', retJson);
     } else {
       axios.get(url, {
         params: {
-          // ID: 12345
         }
       })
         .then(function (response) {
-          // event.returnValue = response.data; // sync
-          // console.log(response.data);
-
           let retJson = response.data;
 
-          store.set("vm-list", retJson);
+          if(userId === 'all') {
+            store.set("vm-list-admin", retJson);
+          } else {
+            store.set("vm-list", retJson);
+          }
+          
           event.reply('vm-list', retJson);
         })
         .catch(function (error) {
           console.error(error);
         })
         .then(function () {
-          // always executed
         });
     }
   });
@@ -158,27 +150,27 @@ function init(mainWindow) {
 
     axios.get(url, {
       params: {
-        // ID: 12345
       }
     })
       .then(function (response) {
-        // event.returnValue = response.data; // sync
         vmList.map((vm) => {
           let index = response.data.findIndex(obj => obj.id === vm.id);
           if(index != -1) {
             vm.basicState = response.data[index].basicState;
-            // vm.vmImage = 'http://' + _SEED_GATE_ + '/vms/image/' + vm.id + '?' + (new Date().getTime());
           }
         });
 
-        store.set("vm-list", vmList);
+        if(userId === 'all') {
+          store.set("vm-list-admin", retJson);
+        } else {
+          store.set("vm-list", retJson);
+        }
         event.reply('vm-list', vmList);
       })
       .catch(function (error) {
         console.error(error);
       })
       .then(function () {
-        // always executed
       });
   });
 
@@ -188,25 +180,22 @@ function init(mainWindow) {
 
     axios.get(url, {
       params: {
-        // ID: 12345
       }
     })
       .then(function (response) {
-        // event.returnValue = response.data; // sync
-
         let retJson = response.data;
-        // retJson.map((vm) =>{
-        //   vm.vmImage = 'http://' + _SEED_GATE_ + '/vms/image/' + vm.id + '?' + (new Date().getTime());
-        // });
 
-        store.set("vm-list", retJson);
+        if(userId === 'all') {
+          store.set("vm-list-admin", retJson);
+        } else {
+          store.set("vm-list", retJson);
+        }
         event.reply('vm-list', retJson);
       })
       .catch(function (error) {
         console.error(error);
       })
       .then(function () {
-        // always executed
       });
   });
 
@@ -222,13 +211,10 @@ function init(mainWindow) {
             image: response.data,
           };
 
-          console.log(vm.id);
-
           event.reply('vm-screenshot', retJson);
 
         })
         .catch(function (error) {
-          // console.error(error);
           let retJson = {
             id: vm.id,
             image: BlackScreen,
@@ -236,9 +222,25 @@ function init(mainWindow) {
           event.reply('vm-screenshot', retJson);
         })
         .then(function () {
-          // always executed
         });
     });
+  });
+
+  ipcMain.on("vm-screenshot-admin", (event, arg) => {
+    let url = 'http://' + _SEED_GATE_ + '/vms/image/' + arg;
+    
+    axios.get(url, {})
+      .then(function (response) {
+        
+        event.reply('vm-screenshot', response.data);
+
+      })
+      .catch(function (error) {
+        
+        event.reply('vm-screenshot', BlackScreen);
+      })
+      .then(function () {
+      });
   });
 
   setTimeout(() => {

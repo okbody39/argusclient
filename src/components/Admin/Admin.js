@@ -3,17 +3,18 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Typography, Spin,
-  Modal, notification,
+  Modal, notification, Radio, Input, Select, Affix,
 } from 'antd';
 const { Text, Paragraph } = Typography;
 const { Dragger } = Upload;
 const { Meta } = Card;
+const { Option } = Select;
 
 import { Link, withRouter } from 'react-router-dom';
 import FileBrowser from 'react-keyed-file-browser';
 import { Plus } from 'react-feather';
 
-import { Caption, Figure, Image, SubTitle, Title, Description } from '../@shared/TileAdmin';
+import { Caption, Figure, SubTitle, Title, Description, Image } from '../@shared/TileAdmin';
 // import win7preview from '@/assets/images/preview/windows7.gif';
 
 const props = {
@@ -51,7 +52,7 @@ const displaySize = (size) => {
   }
 };
 
-// var _TIMER_ = null;
+var _TIMER_ = null;
 
 // Styles
 import styles from "./Admin.scss";
@@ -89,6 +90,7 @@ class Admin extends Component {
       loading: false, //true,
       vmName: 'W10-INETRNETVM',
       selectedVm:{},
+      selectVmScreenShot: "",
       vmlist: [],
       // vmlist: [
       //   { id: "VM-002", displayName: "ADM001", basicState: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
@@ -167,15 +169,12 @@ class Admin extends Component {
       });
     });
 
-    // window.ipcRenderer.on("vm-screenshot", (event, arg) => {
-    //   let vmScreenShot = this.state.vmScreenShot;
-
-    //   vmScreenShot[arg.id] = arg.image;
-
-    //   this.setState({
-    //     vmScreenShot: vmScreenShot,
-    //   });
-    // });
+    window.ipcRenderer.on("vm-screenshot", (event, arg) => {
+      
+      this.setState({
+        selectVmScreenShot: arg,
+      });
+    });
 
     window.ipcRenderer.on("reload-sig", (event, arg) => {
 
@@ -249,6 +248,13 @@ class Admin extends Component {
 
   showDrawer = (selectedVm) => {
     // console.log(selectedVm);
+
+    window.ipcRenderer.send("vm-screenshot-admin", selectedVm.name);
+    
+    // _TIMER_ = setTimeout(() => {
+    //   window.ipcRenderer.send("vm-screenshot-admin", selectedVm.name);
+    // }, 10000);
+
     this.setState({
       selectedVm: selectedVm,
       vmName: selectedVm.displayName,
@@ -256,7 +262,13 @@ class Admin extends Component {
     });
   };
 
+  refreshScreenshot = () => {
+    window.ipcRenderer.send("vm-screenshot-admin", this.state.selectedVm.name);
+  }
+
   onClose = () => {
+    // clearTimeout( _TIMER_ );
+
     this.setState({
       visible: false,
     });
@@ -294,7 +306,36 @@ class Admin extends Component {
 
   render() {
     return (
-      <div className={styles.admin}>
+      <div className={styles.admin} ref={node => {
+        this.container = node;
+      }}>
+        <Affix target={() => this.container}>
+         <div style={{display:'flex', flexDirection: 'row', paddingTop: 7, paddingBottom: 8, justifyContent: 'space-between', backgroundColor: 'white' }}>
+          <Col>
+            <Radio.Group defaultValue="a" size="small" buttonStyle="solid">
+              <Radio.Button value="a">All</Radio.Button>
+              <Radio.Button value="v">VIP</Radio.Button>
+              <Radio.Button value="e">Error</Radio.Button>
+              <Radio.Button value="r">Running</Radio.Button>
+              <Radio.Button value="n">Not Running</Radio.Button>
+            </Radio.Group>
+          </Col>
+          <Col>
+            <Input.Group compact>
+              <Select defaultValue="a" size="small" style={{ width: 80 }}>
+                <Option value="a">Name</Option>
+                <Option value="b">IP</Option>
+              </Select>
+              <Input defaultValue=""  size="small"  style={{ width: 200 }}/>
+            </Input.Group>
+          </Col>
+          <Col>
+          </Col>
+          <Col>
+            <Text strong style={{marginLeft: 0}}>({this.state.vmlist.length} VMs)</Text>
+          </Col>
+        </div>
+        </Affix>
         <Row gutter={[8, 8]}>
           {
             this.state.vmlist.map((vm, i) => {
@@ -385,7 +426,7 @@ class Admin extends Component {
 
         <Drawer
           title={
-            <Text editable={{ onChange: this.onChangeVmName }}>{this.state.vmName}</Text>
+            <Text editable={{ onChange: this.onChangeVmName }}>{this.state.selectedVm.name}</Text>
           }
           width={520}
           placement="right"
@@ -395,6 +436,16 @@ class Admin extends Component {
           bodyStyle={{ overflow: "auto", height: "calc(100vh - 110px)" }}
         >
           <Alert message="디스크 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
+
+            <div style={{display:'flex', flexDirection: 'row'}}>
+              <div style={{width: 250, height: 150, marginBottom: 15, backgroundPosition: 'center center',  backgroundSize: 'cover',  backgroundImage: 'url('+this.state.selectVmScreenShot+')'}}>
+                {/* <Image source={this.state.selectVmScreenShot} /> */}
+              </div>
+              <Button style={{marginLeft: 5}} onClick={this.refreshScreenshot}>
+                <Icon type="sync" />
+              </Button>
+            </div>
+          
 
           <Descriptions bordered title="VM 상태" size="small" column={2}>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
@@ -463,7 +514,7 @@ class Admin extends Component {
               borderRadius: '0 0 4px 4px',
             }}
           >
-            기본 VM 설정 <Switch defaultChecked className="mr-3"/>
+            VIP 설정 <Switch defaultChecked className="mr-3"/>
 
             <Button onClick={this.onConnect} type="success">
               접속

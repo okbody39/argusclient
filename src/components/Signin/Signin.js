@@ -15,7 +15,6 @@ const { Meta } = Card;
 
 // Styles
 import styles from "./Signin.scss";
-
 import logo from '@/assets/images/seedclient_logo_l.png';
 
 /**
@@ -46,8 +45,7 @@ class Signin extends Component {
           code: values,
         });
 
-        // console.log(formData);
-
+        console.log(formData);
         localStorage.setItem("ARGUS.USERTOKEN", "true");
 
         this.props.history.push("/");

@@ -84,13 +84,13 @@ const Description = styled.span`
   opacity: 0.6;
 `;
 
-const Image = styled.span`
+const Image = styled.img`
   position: absolute;
-  background-size: cover;
-  background-position: center center;
-  background-image: url(${props => props.source});
-  width: 100%;
-  height: 100%;
+  //background-size: cover;
+  //background-position: center center;
+  src: url(${props => props.source});
+  //width: ${props => props.width}px;
+  //height: ${props => props.width}px;
 `;
 
 export { Figure, Caption, Title, SubTitle, Image, Description };

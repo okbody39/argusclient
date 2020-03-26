@@ -29,7 +29,7 @@ function aboutModal(parent) {
     width: 500, height: 180,
     'parent': parent,
     'show': false,
-    // 'modal': true,
+    'modal': true,
     'alwaysOnTop' : true,
     // 'title' : 'New update!',
     'autoHideMenuBar': true,

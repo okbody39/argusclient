@@ -140,7 +140,7 @@ class HelloWorld extends Component {
     window.ipcRenderer.on("vm-screenshot", (event, arg) => {
       let vmScreenShot = this.state.vmScreenShot;
 
-      console.log(":::SCREENSHOT:::", arg.id);
+      // console.log(":::SCREENSHOT:::", arg.id);
 
       vmScreenShot[arg.id] = arg.image;
 
