@@ -55,7 +55,7 @@ class Footer extends Component {
 
   componentDidMount() {
 
-    window.ipcRenderer.on("reload-sig", (event, arg) => {
+    window.ipcRenderer.on("log-message", (event, arg) => {
       let log = new Date().format("yyyy-MM-dd HH:mm:ss") + " - " + arg;
       
       this.setState({
@@ -79,7 +79,7 @@ class Footer extends Component {
   }
 
   componentWillUnmount() {
-    window.ipcRenderer.removeAllListeners('reload-sig');
+    window.ipcRenderer.removeAllListeners('log-message');
   }
 
   render() {

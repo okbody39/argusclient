@@ -1,5 +1,6 @@
 // Libs
 import React, { Component } from "react";
+import { Link, withRouter, Router } from 'react-router-dom';
 import PropTypes from "prop-types";
 import { Layout } from "antd";
 import { Resize, ResizeVertical, ResizeHorizon } from "react-resize-layout";
@@ -11,9 +12,13 @@ import HeaderAdmin from "@/components/@shared/HeaderAdmin";
 // import Footer from "@/components/@shared/Footer";
 import Logger from "../components/@shared/Logger";
 
+import { ISFULLSCREEN } from "@/config";
+
 var InitHeight = 640;
 const InitLogHeight = 100;
 const LoggerPadding = 10;
+
+
 
 // if(window.innerHeight - ( InitHeight + InitLogHeight + LoggerPadding ) < 0) {
 //   InitHeight = 550;
@@ -87,6 +92,14 @@ class App extends Component {
   render() {
     const { children } = this.props;
 
+    if(ISFULLSCREEN(this.props.location.pathname)) {
+      return (
+        <Layout className={styles.appFull}>
+          <Layout.Content>{children}</Layout.Content>
+        </Layout>
+      );
+    }
+
     return (
       <Layout>
         <Header />
@@ -108,4 +121,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withRouter(App);

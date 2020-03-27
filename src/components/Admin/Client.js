@@ -18,16 +18,6 @@ import { Caption, Figure, SubTitle, Title, Description, Image } from '../@shared
 // import win7preview from '@/assets/images/preview/windows7.gif';
 
 const _NODE_HEIGHT_ = 70;
-const props = {
-  name: 'file',
-  multiple: true,
-  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-
-};
-
-window.ipcRenderer.on("pong", (event, arg) => {
-  alert("async: " + arg);
-});
 
 const displaySize = (size) => {
   if(size) {
@@ -64,7 +54,8 @@ import styles from "./Client.scss";
  * @class Client
  * @extends {Component}
  */
-class Client extends Component {
+
+ class Client extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -81,46 +72,28 @@ class Client extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    // console.log(this.props.location.state, nextProps.location.state);
-
-    // if(nextProps.location.state === "Reset") {
-    //   window.ipcRenderer.send("vm-list-reset", "all");
-    //   this.setState({
-    //     loading: true,
-    //   });
-    // }
   }
 
   componentDidMount() {
-    // setTimeout(() => {
-    //   let result = window.ipcRenderer.sendSync("vm-list", "all");
-    //   console.log(result)
-    //   this.setState({
-    //     vmlist: result,
-    //     loading: false,
-    //   });
-    // }, 500);
-
-
     setTimeout(() => {
-
-      window.ipcRenderer.send("client-list", "all");
+      window.ipcRenderer.send("client-list");
 
       this.setState({
         loading: true,
       });
+
     }, 500);
 
     window.ipcRenderer.on("client-list", (event, arg) => {
+      let list = [...this.state.clientList, {id:arg}];
 
       this.setState({
-        clientList: arg,
+        clientList: list,
         loading: false,
       });
     });
 
     window.ipcRenderer.on("reload-sig", (event, arg) => {
-
       this.setState({
         clientList: JSON.parse(arg),
         loading: false,

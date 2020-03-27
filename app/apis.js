@@ -53,25 +53,29 @@ function init(mainWindow) {
       message: 'Disconnect Server, try again... ', // + err.error.errno,
       buttons: ['Ok'],
     }).then(() => {
-      process.exit(2);
+      // process.exit(2);
     });
 
   };
 
   ws.onerror = (err) => {
+    // console.log(err);
     dialog.showMessageBox(mainWindow, {
       type: 'error',
       title: 'Server connection Error',
       message: 'Server is not ready, try again... ',
       buttons: ['Ok'],
     }).then(() => {
-      process.exit(2);
+      // process.exit(2);
     });
   };
 
   ws.onmessage = (data, flags) => {
     mainWindow.webContents.send("reload-sig", data.data);
+    mainWindow.webContents.send("log-message", data.data);
   };
+
+  ///////////////////////////////////////
 
 
   ipcMain.on("about-this", (event, arg) => {
@@ -85,6 +89,26 @@ function init(mainWindow) {
   ipcMain.on("ping", (event, arg) => {
     event.reply('pong', 'Hello!') // async
   });
+
+  // CLIENTS
+
+  ipcMain.on("client-list", (event, arg) => {
+    let url = 'http://' + _SEED_GATE_ + '/clients/all';
+    
+    axios.get(url)
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('client-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  // VMS
 
   ipcMain.on("vm-reset", (event, arg) => {
     let machineId = arg;
