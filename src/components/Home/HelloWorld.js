@@ -99,7 +99,7 @@ class HelloWorld extends Component {
     // console.log(this.props.location.state, nextProps.location.state);
 
     if(nextProps.location.state === "Reset") {
-      window.ipcRenderer.send("vm-list-reset", "mhkim");
+      window.ipcRenderer.send("vm-list-reset", this.props.auth);
       window.ipcRenderer.send("vm-screenshot");
       this.setState({
         loading: true,
@@ -110,7 +110,7 @@ class HelloWorld extends Component {
   componentDidMount() {
 
     setTimeout(() => {
-      window.ipcRenderer.send("vm-list", "mhkim");
+      window.ipcRenderer.send("vm-list", this.props.auth);
       window.ipcRenderer.send("vm-screenshot");
 
       this.setState({

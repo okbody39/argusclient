@@ -28,13 +28,19 @@ import AdminClient from "@/screens/Admin/Client";
 
 function PrivateRoute ({component: Component, ...rest}) {
 
-  let userToken = localStorage.getItem("ARGUS.USERTOKEN");
+  let userToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
+  let token = JSON.parse(userToken);
+  let auth = false;
+
+  if(token.username && token.username.length > 0) {
+    auth = true;
+  }
 
   return (
     <Route
       {...rest}
-      render={(props) => userToken === "true"
-        ? <Component {...props} />
+      render={(props) => auth
+        ? <Component {...props} auth={token.username}/>
         : <Redirect to={{pathname: '/signin', state: {from: props.location}}} />}
     />
   )
@@ -46,33 +52,27 @@ const Routes = () => (
       <PrivateRoute exact path='/' component={Root} />
       <PrivateRoute path='/home' component={Root} />
 
-
-      {/*
-      <Route exact path="/" component={Root} />
-      <Route exact path="/home" component={Root} />
-      */}
-
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
 
-      <Route path="/failure" component={Failure} />
-      <Route path="/notice" component={Notice} />
-      <Route path="/alarm" component={Alarm} />
+      <PrivateRoute path="/failure" component={Failure} />
+      <PrivateRoute path="/notice" component={Notice} />
+      <PrivateRoute path="/alarm" component={Alarm} />
 
-      <Route path="/change/password" component={ChangePassword} />
-      <Route path="/change" component={Change} />
+      <PrivateRoute path="/change/password" component={ChangePassword} />
+      <PrivateRoute path="/change" component={Change} />
 
-      <Route path="/settings" component={Settings} />
+      <PrivateRoute path="/settings" component={Settings} />
 
-      <Route path="/history/change" component={HistoryChange} />
-      <Route path="/history/failure" component={HistoryFailure} />
-      <Route path="/history/access" component={HistoryAccess} />
+      <PrivateRoute path="/history/change" component={HistoryChange} />
+      <PrivateRoute path="/history/failure" component={HistoryFailure} />
+      <PrivateRoute path="/history/access" component={HistoryAccess} />
 
-      <Route path="/vm/create" component={VMCreate} />
+      <PrivateRoute path="/vm/create" component={VMCreate} />
 
       {/* ADMIN */}
       <PrivateRoute exact path='/admin' component={Admin} />
-      <Route path="/admin/client" component={AdminClient} />
+      <PrivateRoute path="/admin/client" component={AdminClient} />
 
     </Switch>
   </HashRouter>

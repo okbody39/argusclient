@@ -22,7 +22,7 @@ class Settings extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <SettingsCompo />
+          <SettingsCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

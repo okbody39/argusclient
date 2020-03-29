@@ -1,6 +1,6 @@
 // Libs
-import React, { Component } from "react";
-import { Button, Checkbox, Form, Input, message, Row, Card } from 'antd';
+import React, {Component, useReducer} from "react";
+import { Button, Checkbox, Form, Input, message, Row, Card, notification } from 'antd';
 import { Eye, Mail, Triangle, User } from 'react-feather';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
@@ -34,6 +34,22 @@ class Signin extends Component {
     };
   }
 
+  componentDidMount() {
+    let userToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
+    let token = JSON.parse(userToken);
+
+    if(token.remember) {
+      this.props.form.setFieldsValue({
+        username: token.username,
+      }, () => console.log('after'));
+
+    } else {
+      token = "";
+    }
+
+    localStorage.setItem("ARGUS.USERTOKEN", "");
+  }
+
   handleSubmit(event) {
     const { form } = this.props;
     event.preventDefault();
@@ -41,15 +57,21 @@ class Signin extends Component {
     form.validateFields((err, values)  => {
       if (!err) {
 
-        let formData = JSON.stringify({
-          code: values,
-        });
+        let auth = window.ipcRenderer.sendSync("login", values);
 
-        console.log(formData);
-        localStorage.setItem("ARGUS.USERTOKEN", "true");
+        // console.log(auth);
 
-        this.props.history.push("/");
-
+        if(auth) {
+          localStorage.setItem("ARGUS.USERTOKEN", JSON.stringify(values));
+          this.props.history.push("/");
+        } else {
+          localStorage.setItem("ARGUS.USERTOKEN", "");
+          notification.error({
+            message: '로그인 실패',
+            description:
+              '사용자ID 또는 비밀번호를 다시 확인해 주세요.',
+          });
+        }
       }
     });
   }
@@ -133,19 +155,8 @@ class Signin extends Component {
                 initialValue: true
               })(<Checkbox className="mr-2">아이디 저장</Checkbox>)}
 
-
-                {/*<a className="text-xs-right">*/}
-                  <Link to="/signup">
-                    <small>회원 가입</small>
-                  </Link>
-                {/*</a>*/}
-
-              {/*<small> | </small>*/}
-
-              {/*<Link to="/forgot">*/}
-              {/*  <a className="text-xs-right">*/}
-              {/*    <small>비밀번호 찾기</small>*/}
-              {/*  </a>*/}
+              {/*<Link to="/signup">*/}
+              {/*  <small>회원 가입</small>*/}
               {/*</Link>*/}
 
             </FormItem>

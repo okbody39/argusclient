@@ -22,7 +22,7 @@ class Admin extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <AdminCompo />
+          <AdminCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

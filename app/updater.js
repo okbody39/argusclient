@@ -23,12 +23,12 @@ let modalWindow;
 function init(mainWindow) {
 
   if(isDev) {
-    updateModal(mainWindow);
-
-    setTimeout(() => {
-      modalWindow.webContents.send('version-data', {version: "1.1.16"});
-    }, 2000);
-
+    // updateModal(mainWindow);
+    //
+    // setTimeout(() => {
+    //   modalWindow.webContents.send('version-data', {version: "1.1.16"});
+    // }, 2000);
+    //
     return;
   }
 

@@ -22,7 +22,7 @@ class Password extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <PasswordCompo />
+          <PasswordCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

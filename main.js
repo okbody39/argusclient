@@ -16,7 +16,6 @@ const apis = require('./app/apis');
 
 if(!isDev) {
     Menu.setApplicationMenu(null);
-    Menu.setApplicationMenu(null);
 }
 
 let mainWindow;

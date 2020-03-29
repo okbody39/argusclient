@@ -22,7 +22,7 @@ class Notice extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <NoticeCompo />
+          <NoticeCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

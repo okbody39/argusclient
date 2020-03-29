@@ -125,6 +125,7 @@ import styles from "./Client.scss";
       <div className={styles.admin} ref={node => {
         this.container = node;
       }}>
+
         <Affix target={() => this.container}>
          <div style={{display:'flex', flexDirection: 'row', paddingTop: 7, paddingBottom: 8, justifyContent: 'space-between', backgroundColor: 'white' }}>
           <Col>
@@ -151,73 +152,27 @@ import styles from "./Client.scss";
           </Col>
         </div>
         </Affix>
+
         <Row gutter={[8, 8]}>
+
           {
             this.state.clientList.map((vm, i) => {
               return (
                 <Col key={i} xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
-
-                  {/*<Badge count={5}>*/}
-                    <Figure height={_NODE_HEIGHT_} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
-                      <Caption className={`header`} >
-                        <Badge count={0} offset={[-3, 3]}>
-                          <Title>{vm.id}</Title>
-                        </Badge>
-                        <SubTitle>{vm.displayName  || "-"}</SubTitle>
-                        <Description>{vm.state && vm.state.toUpperCase() || "-"}</Description>
-                        <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
-                      </Caption>
-                    </Figure>
-                  {/*</Badge>*/}
-
-                  {/*<Card*/}
-                  {/*  bodyStyle={{padding: 12}}*/}
-                  {/*  // hoverable*/}
-                  {/*  style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}*/}
-                  {/*  // onClick={this.showDrawer}*/}
-                  {/*  cover={*/}
-                  {/*    <Figure height={80} onClick={this.showDrawer.bind(this, vm)}>*/}
-                  {/*      <Image*/}
-                  {/*        source={this.state.vmScreenShot[vm.id]}*/}
-                  {/*      />*/}
-                  {/*      <Caption className={`header`}>*/}
-                  {/*        <Text strong style={{ color: "white" }}>{vm.displayName}</Text>*/}
-                  {/*        <SubTitle>{vm.operatingSystem || "Unknown"}</SubTitle>*/}
-                  {/*      </Caption>*/}
-                  {/*    </Figure>*/}
-                  {/*  }*/}
-                  {/*>*/}
-                  {/*    <Badge status="processing" color={vm.statusColor || 'gray'} />*/}
-                  {/*    <Text style={{position: 'absolute'}}>{vm.basicState || "-"}</Text>*/}
-                  {/*</Card>*/}
+                  <Figure height={_NODE_HEIGHT_} onClick={this.showDrawer.bind(this, vm)} color={vm.statusColor || 'gray'} >
+                    <Caption className={`header`} >
+                      <Badge count={0} offset={[-3, 3]}>
+                        <Title>{vm.id}</Title>
+                      </Badge>
+                      <SubTitle>{vm.displayName  || "-"}</SubTitle>
+                      <Description>{vm.state && vm.state.toUpperCase() || "-"}</Description>
+                      <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
+                    </Caption>
+                  </Figure>
                 </Col>
-                // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-                //   <Card
-                //     hoverable
-                //     // style={{ width: 240 }}
-                //     onClick={this.showDrawer}
-                //     cover={<img alt="example" className={styles.cover} src={win7preview} />}
-                //   >
-                //     <Meta title={ vm.Name || vm.PoolName } description={ vm.BasicState || "공용VM" } />
-                //   </Card>
-                // </Col>
               );
             })
           }
-
-
-
-          {/* <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-            <Figure height={240}>
-              <Image
-                source={win7preview}
-              />
-              <Caption className={`header`}>
-                <Title>Grid tile</Title>
-                <SubTitle>Media</SubTitle>
-              </Caption>
-            </Figure>
-          </Col> */}
 
           <Col xl={{span: 2}} lg={{span: 3}} md={{span:4}} sm={{span:6}} xs={{span:6}} >
             <Figure height={_NODE_HEIGHT_} onClick={() => this.props.history.push("/vm/create")} color={'lightgray'} >
@@ -227,17 +182,8 @@ import styles from "./Client.scss";
                 </div>
               </Spin>
             </Figure>
-            {/*<Card hoverable onClick={() => this.props.history.push("/vm/create")}>*/}
-            {/*  <Spin spinning={this.state.loading}  size="large" tip="Loading...">*/}
-            {/*    <div style={{height: 78, display: 'flex', justifyContent: 'center', alignItems: "center"}}>*/}
-            {/*      {this.state.loading ? null : <Plus size={100} color="lightgrey" />}*/}
-            {/*    </div>*/}
-            {/*  </Spin>*/}
-            {/*</Card>*/}
           </Col>
-
         </Row>
-
 
         <Drawer
           title={
@@ -293,10 +239,7 @@ import styles from "./Client.scss";
               닫기
             </Button>
           </div>
-
         </Drawer>
-
-
       </div>
     );
   }

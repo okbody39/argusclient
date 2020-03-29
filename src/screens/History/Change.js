@@ -23,7 +23,7 @@ class Change extends Component {
     return (
       <Layout>
         <div className={styles.home}>
-          <ChangeCompo />
+          <ChangeCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

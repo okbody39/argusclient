@@ -24,7 +24,7 @@ class Create extends Component {
       <Layout>
         <div className={styles.screen}>
           {/*<Path />*/}
-          <CreateCompo />
+          <CreateCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

@@ -22,7 +22,7 @@ class Access extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <AccessCompo />
+          <AccessCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

@@ -12,8 +12,9 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const _SEED_GATE_ = "211.232.94.235:8000";
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
+
+var _ARGUS_GATE_ = ""; //"211.232.94.235:8000";
 
 // Web socket
 
@@ -24,62 +25,93 @@ const props = {
   name: 'file',
   multiple: true,
   action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-
 };
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
+const settingThis = require('./setting');
 
 function autoUpdateCheck(mainWindow) {
   autoUpdater.init(mainWindow);
 }
 
 function init(mainWindow) {
+  let serverInfo = store.get("server-info", {}); // "211.232.94.235:8000"; //
 
-  try {
-    ws = new WebSocket('ws://' + _SEED_GATE_ + '/vms/' + 'mhkim');
-  } catch(e) {
-    console.error(e);
+  _ARGUS_GATE_ = serverInfo.serverUrl;
+
+  if(_ARGUS_GATE_) {
+    //
+    try {
+      ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + 'mhkim');
+    } catch(e) {
+      console.error(e);
+    }
+
+    ws.onopen = () => {
+      //
+    };
+
+    ws.onclose = () => {
+      dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'Server connection Error',
+        message: 'Disconnect Server, try again... ', // + err.error.errno,
+        buttons: ['Ok'],
+      }).then(() => {
+        // process.exit(2);
+      });
+
+    };
+
+    ws.onerror = (err) => {
+      // console.log(err);
+      dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'Server connection Error',
+        message: 'Server is not ready, try again... ',
+        buttons: ['Ok'],
+      }).then(() => {
+        // process.exit(2);
+      });
+    };
+
+    ws.onmessage = (data, flags) => {
+      mainWindow.webContents.send("reload-sig", data.data);
+      mainWindow.webContents.send("log-message", data.data);
+    };
+
+  } else {
+    settingThis.run(mainWindow);
   }
 
-  ws.onopen = () => {
-    //
-  };
 
-  ws.onclose = () => {
-    dialog.showMessageBox(mainWindow, {
-      type: 'error',
-      title: 'Server connection Error',
-      message: 'Disconnect Server, try again... ', // + err.error.errno,
-      buttons: ['Ok'],
-    }).then(() => {
-      // process.exit(2);
-    });
-
-  };
-
-  ws.onerror = (err) => {
-    // console.log(err);
-    dialog.showMessageBox(mainWindow, {
-      type: 'error',
-      title: 'Server connection Error',
-      message: 'Server is not ready, try again... ',
-      buttons: ['Ok'],
-    }).then(() => {
-      // process.exit(2);
-    });
-  };
-
-  ws.onmessage = (data, flags) => {
-    mainWindow.webContents.send("reload-sig", data.data);
-    mainWindow.webContents.send("log-message", data.data);
-  };
 
   ///////////////////////////////////////
 
 
   ipcMain.on("about-this", (event, arg) => {
     aboutThis.run(mainWindow);
+  });
+
+  ipcMain.on("setting", (event, arg) => {
+    // 현재 셋팅을 보낸다.
+
+    event.returnValue = _ARGUS_GATE_ || "";
+
+  });
+
+  ipcMain.on("setting-update", (event, arg) => {
+    // Setting 값이 유효한지 확인 한다
+    // 셋팅이 유효하면 store에 입력후 재기동 한다.
+    // 유효하지 않으면 다시 입력
+    // console.log(arg);
+
+    store.set("server-info", arg);
+
+    app.relaunch();
+    app.exit();
+
   });
 
   ipcMain.on("check-update", (event, arg) => {
@@ -90,11 +122,40 @@ function init(mainWindow) {
     event.reply('pong', 'Hello!') // async
   });
 
+  // LOGIN
+
+  ipcMain.on("login", (event, arg) => {
+    let url = 'http://' + _ARGUS_GATE_ + '/login';
+    let auth = true; // false;
+
+    if(arg.username === "mhkim") {
+      auth = true;
+    } else {
+      auth = false;
+    }
+
+    // axios.get(url)
+    //   .then(function (response) {
+    //     let retJson = response.data;
+    //
+    //     auth = true;
+    //
+    //   })
+    //   .catch(function (error) {
+    //     console.error(error);
+    //   })
+    //   .then(function () {
+    //   });
+
+    event.returnValue = auth;
+  });
+
+
   // CLIENTS
 
   ipcMain.on("client-list", (event, arg) => {
-    let url = 'http://' + _SEED_GATE_ + '/clients/all';
-    
+    let url = 'http://' + _ARGUS_GATE_ + '/clients/all';
+
     axios.get(url)
       .then(function (response) {
         let retJson = response.data;
@@ -112,7 +173,7 @@ function init(mainWindow) {
 
   ipcMain.on("vm-reset", (event, arg) => {
     let machineId = arg;
-    let url = 'http://' + _SEED_GATE_ + '/vms/reset';
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/reset';
 
     axios({
       url: url,
@@ -137,7 +198,7 @@ function init(mainWindow) {
 
   ipcMain.on("vm-list", (event, arg) => {
     let userId = arg;
-    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
     let vmList = null; // store.get("vm-list");
 
     if(vmList) {
@@ -156,7 +217,7 @@ function init(mainWindow) {
           } else {
             store.set("vm-list", retJson);
           }
-          
+
           event.reply('vm-list', retJson);
         })
         .catch(function (error) {
@@ -170,7 +231,7 @@ function init(mainWindow) {
   ipcMain.on("vm-list-refresh", (event, arg) => {
     let userId = arg;
     let vmList = store.get("vm-list");
-    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
 
     axios.get(url, {
       params: {
@@ -200,7 +261,7 @@ function init(mainWindow) {
 
   ipcMain.on("vm-list-reset", (event, arg) => {
     let userId = arg;
-    let url = 'http://' + _SEED_GATE_ + '/vms/' + userId;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
 
     axios.get(url, {
       params: {
@@ -224,7 +285,7 @@ function init(mainWindow) {
   });
 
   ipcMain.on("vm-screenshot", (event, arg) => {
-    let url = 'http://' + _SEED_GATE_ + '/vms/image/';
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/image/';
     let vmList = store.get("vm-list");
 
     vmList.map((vm) => {
@@ -251,16 +312,16 @@ function init(mainWindow) {
   });
 
   ipcMain.on("vm-screenshot-admin", (event, arg) => {
-    let url = 'http://' + _SEED_GATE_ + '/vms/image/' + arg;
-    
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/image/' + arg;
+
     axios.get(url, {})
       .then(function (response) {
-        
+
         event.reply('vm-screenshot', response.data);
 
       })
       .catch(function (error) {
-        
+
         event.reply('vm-screenshot', BlackScreen);
       })
       .then(function () {

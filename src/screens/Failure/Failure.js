@@ -22,7 +22,7 @@ class Failure extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <FailureCompo />
+          <FailureCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

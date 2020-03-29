@@ -22,7 +22,7 @@ class Alarm extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <AlarmCompo />
+          <AlarmCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );

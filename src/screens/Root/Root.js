@@ -24,7 +24,7 @@ class Root extends Component {
       <Layout>
         <div className={styles.home}>
           {/*<Path />*/}
-          <HelloWorld />
+          <HelloWorld auth={this.props.auth}/>
         </div>
       </Layout>
     );

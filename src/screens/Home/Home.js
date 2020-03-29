@@ -17,6 +17,8 @@ import HelloWorld from "@/components/Home/HelloWorld";
 class Home extends Component {
   constructor(props) {
     super(props);
+
+    this.props = props;
   }
 
   render() {
@@ -24,7 +26,7 @@ class Home extends Component {
       <Layout>
         <div className={styles.home}>
           {/*<Path />*/}
-          <HelloWorld />
+          <HelloWorld  auth={this.props.auth}/>
         </div>
       </Layout>
     );

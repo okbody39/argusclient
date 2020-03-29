@@ -22,7 +22,7 @@ class Client extends Component {
     return (
       <Layout>
         <div className={styles.screen}>
-          <ClientCompo />
+          <ClientCompo auth={this.props.auth}/>
         </div>
       </Layout>
     );
