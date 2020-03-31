@@ -21,11 +21,11 @@
 <!--      </div> -->
       <form>
         <div class="form-group" style="margin-top: 20px;">
-          <label for="serverUrl">서버 주소를 입력해 주세요.</label>
+          <label for="serverUrl">서버 주소를 입력해 주세요. (저장시 앱이 재기동됩니다.)</label>
           <input type="text" class="form-control" id="serverUrl" placeholder="127.0.0.1:8080">
         </div>
-        <button type="submit" class="btn btn-primary" id="save">저장</button>
-        <button type="button" class="btn btn-secondary" id="home">취소</button>
+        <button type="submit" class="btn btn-primary" id="save"> 저장 </button>
+        <button type="button" class="btn btn-secondary" id="cancel"> 취소 </button>
       </form>
 
     </div>
@@ -40,6 +40,12 @@
     ipcRenderer.send('setting-update', {
       "serverUrl": document.getElementById('serverUrl').value,
     });
+    this.close();
+  });
+
+  const cancelBtn = document.getElementById('cancel');
+  saveBtn.addEventListener('click', () => {
+    ipcRenderer.send('setting-cancel');
     this.close();
   });
 

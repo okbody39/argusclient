@@ -105,13 +105,30 @@ function init(mainWindow) {
     // Setting 값이 유효한지 확인 한다
     // 셋팅이 유효하면 store에 입력후 재기동 한다.
     // 유효하지 않으면 다시 입력
-    // console.log(arg);
 
-    store.set("server-info", arg);
+    let url = "http://" + arg + "/conninfo";
 
-    app.relaunch();
-    app.exit();
+    axios.get(url)
+    .then(function (response) {
+      let encJson = response.data;
+  
+      console.log(encJson);
 
+      store.set("server-info", arg);
+      
+      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
+      app.exit(0);
+    })
+    .catch(function (error) {
+      console.error(error);
+    })
+    .then(function () {
+    });
+
+  });
+
+  ipcMain.on("setting-cancel", (event, arg) => {
+    app.exit(0);
   });
 
   ipcMain.on("check-update", (event, arg) => {
@@ -125,29 +142,37 @@ function init(mainWindow) {
   // LOGIN
 
   ipcMain.on("login", (event, arg) => {
-    let url = 'http://' + _ARGUS_GATE_ + '/login';
-    let auth = true; // false;
+    let url = 'http://' + _ARGUS_GATE_ + '/auth';
+    let auth = false;
 
-    if(arg.username === "mhkim") {
-      auth = true;
-    } else {
-      auth = false;
-    }
+    axios({
+      url: url,
+      method: 'post',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: `username=${encodeURIComponent(arg.username)}&password=${encodeURIComponent(arg.password)}`,
+  })
+    .then(function (response) {
+      let retJson = response.data;
+      // console.log(retJson, typeof retJson);
+      auth = retJson; // === "true";
+      // event.returnValue = auth;
+    })
+    .catch(function (error) {
+      console.error(error);
+    })
+    .then(function () {
+      event.returnValue = auth;
+    });
 
-    // axios.get(url)
-    //   .then(function (response) {
-    //     let retJson = response.data;
-    //
-    //     auth = true;
-    //
-    //   })
-    //   .catch(function (error) {
-    //     console.error(error);
-    //   })
-    //   .then(function () {
-    //   });
+    // if(arg.username === "mhkim") {
+    //   auth = true;
+    // } else {
+    //   auth = false;
+    // }
 
-    event.returnValue = auth;
+    
+
+    
   });
 
 
