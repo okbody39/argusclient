@@ -35,15 +35,16 @@ function autoUpdateCheck(mainWindow) {
   autoUpdater.init(mainWindow);
 }
 
-function init(mainWindow) {
-  let serverInfo = store.get("server-info", {}); // "211.232.94.235:8000"; //
-
+async function init(mainWindow) {
+  let serverInfo = store.get("server-info", {});
+  let authInfo = await mainWindow.webContents.executeJavaScript('localStorage.getItem("ARGUS.USERTOKEN")') || {};
+  
   _ARGUS_GATE_ = serverInfo.serverUrl;
 
   if(_ARGUS_GATE_) {
     //
     try {
-      ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + 'mhkim');
+      ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + authInfo.username);
     } catch(e) {
       console.error(e);
     }
@@ -106,25 +107,39 @@ function init(mainWindow) {
     // 셋팅이 유효하면 store에 입력후 재기동 한다.
     // 유효하지 않으면 다시 입력
 
-    let url = "http://" + arg + "/conninfo";
+    // console.log(arg);
 
-    axios.get(url)
-    .then(function (response) {
-      let encJson = response.data;
+    if(arg.serverUrl) {
+      let url = "http://" + arg.serverUrl + "/conninfo";
+
+      axios.get(url)
+      .then(function (response) {
+        let encJson = response.data;
+    
+        // console.log(encJson);
   
-      console.log(encJson);
+        store.set("server-info", arg);
+        
+        app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
+        app.exit(0);
+      })
+      .catch(function (error) {
+        console.error(error);
+        // console.log(arg);
+      })
+      .then(function () {
+      });
+    } else {
+      alert('ERROR');
+    }
 
-      store.set("server-info", arg);
-      
-      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
-      app.exit(0);
-    })
-    .catch(function (error) {
-      console.error(error);
-    })
-    .then(function () {
-    });
+    
 
+  });
+
+  ipcMain.on("setting-reset", (event, arg) => {
+    store.set("server-info", {});
+    settingThis.run(mainWindow);
   });
 
   ipcMain.on("setting-cancel", (event, arg) => {
@@ -145,6 +160,8 @@ function init(mainWindow) {
     let url = 'http://' + _ARGUS_GATE_ + '/auth';
     let auth = false;
 
+    // console.log(url, arg);
+
     axios({
       url: url,
       method: 'post',
@@ -156,6 +173,12 @@ function init(mainWindow) {
       // console.log(retJson, typeof retJson);
       auth = retJson; // === "true";
       // event.returnValue = auth;
+
+      store.set("auth-info", {
+        username: arg.username,
+        password: arg.password,
+      });
+
     })
     .catch(function (error) {
       console.error(error);
