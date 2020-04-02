@@ -54,6 +54,10 @@ class Header extends Component {
     // console.log("check-update");
   }
 
+  reconfiguration() {
+    window.ipcRenderer.send("setting-reset");
+  }
+
   about() {
     // window.api.receive("fromMain", (data) => {
     //   console.log(`Received ${data} from main process`);
@@ -237,6 +241,10 @@ class Header extends Component {
             <Menu.Item onClick={this.checkUpdate.bind(this)}>
                 <Icon type="download" />
                 <span>업데이트 확인</span>
+            </Menu.Item>
+            <Menu.Item onClick={this.reconfiguration.bind(this)}>
+                <Icon type="download" />
+                <span>재설정</span>
             </Menu.Item>
             <Menu.Item>
               <Link to="/change/password">
