@@ -29,67 +29,80 @@ const props = {
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
-const settingThis = require('./setting');
+// const settingThis = require('./setting');
 
 function autoUpdateCheck(mainWindow) {
   autoUpdater.init(mainWindow);
 }
 
-async function init(mainWindow) {
-  let serverInfo = store.get("server-info", {});
-  let authInfo = await mainWindow.webContents.executeJavaScript('localStorage.getItem("ARGUS.USERTOKEN")') || {};
+function init(mainWindow) {
   
-  _ARGUS_GATE_ = serverInfo.serverUrl;
+  ipcMain.on("start-app", (event, arg) => {
+    let serverInfo = store.get("server-info", {});
+    let authInfo = store.get("auth-info", {}); 
+    
+    _ARGUS_GATE_ = serverInfo.serverUrl;
 
-  if(_ARGUS_GATE_) {
-    //
-    try {
-      ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + authInfo.username);
-    } catch(e) {
-      console.error(e);
+    if(_ARGUS_GATE_ && authInfo.username) {
+      
+      if(ws) {
+
+      } else {
+        
+        try {
+          ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + authInfo.username);
+        } catch(e) {
+          console.error(e);
+        }
+  
+        ws.onopen = () => {
+          //
+        };
+  
+        ws.onclose = () => {
+          dialog.showMessageBox(mainWindow, {
+            type: 'error',
+            title: 'Server connection Error',
+            message: 'Disconnect Server, Try again... ',
+            buttons: ['Ok'],
+          }).then(() => {
+            process.exit(2);
+          });
+  
+        };
+  
+        ws.onerror = (err) => {
+          // console.log(err);
+          dialog.showMessageBox(mainWindow, {
+            type: 'error',
+            title: 'Server connection Error',
+            message: 'Server is not ready, Try again... ',
+            buttons: ['Ok'],
+          }).then(() => {
+            process.exit(2);
+          });
+        };
+  
+        ws.onmessage = (data, flags) => {
+          mainWindow.webContents.send("reload-sig", data.data);
+          mainWindow.webContents.send("log-message", data.data);
+        };
+      }
+
+      event.reply('start-app');
+
+    } else {
+      // settingThis.run(mainWindow);
+      dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'Application Error',
+        message: 'Invalid configuration. Try again... ',
+        buttons: ['Ok'],
+      }).then(() => {
+        process.exit(2);
+      });
     }
-
-    ws.onopen = () => {
-      //
-    };
-
-    ws.onclose = () => {
-      dialog.showMessageBox(mainWindow, {
-        type: 'error',
-        title: 'Server connection Error',
-        message: 'Disconnect Server, try again... ', // + err.error.errno,
-        buttons: ['Ok'],
-      }).then(() => {
-        // process.exit(2);
-      });
-
-    };
-
-    ws.onerror = (err) => {
-      // console.log(err);
-      dialog.showMessageBox(mainWindow, {
-        type: 'error',
-        title: 'Server connection Error',
-        message: 'Server is not ready, try again... ',
-        buttons: ['Ok'],
-      }).then(() => {
-        // process.exit(2);
-      });
-    };
-
-    ws.onmessage = (data, flags) => {
-      mainWindow.webContents.send("reload-sig", data.data);
-      mainWindow.webContents.send("log-message", data.data);
-    };
-
-  } else {
-    settingThis.run(mainWindow);
-  }
-
-
-
-  ///////////////////////////////////////
-
+  });
 
   ipcMain.on("about-this", (event, arg) => {
     aboutThis.run(mainWindow);
@@ -119,18 +132,24 @@ async function init(mainWindow) {
         // console.log(encJson);
   
         store.set("server-info", arg);
+        // event.returnValue = true;
         
-        app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
-        app.exit(0);
+        // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
+        // app.exit(0);
+
+        event.reply('setting-update', true);
+
       })
       .catch(function (error) {
         console.error(error);
         // console.log(arg);
+        event.reply('setting-update', false);
       })
       .then(function () {
       });
     } else {
-      alert('ERROR');
+      // alert('ERROR');
+      event.reply('setting-update', false);
     }
 
     
@@ -139,7 +158,7 @@ async function init(mainWindow) {
 
   ipcMain.on("setting-reset", (event, arg) => {
     store.set("server-info", {});
-    settingThis.run(mainWindow);
+    // settingThis.run(mainWindow);
   });
 
   ipcMain.on("setting-cancel", (event, arg) => {
@@ -151,7 +170,7 @@ async function init(mainWindow) {
   });
 
   ipcMain.on("ping", (event, arg) => {
-    event.reply('pong', 'Hello!') // async
+    event.reply('pong', 'Hello!'); // async
   });
 
   // LOGIN
@@ -193,9 +212,6 @@ async function init(mainWindow) {
     //   auth = false;
     // }
 
-    
-
-    
   });
 
 

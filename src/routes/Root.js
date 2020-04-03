@@ -27,12 +27,34 @@ import Admin from "@/screens/Admin/Admin";
 import AdminClient from "@/screens/Admin/Client";
 
 function PrivateRoute ({component: Component, ...rest}) {
+  let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
+  let UserToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
 
-  let userToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
-  let token = JSON.parse(userToken);
+  // console.log(ConnInfo, UserToken);
+
+  let connInfo = JSON.parse(ConnInfo);
+  let userToken = JSON.parse(UserToken);
+
   let auth = false;
+  let redirectPath = "/signin";
+  
+  if(connInfo.serverUrl && connInfo.serverUrl.length > 0) {
+    //
+  } else {
 
-  if(token.username && token.username.length > 0) {
+    redirectPath = "/signup";
+
+    return (
+      <Route
+        {...rest}
+        render={(props) => 
+          <Redirect to={{pathname: redirectPath, state: {from: props.location}}} />
+        }
+      />
+    )
+  }
+
+  if(userToken.username && userToken.username.length > 0) {
     auth = true;
   }
 
@@ -40,10 +62,10 @@ function PrivateRoute ({component: Component, ...rest}) {
     <Route
       {...rest}
       render={(props) => auth
-        ? <Component {...props} auth={token.username}/>
-        : <Redirect to={{pathname: '/signin', state: {from: props.location}}} />}
+        ? <Component {...props} auth={userToken.username}/>
+        : <Redirect to={{pathname: redirectPath, state: {from: props.location}}} />}
     />
-  )
+  );
 }
 
 const Routes = () => (
@@ -54,6 +76,7 @@ const Routes = () => (
 
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
+      <PrivateRoute path="/settings" component={Signup} />
 
       <PrivateRoute path="/failure" component={Failure} />
       <PrivateRoute path="/notice" component={Notice} />
@@ -62,7 +85,6 @@ const Routes = () => (
       <PrivateRoute path="/change/password" component={ChangePassword} />
       <PrivateRoute path="/change" component={Change} />
 
-      <PrivateRoute path="/settings" component={Settings} />
 
       <PrivateRoute path="/history/change" component={HistoryChange} />
       <PrivateRoute path="/history/failure" component={HistoryFailure} />

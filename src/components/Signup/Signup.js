@@ -1,6 +1,6 @@
 // Libs
 import React, { Component } from "react";
-import { Button, Checkbox, Form, Input, message, Row, Card } from 'antd';
+import { Button, Checkbox, Form, Input, message, Row, Card, notification } from 'antd';
 import { Eye, Mail, Triangle, User, Server } from 'react-feather';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
@@ -28,13 +28,42 @@ class Signup extends Component {
   constructor(props) {
     super(props);
 
+    let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
+    let connInfo = JSON.parse(ConnInfo);
+
     this.state = {
       // username: "",
       // password: "",
       loading: false,
+      serverUrl: connInfo.serverUrl,
     };
 
     // this.history = useHistory();
+  }
+
+  componentDidMount() {
+    const { form } = this.props;
+    
+    window.ipcRenderer.on("setting-update", (event, arg) => {
+      if(arg) {
+        let value = { serverUrl: form.getFieldValue("serverUrl") };
+
+        localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
+        this.props.history.push('/');
+        
+      } else {
+        notification.error({
+          message: '서버설정 실패',
+          description:
+            '서버 정보를 다시 확인해 주세요.',
+        });
+      }
+      this.setState({
+        loading: false,
+      });
+
+    });
+
   }
 
   handleSubmit(event) {
@@ -45,13 +74,20 @@ class Signup extends Component {
     form.validateFields((err, values)  => {
       if (!err) {
 
-        let formData = JSON.stringify({
-          code: values,
-        });
+        // let formData = JSON.stringify({
+        //   code: values,
+        // });
 
         // console.log(formData);
-        this.props.history.push('/signin');
+        // this.props.history.push('/signin');
 
+        this.setState({
+          loading: true,
+        });
+
+        ipcRenderer.send('setting-update', values);
+        
+        
       }
     });
   }
@@ -86,16 +122,17 @@ class Signup extends Component {
 
           >
             <FormItem label="서버 주소">
-              {form.getFieldDecorator('serverurl', {
+              {form.getFieldDecorator('serverUrl', {
+                initialValue: this.state.serverUrl,
                 rules: [
                   {
                     required: true,
                     message: '서버 주소을 입력하세요!'
                   },
-                  {
-                    type: 'url',
-                    message: '서버 주소 형식에 맞지 않습니다.'
-                  }
+                  // {
+                  //   type: 'url',
+                  //   message: '서버 주소 형식에 맞지 않습니다.'
+                  // }
                 ]
               })(
                 <Input
@@ -106,13 +143,13 @@ class Signup extends Component {
                       style={{ color: 'rgba(0,0,0,.25)' }}
                     />
                   }
-                  placeholder="http://127.0.0.1:8080"
+                  placeholder="127.0.0.1:8080"
                 />
               )}
             </FormItem>
 
             <FormItem>
-              <Button type="primary" htmlType="submit" block className="mb-3">
+              <Button type="primary" htmlType="submit" block className="mb-3" loading={this.state.loading}>
                 저장
               </Button>
             </FormItem>

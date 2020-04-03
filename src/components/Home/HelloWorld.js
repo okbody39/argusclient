@@ -110,13 +110,17 @@ class HelloWorld extends Component {
   componentDidMount() {
 
     setTimeout(() => {
+      window.ipcRenderer.send("start-app");
+    }, 500);
+
+    window.ipcRenderer.on("start-app", (event, arg) => {
       window.ipcRenderer.send("vm-list", this.props.auth);
       window.ipcRenderer.send("vm-screenshot");
 
       this.setState({
         loading: true,
       });
-    }, 500);
+    });
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
 

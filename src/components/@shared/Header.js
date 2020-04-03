@@ -242,10 +242,6 @@ class Header extends Component {
                 <Icon type="download" />
                 <span>업데이트 확인</span>
             </Menu.Item>
-            <Menu.Item onClick={this.reconfiguration.bind(this)}>
-                <Icon type="download" />
-                <span>재설정</span>
-            </Menu.Item>
             <Menu.Item>
               <Link to="/change/password">
                 <Icon type="safety-certificate" />
