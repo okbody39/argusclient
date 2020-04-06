@@ -137,7 +137,7 @@ function init(mainWindow) {
         // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
         // app.exit(0);
 
-        event.reply('setting-update', true);
+        event.reply('setting-update', arg);
 
       })
       .catch(function (error) {
@@ -223,6 +223,8 @@ function init(mainWindow) {
     axios.get(url)
       .then(function (response) {
         let retJson = response.data;
+
+        // console.log(retJson);
 
         event.reply('client-list', retJson);
       })

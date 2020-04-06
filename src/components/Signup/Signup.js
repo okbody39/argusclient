@@ -46,7 +46,9 @@ class Signup extends Component {
     
     window.ipcRenderer.on("setting-update", (event, arg) => {
       if(arg) {
-        let value = { serverUrl: form.getFieldValue("serverUrl") };
+        let value = arg; // { serverUrl: form.getFieldValue("serverUrl") };
+
+        // console.log("ipc", value);
 
         localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
         this.props.history.push('/');
@@ -64,6 +66,10 @@ class Signup extends Component {
 
     });
 
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('setting-update');
   }
 
   handleSubmit(event) {
@@ -84,6 +90,8 @@ class Signup extends Component {
         this.setState({
           loading: true,
         });
+
+        console.log("submit", values);
 
         ipcRenderer.send('setting-update', values);
         
