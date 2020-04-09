@@ -4,13 +4,13 @@ import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Modal,
   Steps, Result, Typography,
-  Table, Input, Form, Slider, Radio, Select, Checkbox,InputNumber,
+  Table, Input, Form, Slider, Radio, Select, Checkbox,InputNumber, notification,
 } from 'antd';
 const FormItem = Form.Item;
 const { Step } = Steps;
 const { Option } = Select;
 const { Paragraph, Text, Title } = Typography;
-
+import { Eye, Mail, Triangle, User, Server } from 'react-feather';
 import Highlighter from 'react-highlight-words';
 
 import { Plus } from 'react-feather';
@@ -29,12 +29,81 @@ import { withRouter } from "react-router-dom";
 class Settings extends Component {
   constructor(props) {
     super(props);
+
+    let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
+    let connInfo = JSON.parse(ConnInfo);
+
     this.state = {
+      // username: "",
+      // password: "",
+      loading: false,
+      serverUrl: connInfo.serverUrl,
     };
+
+    // this.history = useHistory();
+  }
+
+  componentDidMount() {
+    const { form } = this.props;
+    
+    window.ipcRenderer.on("setting-update", (event, arg) => {
+      if(arg) {
+        let value = arg; // { serverUrl: form.getFieldValue("serverUrl") };
+
+        // console.log("ipc", value);
+
+        localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
+        this.props.history.push('/');
+        
+      } else {
+        notification.error({
+          message: '서버설정 실패',
+          description:
+            '서버 정보를 다시 확인해 주세요.',
+        });
+      }
+      this.setState({
+        loading: false,
+      });
+
+    });
+
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('setting-update');
+  }
+
+  handleSubmit(event) {
+    const { form } = this.props;
+
+    event.preventDefault();
+
+    form.validateFields((err, values)  => {
+      if (!err) {
+
+        // let formData = JSON.stringify({
+        //   code: values,
+        // });
+
+        // console.log(formData);
+        // this.props.history.push('/signin');
+
+        this.setState({
+          loading: true,
+        });
+
+        console.log("submit", values);
+
+        ipcRenderer.send('setting-update', values);
+        
+        
+      }
+    });
   }
 
   render() {
-    const { getFieldDecorator } = this.props.form;
+    const { form } = this.props;
     const formItemLayout = {
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
@@ -47,116 +116,51 @@ class Settings extends Component {
             <Title level={2}>Settings</Title>
             <Divider />
             <Paragraph>
-              In the process of internal desktop applications development, many different design specs and
-              implementations would be involved, which might cause designers and developers difficulties and
-              duplication and reduce the efficiency of development.
+              서버 IP가 변경된 경우가 아니면 수정하지 말아 주세요. 변경시 서비스가 정상적으로 동작하지 않을 수있습니다.
             </Paragraph>
           </Typography>
-          <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-            <Form.Item label="Plain Text">
-              <span className="ant-form-text">China</span>
-            </Form.Item>
-            <Form.Item label="Select" hasFeedback>
-              {getFieldDecorator('select', {
-                rules: [{ required: true, message: 'Please select your country!' }],
-              })(
-                <Select placeholder="Please select a country">
-                  <Option value="china">China</Option>
-                  <Option value="usa">U.S.A</Option>
-                </Select>,
-              )}
-            </Form.Item>
+          <Form
+             {...formItemLayout}
+            onSubmit={this.handleSubmit.bind(this)}
 
-            <Form.Item label="Select[multiple]">
-              {getFieldDecorator('select-multiple', {
+          >
+            <FormItem label="서버 주소">
+              {form.getFieldDecorator('serverUrl', {
+                initialValue: this.state.serverUrl,
                 rules: [
-                  { required: true, message: 'Please select your favourite colors!', type: 'array' },
-                ],
+                  {
+                    required: true,
+                    message: '서버 주소을 입력하세요!'
+                  },
+                  // {
+                  //   type: 'url',
+                  //   message: '서버 주소 형식에 맞지 않습니다.'
+                  // }
+                ]
               })(
-                <Select mode="multiple" placeholder="Please select favourite colors">
-                  <Option value="red">Red</Option>
-                  <Option value="green">Green</Option>
-                  <Option value="blue">Blue</Option>
-                </Select>,
+                <Input
+                  prefix={
+                    <Server
+                      size={16}
+                      strokeWidth={1}
+                      style={{ color: 'rgba(0,0,0,.25)' }}
+                    />
+                  }
+                  placeholder="127.0.0.1:8080"
+                />
               )}
-            </Form.Item>
-
-            <Form.Item label="InputNumber">
-              {getFieldDecorator('input-number', { initialValue: 3 })(<InputNumber min={1} max={10} />)}
-              <span className="ant-form-text"> machines</span>
-            </Form.Item>
-
-            <Form.Item label="Switch">
-              {getFieldDecorator('switch', { valuePropName: 'checked' })(<Switch />)}
-            </Form.Item>
-
-            <Form.Item label="Slider">
-              {getFieldDecorator('slider')(
-                <Slider
-                  marks={{
-                    0: 'A',
-                    20: 'B',
-                    40: 'C',
-                    60: 'D',
-                    80: 'E',
-                    100: 'F',
-                  }}
-                />,
-              )}
-            </Form.Item>
-
-            <Form.Item label="Radio.Group">
-              {getFieldDecorator('radio-group')(
-                <Radio.Group>
-                  <Radio value="a">item 1</Radio>
-                  <Radio value="b">item 2</Radio>
-                  <Radio value="c">item 3</Radio>
-                </Radio.Group>,
-              )}
-            </Form.Item>
-
-            <Form.Item label="Radio.Button">
-              {getFieldDecorator('radio-button')(
-                <Radio.Group>
-                  <Radio.Button value="a">item 1</Radio.Button>
-                  <Radio.Button value="b">item 2</Radio.Button>
-                  <Radio.Button value="c">item 3</Radio.Button>
-                </Radio.Group>,
-              )}
-            </Form.Item>
-
-            <Form.Item label="Checkbox.Group">
-              {getFieldDecorator('checkbox-group', {
-                initialValue: ['A', 'B'],
-              })(
-                <Checkbox.Group style={{ width: '100%' }}>
-                  <Row>
-                    <Col span={8}>
-                      <Checkbox value="A">A</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox disabled value="B">
-                        B
-                      </Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value="C">C</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value="D">D</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value="E">E</Checkbox>
-                    </Col>
-                  </Row>
-                </Checkbox.Group>,
-              )}
-            </Form.Item>
+            </FormItem>
             <Form.Item wrapperCol={{ span: 12, offset: 6 }}>
-              <Button type="primary" htmlType="submit">
-                Submit
+              <Button type="primary" htmlType="submit" loading={this.state.loading}>
+              저장
               </Button>
             </Form.Item>
+            {/* <FormItem>
+              <Button type="primary" htmlType="submit" block className="mb-3" loading={this.state.loading}>
+                저장
+              </Button>
+            </FormItem> */}
+
           </Form>
         </div>
       </div>

@@ -1,5 +1,5 @@
 const os = require('os');
-const { app, BrowserWindow, Menu, remote, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, Menu, remote, ipcMain, dialog, Notification } = require("electron");
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
@@ -84,8 +84,47 @@ function init(mainWindow) {
         };
   
         ws.onmessage = (data, flags) => {
-          mainWindow.webContents.send("reload-sig", data.data);
-          mainWindow.webContents.send("log-message", data.data);
+          // data 플래그로 작업 분기할 것...
+           /*
+            from ArgusServer server.js
+
+            data.data = 
+            {
+              to: "", // ALL or ID
+              title: "",
+              body: "",
+              action: ""
+            }
+          */
+
+          // console.log(data.data);
+
+          let jsonData = JSON.parse(data.data);
+
+          if(jsonData.action === "USER_VM_REFRESH") {
+            mainWindow.webContents.send("reload-sig");
+
+           
+            
+          } else if(jsonData.action === "ADM_LOG_MESSAGE") {
+            mainWindow.webContents.send("log-message", data.data);
+          }
+
+          if(jsonData.notification) {
+            let iconAddress = path.join(__dirname, "../resources/icons/seedclient_icon.ico");
+            const notif={
+              title: jsonData.title,
+              body: jsonData.body,
+              icon: iconAddress
+            };
+            let myNotification = new Notification(notif);
+            
+            myNotification.show();
+  
+            myNotification.onclick = () => {
+              // console.log('Notification clicked')
+            };
+          }
         };
       }
 
@@ -215,7 +254,7 @@ function init(mainWindow) {
   });
 
 
-  // CLIENTS
+  // CLIENTSl
 
   ipcMain.on("client-list", (event, arg) => {
     let url = 'http://' + _ARGUS_GATE_ + '/clients/all';

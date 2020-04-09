@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Layout } from "antd";
 import { Resize, ResizeVertical, ResizeHorizon } from "react-resize-layout";
 // Styles
-import styles from "./App.scss";
+import styles from "./AppAdmin.scss";
 // Components
 import Header from "@/components/@shared/Header";
 import HeaderAdmin from "@/components/@shared/HeaderAdmin";

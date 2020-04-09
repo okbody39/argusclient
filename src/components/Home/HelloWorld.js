@@ -157,8 +157,10 @@ class HelloWorld extends Component {
 
       window.ipcRenderer.send("vm-screenshot");
 
+      // console.log(arg);
+
       this.setState({
-        vmlist: JSON.parse(arg),
+        // vmlist: JSON.parse(arg),
         loading: false,
       });
 

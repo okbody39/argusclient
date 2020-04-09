@@ -76,7 +76,7 @@ const Routes = () => (
 
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
-      <PrivateRoute path="/settings" component={Signup} />
+      <PrivateRoute path="/settings" component={Settings} />
 
       <PrivateRoute path="/failure" component={Failure} />
       <PrivateRoute path="/notice" component={Notice} />
