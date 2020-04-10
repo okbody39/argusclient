@@ -17,8 +17,8 @@ const crypto = require('crypto');
 const ENC_KEY = "bf3c199c2470cb1759907b1e0905c17b";
 const IV = "5185207c72eec9e4";
 
-const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
-const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+// const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
+// const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
 
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 
@@ -168,6 +168,7 @@ function init(mainWindow) {
   });
 
   ipcMain.on("setting-update", (event, arg) => {
+    let decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
     // Setting 값이 유효한지 확인 한다
     // 셋팅이 유효하면 store에 입력후 재기동 한다.
     // 유효하지 않으면 다시 입력
@@ -179,10 +180,14 @@ function init(mainWindow) {
 
       axios.get(url)
       .then(function (response) {
-        let encJson = response.data;
-        let decVal = decipher.update(encJson, 'base64', 'utf8');
+
+        let encVal = response.data;
+        let decVal = decipher.update(encVal, 'base64', 'utf8');
+
         decVal += decipher.final('utf8');
         let decJson = JSON.parse(decVal);
+
+        decJson.serverUrl = arg.serverUrl;
 
         store.set("server-info", arg);
         // event.returnValue = true;
@@ -247,7 +252,7 @@ function init(mainWindow) {
       method: 'post',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       data: `username=${encodeURIComponent(arg.username)}&password=${encodeURIComponent(arg.password)}`,
-  })
+    })
     .then(function (response) {
       let retJson = response.data;
       // console.log(retJson, typeof retJson);

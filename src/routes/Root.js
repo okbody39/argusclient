@@ -25,6 +25,11 @@ import VMCreate from "@/screens/VM/Create";
 // ADMIN
 import Admin from "@/screens/Admin/Admin";
 import AdminClient from "@/screens/Admin/Client";
+import AdminApprove from "@/screens/Admin/Approve";
+import AdminFailure from "@/screens/Admin/Failure";
+import AdminNotice from "@/screens/Admin/Notice";
+import AdminAlarm from "@/screens/Admin/Alarm";
+import AdminReport from "@/screens/Admin/Report";
 
 function PrivateRoute ({component: Component, ...rest}) {
   let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
@@ -97,6 +102,11 @@ const Routes = () => (
       {/* ADMIN */}
       <PrivateRoute exact path='/admin' component={Admin} />
       <PrivateRoute path="/admin/client" component={AdminClient} />
+      <PrivateRoute path="/admin/approve" component={AdminApprove} />
+      <PrivateRoute path="/admin/failure" component={AdminFailure} />
+      <PrivateRoute path="/admin/notice" component={AdminNotice} />
+      <PrivateRoute path="/admin/alarm" component={AdminAlarm} />
+      <PrivateRoute path="/admin/report" component={AdminReport} />
 
     </Switch>
   </HashRouter>

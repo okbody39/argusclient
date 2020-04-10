@@ -97,6 +97,26 @@ class Header extends Component {
             <Link to="/admin">가상머신</Link>
           </Menu.Item>
 
+          <Menu.Item key="/admin/approve" >
+            <Link to="/admin/approve">
+              <Badge count={1}>
+                승인
+              </Badge>
+            </Link>
+          </Menu.Item>
+
+          <Menu.Item key="/admin/failure" >
+              <Link to="/admin/failure">
+                <Badge count={5}>
+                  장애
+                </Badge>
+              </Link>
+          </Menu.Item>
+
+          <Menu.Item key="/admin/report" >
+            <Link to="/admin/report"> 통계 </Link>
+          </Menu.Item>
+
           {/*<Menu.Item key="/history/failure">*/}
           {/*  <Link to="/history/failure">장애신고</Link>*/}
           {/*</Menu.Item>*/}
@@ -120,53 +140,41 @@ class Header extends Component {
             </Link>
           </Menu.Item>
 
-          <Menu.Item>
-            <Link to={{
-              pathname: "/admin",
-              state: "Reset"
-            }}>
-              <div className={styles.menusubitem}>
-                <RefreshCcw size={22} strokeWidth={1} />
-              </div>
-            </Link>
-          </Menu.Item>
+          {/*<SubMenu*/}
+          {/*  title={*/}
+          {/*    <div className={styles.menusubitem}>*/}
+          {/*    <Badge count={5}>*/}
+          {/*        <Bell size={22} strokeWidth={1} />*/}
+          {/*    </Badge>*/}
+          {/*    </div>*/}
 
+          {/*  }*/}
+          {/*  popupClassName={styles.popup}*/}
+          {/*>*/}
+          {/*  <Menu.Item*/}
+          {/*    className="p-0 bg-transparent"*/}
+          {/*    style={{ height: 'auto' }}*/}
+          {/*  >*/}
+          {/*    <List*/}
+          {/*      className="header-notifications"*/}
+          {/*      itemLayout="horizontal"*/}
+          {/*      dataSource={notifications}*/}
+          {/*      // footer={<div>5 Notifications</div>}*/}
+          {/*      renderItem={item => (*/}
+          {/*        <div className={styles.inner}>*/}
+          {/*          <List.Item>*/}
+          {/*            <List.Item.Meta*/}
+          {/*              // avatar={item.avatar}*/}
+          {/*              title={<a>{item.title}</a>}*/}
+          {/*              description={<small>{item.description}</small>}*/}
+          {/*            />*/}
+          {/*          </List.Item>*/}
+          {/*        </div>*/}
+          {/*      )}*/}
+          {/*    />*/}
 
-          <SubMenu
-            title={
-              <div className={styles.menusubitem}>
-              <Badge count={5}>
-                  <Bell size={22} strokeWidth={1} />
-              </Badge>
-              </div>
-
-            }
-            popupClassName={styles.popup}
-          >
-            <Menu.Item
-              className="p-0 bg-transparent"
-              style={{ height: 'auto' }}
-            >
-              <List
-                className="header-notifications"
-                itemLayout="horizontal"
-                dataSource={notifications}
-                // footer={<div>5 Notifications</div>}
-                renderItem={item => (
-                  <div className={styles.inner}>
-                    <List.Item>
-                      <List.Item.Meta
-                        // avatar={item.avatar}
-                        title={<a>{item.title}</a>}
-                        description={<small>{item.description}</small>}
-                      />
-                    </List.Item>
-                  </div>
-                )}
-              />
-
-            </Menu.Item>
-          </SubMenu>
+          {/*  </Menu.Item>*/}
+          {/*</SubMenu>*/}
 
           <SubMenu
             title={
@@ -178,49 +186,18 @@ class Header extends Component {
           >
 
             <Menu.Item  style={{width: 200}}>
-              <Link to="/notice">
+              <Link to="/admin/notice">
                 <Icon type="notification" />
                 <span>공지사항</span>
 
               </Link>
             </Menu.Item>
             <Menu.Item>
-              <Link to="/alarm">
+              <Link to="/admin/alarm">
                 <Icon type="bell" />
                 <span>알림목록</span>
-
               </Link>
             </Menu.Item>
-
-            <Menu.Divider />
-
-            <SubMenu
-              key="sub1"
-              title={
-                <span>
-                  <Icon type="history" />
-                  <span>이력조회</span>
-                </span>
-              }
-              popupClassName={styles.popup}
-            >
-
-              <Menu.Item>
-                <Link to="/history/change">
-                  변경이력
-                </Link>
-              </Menu.Item>
-              <Menu.Item>
-                <Link to="/history/failure">
-                  장애이력
-                </Link>
-              </Menu.Item>
-              <Menu.Item>
-                <Link to="/history/access">
-                  접속이력
-                </Link>
-              </Menu.Item>
-            </SubMenu>
 
             <Menu.Divider />
 

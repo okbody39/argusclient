@@ -47,7 +47,17 @@ class Settings extends Component {
   componentDidMount() {
     const { form } = this.props;
 
+    let connInfo = localStorage.getItem("ARGUS.CONNINFO");
+
+    if(connInfo) {
+      console.log(connInfo);
+      this.setState({
+        connInfo: JSON.parse(connInfo),
+      });
+    }
+
     window.ipcRenderer.on("setting-update", (event, arg) => {
+
       if(arg) {
         let value = arg; // { serverUrl: form.getFieldValue("serverUrl") };
 
@@ -128,7 +138,7 @@ class Settings extends Component {
       <div className={styles.container}>
         <div className={styles.inner}>
           <Typography>
-            <Title level={2}>Settings</Title>
+            <Title level={2}>설정</Title>
             <Divider />
             <Paragraph>
               서버 IP가 변경된 경우가 아니면 수정하지 말아 주세요. 변경시 서비스가 정상적으로 동작하지 않을 수있습니다.<br/>
@@ -182,17 +192,21 @@ class Settings extends Component {
 
           </Form>
 
-          <Descriptions title="User Info" bordered>
-            <Descriptions.Item label="Product">Cloud Database</Descriptions.Item>
-            <Descriptions.Item label="Billing Mode">Prepaid</Descriptions.Item>
-            <Descriptions.Item label="Automatic Renewal">YES</Descriptions.Item>
-            <Descriptions.Item label="Order time">2018-04-24 18:00:00</Descriptions.Item>
-            <Descriptions.Item label="Usage Time" span={2}>
-              2019-04-24 18:00:00
-            </Descriptions.Item>
-            <Descriptions.Item label="Status" span={3}>
-              <Badge status="processing" text="Running" />
-            </Descriptions.Item>
+          <Descriptions title="Connection Info" bordered column={2}>
+            <Descriptions.Item label="Domain">{ this.state.connInfo.Domain || "" }</Descriptions.Item>
+            <Descriptions.Item label="View Server">{ this.state.connInfo.ViewServer || "" }</Descriptions.Item>
+            {/*<Descriptions.Item label="Server Port">{ this.state.connInfo.ServerPort || "" }</Descriptions.Item>*/}
+            <Descriptions.Item label="Cluster Port">{ this.state.connInfo.ClusterPort || "" }</Descriptions.Item>
+            <Descriptions.Item label="Bridge Port">{ this.state.connInfo.BridgePort || "" }</Descriptions.Item>
+
+            {/*<Descriptions.Item label="Automatic Renewal">YES</Descriptions.Item>*/}
+            {/*<Descriptions.Item label="Order time">2018-04-24 18:00:00</Descriptions.Item>*/}
+            {/*<Descriptions.Item label="Usage Time" span={2}>*/}
+            {/*  2019-04-24 18:00:00*/}
+            {/*</Descriptions.Item>*/}
+            {/*<Descriptions.Item label="Status" span={3}>*/}
+            {/*  <Badge status="processing" text="Running" />*/}
+            {/*</Descriptions.Item>*/}
           </Descriptions>
 
         </div>

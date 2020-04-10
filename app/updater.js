@@ -96,7 +96,7 @@ function updateModal(parent) {
     width: 500, height: height,
     'parent': parent,
     'show': false,
-    // 'modal': true,
+    'modal': false,
     'alwaysOnTop' : true,
     // 'title' : 'New update!',
     'autoHideMenuBar': true,

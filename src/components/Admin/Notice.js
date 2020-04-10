@@ -277,7 +277,11 @@ class Notice extends Component {
           bodyStyle={{padding: 0}}
           bordered={false}
           title="공지사항"
-
+          extra={
+            <Button onClick={this.handleEditor} type="link">
+              작성하기
+            </Button>
+          }
         ></Card>
         <Table
           bordered
@@ -295,7 +299,89 @@ class Notice extends Component {
           <p>{this.state.selectedNotice && this.state.selectedNotice.created_at || ""}</p>
           <p>{this.state.selectedNotice && this.state.selectedNotice.content || ""}</p>
         </Modal>
+        <Modal
+          title="공지사항 작성"
+          visible={this.state.editor}
+          // onOk={this.handleSubmit}
+          okButtonProps={{form:'editor-form', key: 'submit', htmlType: 'submit'}}
+          onCancel={this.handleEditorCancel}
+        >
+          <Form
+            {...formItemLayout}
+            id='editor-form'
+            onSubmit={this.handleSubmit.bind(this)}
+          >
+            <FormItem label="제목">
+              {form.getFieldDecorator('title', {
+                rules: [
+                  {
+                    required: true,
+                    message: '제목을 입력하세요!'
+                  },
+                  // {
+                  //   type: 'url',
+                  //   message: '서버 주소 형식에 맞지 않습니다.'
+                  // }
+                ]
+              })(
+                <Input
+                  placeholder="공지사항 제목"
+                />
+              )}
+            </FormItem>
+            <FormItem label="내용">
+              {form.getFieldDecorator('body', {
+                rules: [
+                  {
+                    required: true,
+                    message: '내용을 입력하세요!'
+                  },
+                  // {
+                  //   type: 'url',
+                  //   message: '서버 주소 형식에 맞지 않습니다.'
+                  // }
+                ]
+              })(
+                <Input.TextArea rows={4}
+                  placeholder="공지사항 내용"
+                />
+              )}
+            </FormItem>
+            <FormItem label="상위고정" valuePropName="checked">
+              {form.getFieldDecorator('top', {
+                initialValue: false,
+              })(
+                <Switch />
+              )}
+            </FormItem>
+            <Form.Item label="파일첨부" extra="" >
+              {form.getFieldDecorator('upload', {
+                valuePropName: 'fileList',
+                getValueFromEvent: this.normFile,
+              })(
+                <Upload name="logo" action="/upload.do" listType="picture">
+                  <Button>
+                    <Icon type="upload" />Click to upload
+                  </Button>
+                </Upload>,
+              )}
+            </Form.Item>
+            {/*<Form.Item wrapperCol={{ span: 12, offset: 6 }}>*/}
+            {/*  <Button type="primary" htmlType="submit" loading={this.state.loading}>*/}
+            {/*    저장*/}
+            {/*  </Button>*/}
+            {/*  <Button type="danger" htmlType="button" onClick={this.handleReset.bind(this)}>*/}
+            {/*    초기화*/}
+            {/*  </Button>*/}
+            {/*</Form.Item>*/}
+            {/* <FormItem>
+              <Button type="primary" htmlType="submit" block className="mb-3" loading={this.state.loading}>
+                저장
+              </Button>
+            </FormItem> */}
 
+          </Form>
+        </Modal>
       </div>
     );
   }

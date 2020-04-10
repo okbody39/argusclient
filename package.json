@@ -52,6 +52,7 @@
     "react-keyed-file-browser": "^1.7.0",
     "react-resize-layout": "^0.2.3",
     "react-router-dom": "^5.1.2",
+    "react-sparklines": "^1.7.0",
     "styled-components": "^5.0.1",
     "ws": "^7.2.3"
   },

@@ -186,6 +186,7 @@ class Access extends Component {
         title: '결과',
         dataIndex: 'result',
         key: 'result',
+        align: 'center',
         ...this.getColumnSearchProps('result'),
       },
     ];
@@ -214,7 +215,7 @@ class Access extends Component {
             </div>
           </Col>
         </Row>
-        <Table bordered
+        <Table bordered size="middle"
           columns={columns}
           dataSource={data}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}

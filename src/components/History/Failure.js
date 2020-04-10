@@ -160,6 +160,7 @@ class Failure extends Component {
         title: '유형',
         dataIndex: 'type',
         key: 'type',
+        align: 'center',
         // width: '20%',
         ...this.getColumnSearchProps('type'),
       },
@@ -172,6 +173,7 @@ class Failure extends Component {
       {
         title: '상태',
         dataIndex: 'status',
+        align: 'center',
         key: 'status',
         ...this.getColumnSearchProps('status'),
       },
@@ -184,6 +186,7 @@ class Failure extends Component {
       {
         title: '작업자',
         dataIndex: 'worker',
+        align: 'center',
         key: 'worker',
         ...this.getColumnSearchProps('worker'),
       },
@@ -207,7 +210,7 @@ class Failure extends Component {
         {/* <Button onClick={this.handleApply} type="danger" style={{ marginBottom: 16 }}>
           장애신고 하기
         </Button> */}
-        <Table bordered
+        <Table bordered size="middle"
           columns={columns}
           dataSource={data}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}

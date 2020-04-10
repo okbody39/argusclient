@@ -3,47 +3,46 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Modal,
-  Table, Input,
+  Table, Input, Select,
 } from 'antd';
+const { Option } = Select;
+
 import Highlighter from 'react-highlight-words';
 
 import { Plus } from 'react-feather';
 
-
+import { withRouter } from 'react-router-dom';
 // Styles
-import styles from "./Alarm.scss";
+import styles from "./Approve.scss";
 
 const data = [
   {
-    id: '1',
-    title: '자원변경 작업완료',
-    target: 'WIN10-INTERNERTVM',
-    created_at: '10:23',
+    created_at: '2019.12.30',
+    type: '자원변경',
+    detail: 'CPU: 3Ccore, Memory: 2G 증설',
+    result: '완료',
   },
   {
-    id: '2',
-    title: '고장신고 처리완료',
-    target: 'WIN10-INTERNERTVM',
-    created_at: '2020.01.03 10:23',
+    created_at: '2019.11.30',
+    type: '최초생성',
+    detail: 'Windows10',
+    result: '완료',
   },
-
-
 ];
 
 
 /**
- * Alarm
+ * Approve
  *
- * @class Alarm
+ * @class Approve
  * @extends {Component}
  */
-class Alarm extends Component {
+class Approve extends Component {
   constructor(props) {
     super(props);
     this.state = {
       searchText: '',
       searchedColumn: '',
-      selectedNotice: null,
       visible: false,
     };
   }
@@ -88,15 +87,15 @@ class Alarm extends Component {
         setTimeout(() => this.searchInput.select());
       }
     },
-    // render: text =>
-    //   this.state.searchedColumn === dataIndex ? (
-    //     <Highlighter
-    //       highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-    //       searchWords={[this.state.searchText]}
-    //       autoEscape
-    //       textToHighlight={text.toString()}
-    //     />
-    //   ) : text,
+    render: text =>
+      this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text.toString()}
+        />
+      ) : text,
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -119,10 +118,7 @@ class Alarm extends Component {
   };
 
   handleOk = e => {
-    console.log(e);
-    this.setState({
-      visible: false,
-    });
+    this.props.history.push('/change');
   };
 
   handleCancel = e => {
@@ -132,75 +128,95 @@ class Alarm extends Component {
     });
   };
 
-  handleDetail  = recored => {
-    console.log(recored);
-    this.setState({
-      visible: true,
-      selectedNotice: recored,
-    });
+  handleChange = e => {
+    // this.props.history.push('/failure');
+    //
+    // // this.setState({
+    // //   visible: false,
+    // // });
   };
 
 
   render() {
     const columns = [
       {
-        title: 'No',
-        dataIndex: 'id',
-        key: 'id',
-        align:'center',
-        width: '8%',
-      },
-      {
-        title: '제목',
-        dataIndex: 'title',
-        // key: 'title',
-        // width: '20%',
-        render: (text, record) => <div>{text}</div>,
-        ...this.getColumnSearchProps('title'),
-      },
-      {
-        title: '대상',
-        dataIndex: 'target',
-        key: 'target',
-        align:'center',
-        width: '20%',
-      },
-      {
         title: '날짜',
         dataIndex: 'created_at',
         key: 'created_at',
-        align:'center',
         width: '15%',
+        align: 'center',
+        ...this.getColumnSearchProps('created_at'),
+      },
+      {
+        title: '변경항목',
+        dataIndex: 'type',
+        key: 'type',
+        width: '20%',
+        filters: [
+          { text: '자원변경', value: '자원변경'},
+          { text: '권한신청', value: '권한신청'},
+          { text: '최초생성', value: '최초생성'},
+        ],
+        onFilter: (value, record) => record.type.indexOf(value) === 0,
+      },
+      {
+        title: '내용',
+        dataIndex: 'detail',
+        key: 'detail',
+        ...this.getColumnSearchProps('detail'),
+      },
+      {
+        title: '결과',
+        dataIndex: 'result',
+        key: 'result',
+        width: '10%',
+        align: 'center',
+        filters: [
+          { text: '완료', value: '완료'},
+          { text: '진행중', value: '진행중'},
+          { text: '거절', value: '거절'},
+        ],
+        onFilter: (value, record) => record.result.indexOf(value) === 0,
       },
     ];
 
     return (
-      <div className={styles.container}>
+      <div className={styles.historychange}>
         <Card
           style={{marginBottom: 10 }}
           // type="inner"
           bodyStyle={{padding: 0}}
           bordered={false}
-          title="알림내역"
+          title="승인관리"
+          extra={
+            <Button onClick={this.handleApply} type="link">
+              승인하기
+            </Button>
+          }
         ></Card>
+
         <Table bordered
-               size="middle"
           columns={columns}
           dataSource={data}
-          // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+          pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+               size="middle"
         />
         <Modal
-          title={this.state.selectedNotice && this.state.selectedNotice.title || ""}
+          title="변경 신청"
           visible={this.state.visible}
           onOk={this.handleOk}
           onCancel={this.handleCancel}
         >
-          <p>{this.state.selectedNotice && this.state.selectedNotice.created_at || ""}</p>
-          <p>{this.state.selectedNotice && this.state.selectedNotice.content || ""}</p>
+          <p>대상 VM 선택</p>
+          <Select defaultValue="WIN10-INTERNETVM" style={{ width: 300 }} onChange={this.handleChange}>
+            <Option value="WIN10-INTERNETVM">WIN10-INTERNETVM</Option>
+            <Option value="WIN10-INTERNETVM2">WIN10-INTERNETVM2</Option>
+            <Option value="WIN10-INTERNETVM3">WIN10-INTERNETVM3</Option>
+          </Select>
         </Modal>
       </div>
     );
   }
 }
 
-export default Alarm;
+export default withRouter(Approve);

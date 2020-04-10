@@ -6,6 +6,7 @@ import {
   Modal, notification, Radio, Input, Select, Affix,
 } from 'antd';
 const { Text, Paragraph } = Typography;
+const { TextArea } = Input;
 const { Dragger } = Upload;
 const { Meta } = Card;
 const { Option } = Select;
@@ -63,10 +64,10 @@ import styles from "./Client.scss";
       loading: false, //true,
       selectedClient:{},
       clientList: [
-        { id: "EMP0001", displayName: "김사원", state: "AVAILABLE", statusColor: "green", operatingSystem: "WIndows 10" },
-        { id: "EMP0002", displayName: "한임원", state: "AVAILABLE", statusColor: "gray", operatingSystem: "WIndows 10" },
-        { id: "EMP0003", displayName: "강상무", state: "AVAILABLE", statusColor: "gray", operatingSystem: "WIndows 10" },
-        { id: "EMP0004", displayName: "이부장", state: "AVAILABLE", statusColor: "red", operatingSystem: "WIndows 10" },
+        { id: "EMP0001", displayName: "김사원", version: "1.0.1", statusColor: "green", operatingSystem: "WIndows 10" },
+        { id: "EMP0002", displayName: "한임원", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
+        { id: "EMP0003", displayName: "강상무", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
+        { id: "EMP0004", displayName: "이부장", version: "1.0.1", statusColor: "red", operatingSystem: "WIndows 10" },
       ],
     };
   }
@@ -141,6 +142,7 @@ import styles from "./Client.scss";
               <Select defaultValue="a" size="small" style={{ width: 80 }}>
                 <Option value="a">Name</Option>
                 <Option value="b">IP</Option>
+                <Option value="b">Version</Option>
               </Select>
               <Input defaultValue=""  size="small"  style={{ width: 200 }}/>
             </Input.Group>
@@ -165,7 +167,7 @@ import styles from "./Client.scss";
                         <Title>{vm.id}</Title>
                       </Badge>
                       <SubTitle>{vm.displayName  || "-"}</SubTitle>
-                      <Description>{vm.state && vm.state.toUpperCase() || "-"}</Description>
+                      <Description>{vm.version || "-"}</Description>
                       <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
                     </Caption>
                   </Figure>
@@ -187,7 +189,7 @@ import styles from "./Client.scss";
 
         <Drawer
           title={
-            <Text >{this.state.selectedClient.name}</Text>
+            <Text >{this.state.selectedClient.displayName}</Text>
           }
           width={520}
           placement="right"
@@ -196,29 +198,40 @@ import styles from "./Client.scss";
           visible={this.state.visible}
           bodyStyle={{ overflow: "auto", height: "calc(100vh - 110px)" }}
         >
-          <Descriptions bordered title="VM 상태" size="small" column={2}>
+          <Descriptions bordered title="Client 상태" size="small" column={2}>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedClient.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
+            <Descriptions.Item span={2} label="Version">{this.state.selectedClient.version || "-"}</Descriptions.Item>
             <Descriptions.Item span={2} label="Uptime">{this.state.selectedClient.bootTime || "-"}</Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>
             <Button type="secondary" size="small">
-              재시작
+              업데이트
             </Button>
             <Button type="danger" size="small">
-              장애신고
+              접속차단
             </Button>
           </div>
 
           <Divider />
 
-          <Descriptions bordered title="VM 정보" size="small" column={2}>
+          <Descriptions bordered title="접속환경" size="small" column={2}>
             <Descriptions.Item label="Host name" span={2}>{this.state.selectedClient.hostName}</Descriptions.Item>
             <Descriptions.Item label="CPU">{this.state.selectedClient.numCore} Core</Descriptions.Item>
             <Descriptions.Item label="Memory">{displaySize(this.state.selectedClient.memory * 1024 * 1024)}</Descriptions.Item>
-            \<Descriptions.Item label="Network" span={2}>{this.state.selectedClient.ipAddress}</Descriptions.Item>
+            <Descriptions.Item label="Network" span={2}>{this.state.selectedClient.ipAddress}</Descriptions.Item>
             <Descriptions.Item label="OS ver" span={2}>{this.state.selectedClient.fullName}</Descriptions.Item>
           </Descriptions>
+
+          <Divider />
+
+          <TextArea rows={4} />
+
+          <div className={styles.btngroup}>
+            <Button type="primary" size="small">
+              메세지 전송
+            </Button>
+          </div>
 
           <div
             style={{

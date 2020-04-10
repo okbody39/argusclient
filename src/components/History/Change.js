@@ -144,6 +144,7 @@ class Change extends Component {
         dataIndex: 'created_at',
         key: 'created_at',
         width: '15%',
+        align: 'center',
         ...this.getColumnSearchProps('created_at'),
       },
       {
@@ -169,6 +170,7 @@ class Change extends Component {
         dataIndex: 'result',
         key: 'result',
         width: '10%',
+        align: 'center',
         filters: [
           { text: '완료', value: '완료'},
           { text: '진행중', value: '진행중'},
@@ -197,6 +199,7 @@ class Change extends Component {
           columns={columns}
           dataSource={data}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+               size="middle"
         />
         <Modal
           title="변경 신청"
