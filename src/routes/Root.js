@@ -37,22 +37,24 @@ function PrivateRoute ({component: Component, ...rest}) {
 
   let auth = false;
   let redirectPath = "/signin";
-  
-  if(connInfo.serverUrl && connInfo.serverUrl.length > 0) {
-    //
-  } else {
 
-    redirectPath = "/signup";
+  // console.log(connInfo, userToken);
 
-    return (
-      <Route
-        {...rest}
-        render={(props) => 
-          <Redirect to={{pathname: redirectPath, state: {from: props.location}}} />
-        }
-      />
-    )
-  }
+  // if(connInfo.serverUrl && connInfo.serverUrl.length > 0 && connInfo.serverUrl !== "undefined") {
+  //   //
+  // } else {
+  //
+  //   redirectPath = "/settings";
+  //
+  //   return (
+  //     <Route
+  //       {...rest}
+  //       render={(props) =>
+  //         <Redirect to={{pathname: redirectPath, state: {from: props.location}}} />
+  //       }
+  //     />
+  //   )
+  // }
 
   if(userToken.username && userToken.username.length > 0) {
     auth = true;
@@ -76,7 +78,7 @@ const Routes = () => (
 
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
-      <PrivateRoute path="/settings" component={Settings} />
+      <Route path="/settings" component={Settings} />
 
       <PrivateRoute path="/failure" component={Failure} />
       <PrivateRoute path="/notice" component={Notice} />

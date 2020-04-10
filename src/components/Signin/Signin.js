@@ -36,7 +36,15 @@ class Signin extends Component {
 
   componentDidMount() {
     let userToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
+    let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
     let token = JSON.parse(userToken);
+    let connInfo = JSON.parse(ConnInfo);
+
+    if(connInfo.serverUrl && connInfo.serverUrl.length > 0 && connInfo.serverUrl !== "undefined") {
+      //
+    } else {
+      this.props.history.push("/signup");
+    }
 
     if(token.remember) {
       this.props.form.setFieldsValue({
@@ -85,8 +93,8 @@ class Signin extends Component {
         type="flex"
         align="middle"
         justify="center"
-        className="px-3 bg-white mh-page"
-        style={{ minHeight: '100vh' }}
+        className="px-3 bg-white mh-page signin"
+        style={{ minHeight: 'calc(100vh - 30px)' }}
       >
         <Content>
           <div className="text-center mb-0">
@@ -155,9 +163,9 @@ class Signin extends Component {
                 initialValue: true
               })(<Checkbox className="mr-2">아이디 저장</Checkbox>)}
 
-              {/*<Link to="/signup">*/}
-              {/*  <small>회원 가입</small>*/}
-              {/*</Link>*/}
+              <Link to="/signup">
+                <small>서버 셋팅</small>
+              </Link>
 
             </FormItem>
 

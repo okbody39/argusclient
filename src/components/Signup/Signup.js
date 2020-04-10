@@ -43,7 +43,7 @@ class Signup extends Component {
 
   componentDidMount() {
     const { form } = this.props;
-    
+
     window.ipcRenderer.on("setting-update", (event, arg) => {
       if(arg) {
         let value = arg; // { serverUrl: form.getFieldValue("serverUrl") };
@@ -52,7 +52,7 @@ class Signup extends Component {
 
         localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
         this.props.history.push('/');
-        
+
       } else {
         notification.error({
           message: '서버설정 실패',
@@ -91,11 +91,11 @@ class Signup extends Component {
           loading: true,
         });
 
-        console.log("submit", values);
+        // console.log("submit", values);
 
         ipcRenderer.send('setting-update', values);
-        
-        
+
+
       }
     });
   }
@@ -110,7 +110,7 @@ class Signup extends Component {
         align="middle"
         justify="center"
         className="px-3 bg-white mh-page"
-        style={{ minHeight: '100vh' }}
+        style={{ minHeight: 'calc(100vh - 30px)' }}
       >
         <Content>
           <div className="text-center mb-0">

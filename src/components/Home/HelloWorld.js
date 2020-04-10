@@ -114,12 +114,18 @@ class HelloWorld extends Component {
     }, 500);
 
     window.ipcRenderer.on("start-app", (event, arg) => {
-      window.ipcRenderer.send("vm-list", this.props.auth);
-      window.ipcRenderer.send("vm-screenshot");
 
-      this.setState({
-        loading: true,
-      });
+      if(arg === "OK") {
+        window.ipcRenderer.send("vm-list", this.props.auth);
+        window.ipcRenderer.send("vm-screenshot");
+
+        this.setState({
+          loading: true,
+        });
+      } else if(arg === "INVALIDSETTING") {
+        this.props.history.push('/settings');
+      }
+
     });
 
     window.ipcRenderer.on("vm-list", (event, arg) => {

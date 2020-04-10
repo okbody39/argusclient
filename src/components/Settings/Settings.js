@@ -38,6 +38,7 @@ class Settings extends Component {
       // password: "",
       loading: false,
       serverUrl: connInfo.serverUrl,
+      connInfo: {},
     };
 
     // this.history = useHistory();
@@ -45,7 +46,7 @@ class Settings extends Component {
 
   componentDidMount() {
     const { form } = this.props;
-    
+
     window.ipcRenderer.on("setting-update", (event, arg) => {
       if(arg) {
         let value = arg; // { serverUrl: form.getFieldValue("serverUrl") };
@@ -54,7 +55,7 @@ class Settings extends Component {
 
         localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
         this.props.history.push('/');
-        
+
       } else {
         notification.error({
           message: '서버설정 실패',
@@ -71,7 +72,7 @@ class Settings extends Component {
   }
 
   componentWillUnmount() {
-    window.ipcRenderer.removeAllListeners('setting-update');
+    ipcRenderer.removeAllListeners('setting-update');
   }
 
   handleSubmit(event) {
@@ -93,13 +94,27 @@ class Settings extends Component {
           loading: true,
         });
 
-        console.log("submit", values);
+        // console.log("submit", values);
 
         ipcRenderer.send('setting-update', values);
-        
-        
+
+
       }
     });
+  }
+
+  handleReset() {
+    ipcRenderer.sendSync('setting-reset');
+
+    localStorage.setItem("ARGUS.CONNINFO", "");
+    localStorage.setItem("ARGUS.USERTOKEN", "");
+
+    // console.log(this.props.history);
+
+    setTimeout(() => {
+      this.props.history.push('/signin');
+    }, 500);
+
   }
 
   render() {
@@ -116,7 +131,8 @@ class Settings extends Component {
             <Title level={2}>Settings</Title>
             <Divider />
             <Paragraph>
-              서버 IP가 변경된 경우가 아니면 수정하지 말아 주세요. 변경시 서비스가 정상적으로 동작하지 않을 수있습니다.
+              서버 IP가 변경된 경우가 아니면 수정하지 말아 주세요. 변경시 서비스가 정상적으로 동작하지 않을 수있습니다.<br/>
+              초기화를 선택 하시면 모든 사용자 데이터를 초기화 합니다. <br/><br/>
             </Paragraph>
           </Typography>
           <Form
@@ -152,7 +168,10 @@ class Settings extends Component {
             </FormItem>
             <Form.Item wrapperCol={{ span: 12, offset: 6 }}>
               <Button type="primary" htmlType="submit" loading={this.state.loading}>
-              저장
+                저장
+              </Button>
+              <Button type="danger" htmlType="button" onClick={this.handleReset.bind(this)}>
+                초기화
               </Button>
             </Form.Item>
             {/* <FormItem>
@@ -162,6 +181,20 @@ class Settings extends Component {
             </FormItem> */}
 
           </Form>
+
+          <Descriptions title="User Info" bordered>
+            <Descriptions.Item label="Product">Cloud Database</Descriptions.Item>
+            <Descriptions.Item label="Billing Mode">Prepaid</Descriptions.Item>
+            <Descriptions.Item label="Automatic Renewal">YES</Descriptions.Item>
+            <Descriptions.Item label="Order time">2018-04-24 18:00:00</Descriptions.Item>
+            <Descriptions.Item label="Usage Time" span={2}>
+              2019-04-24 18:00:00
+            </Descriptions.Item>
+            <Descriptions.Item label="Status" span={3}>
+              <Badge status="processing" text="Running" />
+            </Descriptions.Item>
+          </Descriptions>
+
         </div>
       </div>
     );

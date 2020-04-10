@@ -12,6 +12,14 @@ const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
+const crypto = require('crypto');
+
+const ENC_KEY = "bf3c199c2470cb1759907b1e0905c17b";
+const IV = "5185207c72eec9e4";
+
+const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
+const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 
 var _ARGUS_GATE_ = ""; //"211.232.94.235:8000";
@@ -36,29 +44,29 @@ function autoUpdateCheck(mainWindow) {
 }
 
 function init(mainWindow) {
-  
+
   ipcMain.on("start-app", (event, arg) => {
     let serverInfo = store.get("server-info", {});
-    let authInfo = store.get("auth-info", {}); 
-    
+    let authInfo = store.get("auth-info", {});
+
     _ARGUS_GATE_ = serverInfo.serverUrl;
 
-    if(_ARGUS_GATE_ && authInfo.username) {
-      
-      if(ws) {
+    if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0 && authInfo.username) {
 
+      if(ws) {
+        //
       } else {
-        
+
         try {
           ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/vms/' + authInfo.username);
         } catch(e) {
           console.error(e);
         }
-  
+
         ws.onopen = () => {
           //
         };
-  
+
         ws.onclose = () => {
           dialog.showMessageBox(mainWindow, {
             type: 'error',
@@ -68,9 +76,9 @@ function init(mainWindow) {
           }).then(() => {
             process.exit(2);
           });
-  
+
         };
-  
+
         ws.onerror = (err) => {
           // console.log(err);
           dialog.showMessageBox(mainWindow, {
@@ -82,13 +90,13 @@ function init(mainWindow) {
             process.exit(2);
           });
         };
-  
+
         ws.onmessage = (data, flags) => {
           // data 플래그로 작업 분기할 것...
            /*
             from ArgusServer server.js
 
-            data.data = 
+            data.data =
             {
               to: "", // ALL or ID
               title: "",
@@ -104,8 +112,8 @@ function init(mainWindow) {
           if(jsonData.action === "USER_VM_REFRESH") {
             mainWindow.webContents.send("reload-sig");
 
-           
-            
+
+
           } else if(jsonData.action === "ADM_LOG_MESSAGE") {
             mainWindow.webContents.send("log-message", data.data);
           }
@@ -118,9 +126,9 @@ function init(mainWindow) {
               icon: iconAddress
             };
             let myNotification = new Notification(notif);
-            
+
             myNotification.show();
-  
+
             myNotification.onclick = () => {
               // console.log('Notification clicked')
             };
@@ -128,18 +136,23 @@ function init(mainWindow) {
         };
       }
 
-      event.reply('start-app');
+      event.reply('start-app', 'OK');
 
     } else {
       // settingThis.run(mainWindow);
-      dialog.showMessageBox(mainWindow, {
-        type: 'error',
-        title: 'Application Error',
-        message: 'Invalid configuration. Try again... ',
-        buttons: ['Ok'],
-      }).then(() => {
-        process.exit(2);
-      });
+      console.log(serverInfo, authInfo);
+
+      // dialog.showMessageBox(mainWindow, {
+      //   type: 'error',
+      //   title: 'Application Error',
+      //   message: 'Invalid configuration. Try again... ',
+      //   buttons: ['Ok'],
+      // }).then(() => {
+      //   process.exit(2);
+      // });
+
+      event.reply('start-app', 'INVALIDSETTING');
+
     }
   });
 
@@ -167,16 +180,17 @@ function init(mainWindow) {
       axios.get(url)
       .then(function (response) {
         let encJson = response.data;
-    
-        // console.log(encJson);
-  
+        let decVal = decipher.update(encJson, 'base64', 'utf8');
+        decVal += decipher.final('utf8');
+        let decJson = JSON.parse(decVal);
+
         store.set("server-info", arg);
         // event.returnValue = true;
-        
+
         // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
         // app.exit(0);
 
-        event.reply('setting-update', arg);
+        event.reply('setting-update', decJson);
 
       })
       .catch(function (error) {
@@ -191,12 +205,16 @@ function init(mainWindow) {
       event.reply('setting-update', false);
     }
 
-    
+
 
   });
 
   ipcMain.on("setting-reset", (event, arg) => {
     store.set("server-info", {});
+    store.set("auth-info", {});
+
+    event.returnValue = "DONE";
+
     // settingThis.run(mainWindow);
   });
 
@@ -215,6 +233,10 @@ function init(mainWindow) {
   // LOGIN
 
   ipcMain.on("login", (event, arg) => {
+    let serverInfo = store.get("server-info", {});
+
+    _ARGUS_GATE_ = serverInfo.serverUrl;
+
     let url = 'http://' + _ARGUS_GATE_ + '/auth';
     let auth = false;
 
