@@ -9,27 +9,11 @@ import Highlighter from 'react-highlight-words';
 
 import { Plus } from 'react-feather';
 
+import Moment from 'react-moment';
+import 'moment-timezone';
 
 // Styles
 import styles from "./Alarm.scss";
-
-const data = [
-  {
-    id: '1',
-    title: '자원변경 작업완료',
-    target: 'WIN10-INTERNERTVM',
-    created_at: '10:23',
-  },
-  {
-    id: '2',
-    title: '고장신고 처리완료',
-    target: 'WIN10-INTERNERTVM',
-    created_at: '2020.01.03 10:23',
-  },
-
-
-];
-
 
 /**
  * Alarm
@@ -41,11 +25,28 @@ class Alarm extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      list: [],
       searchText: '',
       searchedColumn: '',
       selectedNotice: null,
       visible: false,
     };
+  }
+
+  componentDidMount() {
+
+    window.ipcRenderer.send("alarm-list", this.props.auth);
+
+    window.ipcRenderer.on("alarm-list", (event, arg) => {
+      this.setState({
+        list: arg,
+        loading: false,
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('alarm-list');
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -154,23 +155,24 @@ class Alarm extends Component {
         title: '제목',
         dataIndex: 'title',
         // key: 'title',
-        // width: '20%',
+        width: '20%',
         render: (text, record) => <div>{text}</div>,
         ...this.getColumnSearchProps('title'),
       },
       {
-        title: '대상',
-        dataIndex: 'target',
-        key: 'target',
-        align:'center',
-        width: '20%',
+        title: '내용',
+        dataIndex: 'content',
+        key: 'content',
+        // align:'center',
+        // width: '10%',
       },
       {
-        title: '날짜',
-        dataIndex: 'created_at',
-        key: 'created_at',
+        title: '일시',
+        dataIndex: 'createdAt',
+        // key: 'createdAt',
         align:'center',
-        width: '15%',
+        width: '20%',
+      render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
       },
     ];
 
@@ -186,7 +188,7 @@ class Alarm extends Component {
         <Table bordered
                size="middle"
           columns={columns}
-          dataSource={data}
+          dataSource={this.state.list}
           // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />
         <Modal

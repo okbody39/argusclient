@@ -63,12 +63,13 @@ import styles from "./Client.scss";
       visible: false,
       loading: false, //true,
       selectedClient:{},
-      clientList: [
-        { id: "EMP0001", displayName: "김사원", version: "1.0.1", statusColor: "green", operatingSystem: "WIndows 10" },
-        { id: "EMP0002", displayName: "한임원", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
-        { id: "EMP0003", displayName: "강상무", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
-        { id: "EMP0004", displayName: "이부장", version: "1.0.1", statusColor: "red", operatingSystem: "WIndows 10" },
-      ],
+      clientList: [],
+      // clientList: [
+      //   { id: "EMP0001", displayName: "김사원", version: "1.0.1", statusColor: "green", operatingSystem: "WIndows 10" },
+      //   { id: "EMP0002", displayName: "한임원", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
+      //   { id: "EMP0003", displayName: "강상무", version: "1.0.2", statusColor: "gray", operatingSystem: "WIndows 10" },
+      //   { id: "EMP0004", displayName: "이부장", version: "1.0.1", statusColor: "red", operatingSystem: "WIndows 10" },
+      // ],
     };
   }
 
@@ -86,7 +87,22 @@ import styles from "./Client.scss";
     }, 500);
 
     window.ipcRenderer.on("client-list", (event, arg) => {
-      let list = [...this.state.clientList, {id:arg}];
+      // let list = [...this.state.clientList, {id:arg}];
+      let list = [];
+
+      arg.map((c) => {
+        let cjson = JSON.parse(c);
+        let client =  JSON.parse(cjson.result);
+
+        client.statusColor = cjson.status === "CONNECT" ? "green" : "gray"; 
+        client.id = cjson.user;
+        client.state = cjson.status;
+        client.displayName = cjson.user;
+        client.version = cjson.version;
+
+        list.push(client);
+
+      });
 
       this.setState({
         clientList: list,
@@ -96,7 +112,7 @@ import styles from "./Client.scss";
 
     window.ipcRenderer.on("reload-sig", (event, arg) => {
       this.setState({
-        clientList: JSON.parse(arg),
+        // clientList: JSON.parse(arg),
         loading: false,
       });
     });
@@ -201,7 +217,7 @@ import styles from "./Client.scss";
           <Descriptions bordered title="Client 상태" size="small" column={2}>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedClient.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
             <Descriptions.Item span={2} label="Version">{this.state.selectedClient.version || "-"}</Descriptions.Item>
-            <Descriptions.Item span={2} label="Uptime">{this.state.selectedClient.bootTime || "-"}</Descriptions.Item>
+            <Descriptions.Item span={2} label="Horizon Client">{this.state.selectedClient.client || "-"}</Descriptions.Item>
           </Descriptions>
 
           <div className={styles.btngroup}>
@@ -216,11 +232,11 @@ import styles from "./Client.scss";
           <Divider />
 
           <Descriptions bordered title="접속환경" size="small" column={2}>
-            <Descriptions.Item label="Host name" span={2}>{this.state.selectedClient.hostName}</Descriptions.Item>
-            <Descriptions.Item label="CPU">{this.state.selectedClient.numCore} Core</Descriptions.Item>
-            <Descriptions.Item label="Memory">{displaySize(this.state.selectedClient.memory * 1024 * 1024)}</Descriptions.Item>
-            <Descriptions.Item label="Network" span={2}>{this.state.selectedClient.ipAddress}</Descriptions.Item>
-            <Descriptions.Item label="OS ver" span={2}>{this.state.selectedClient.fullName}</Descriptions.Item>
+            <Descriptions.Item label="Host name" span={2}>{this.state.selectedClient.hostname}</Descriptions.Item>
+            <Descriptions.Item label="CPU" span={2}>{this.state.selectedClient.cpus} Core</Descriptions.Item>
+            <Descriptions.Item label="Memory" span={2}>{displaySize(this.state.selectedClient.totalmem)}</Descriptions.Item>
+            {/* <Descriptions.Item label="Network" span={2}>{this.state.selectedClient.ipAddress}</Descriptions.Item> */}
+            <Descriptions.Item label="OS ver" span={2}>{this.state.selectedClient.os}</Descriptions.Item>
           </Descriptions>
 
           <Divider />

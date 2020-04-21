@@ -7,6 +7,10 @@ const isDev = require("electron-is-dev");
 const axios = require('axios');
 const https = require('https');
 
+const {
+  performance,
+} = require('perf_hooks');
+
 const Store = require('electron-store');
 const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
@@ -43,11 +47,49 @@ function autoUpdateCheck(mainWindow) {
   autoUpdater.init(mainWindow);
 }
 
-function init(mainWindow) {
+var __START_TIME__ = performance.now();
+let cpus = os.cpus();
+var __OS__ = {
+  hostname: os.hostname(),
+  os: os.type() + " " + os.release() + "-" + os.arch(),
+  // type: os.type(),
+  // platform: os.platform(),
+  // arch: os.arch(),
+  // release: os.release(),
+  // loadavg: os.loadavg(),
+  totalmem: os.totalmem(),
+  freemem: os.freemem(),
+  cpus: cpus.length + "core(s) - " + cpus[0].model,
+};
+
+// console.log(__OS__);
+
+function init(mainWindow, appVersion) {
+  let serverInfo = store.get("server-info", {});
+  let authInfo = store.get("auth-info", {});
+
+  _ARGUS_GATE_ = serverInfo.serverUrl;
+
+  if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0 && authInfo.username) {
+
+    __START_TIME__ = performance.now();
+
+    axios({
+      method: 'post',
+      url: 'http://' + _ARGUS_GATE_ + '/access/',
+      data: {
+        user: authInfo.username,
+        gb: "CLIENT_START",
+        target: appVersion,
+        content: "",
+        // ip: "",
+        result: JSON.stringify(__OS__),
+      }
+    });
+
+  }
 
   ipcMain.on("start-app", (event, arg) => {
-    let serverInfo = store.get("server-info", {});
-    let authInfo = store.get("auth-info", {});
 
     _ARGUS_GATE_ = serverInfo.serverUrl;
 
@@ -74,7 +116,7 @@ function init(mainWindow) {
             message: 'Disconnect Server, Try again... ',
             buttons: ['Ok'],
           }).then(() => {
-            process.exit(2);
+            // process.exit(2);
           });
 
         };
@@ -87,7 +129,7 @@ function init(mainWindow) {
             message: 'Server is not ready, Try again... ',
             buttons: ['Ok'],
           }).then(() => {
-            process.exit(2);
+            // process.exit(2);
           });
         };
 
@@ -290,8 +332,6 @@ function init(mainWindow) {
       .then(function (response) {
         let retJson = response.data;
 
-        // console.log(retJson);
-
         event.reply('client-list', retJson);
       })
       .catch(function (error) {
@@ -458,6 +498,139 @@ function init(mainWindow) {
       })
       .then(function () {
       });
+  });
+
+  ipcMain.on("alarm-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/alarm/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('alarm-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("change-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/change/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('change-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("access-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/access/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('access-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("failure-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/failure/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('failure-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  let forceQuit = false;
+
+  mainWindow.on("close", function(e) {
+    let url = 'http://' + _ARGUS_GATE_ + '/access/';
+    // let authInfo = store.get("auth-info", {});
+
+    if (!forceQuit) {
+      e.preventDefault();
+
+      var choice = dialog.showMessageBox(mainWindow,
+        {
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Confirm',
+          message: 'Are you sure you want to quit?'
+       });
+  
+      choice.then(function(res){
+         // 0 for Yes
+        if(res.response== 0){
+          let endTime = performance.now();
+          let timeDiff = endTime - __START_TIME__; 
+          timeDiff /= 1000; 
+          let seconds = Math.round(timeDiff);
+
+          axios({
+            method: 'post',
+            url: url,
+            data: {
+              user: authInfo.username,
+              gb: "CLIENT_END",
+              target: appVersion,
+              content: seconds,
+              // ip: "",
+              result: JSON.stringify(__OS__),
+            }
+          });
+          forceQuit = true;
+          mainWindow.close();
+        }
+         // 1 for No
+        if(res.response== 1){
+         // Your Code
+        }
+      });
+    }
+
   });
 
   setTimeout(() => {
