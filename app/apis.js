@@ -48,7 +48,24 @@ function autoUpdateCheck(mainWindow) {
 }
 
 var __START_TIME__ = performance.now();
+
 let cpus = os.cpus();
+let networkInterfaces = os.networkInterfaces();
+let nics = [];
+
+for (var key in networkInterfaces) {
+  networkInterfaces[key].map((nic) => {
+    if(!nic.internal && nic.address.indexOf(".") != -1) { // nic.family === "IPv4"
+      nics.push({
+        address: nic.address,
+        mac: nic.mac,
+        cidr: nic.cidr,
+      });
+    }
+  });
+}
+
+var vmwareClient = "-";
 var __OS__ = {
   hostname: os.hostname(),
   os: os.type() + " " + os.release() + "-" + os.arch(),
@@ -58,13 +75,50 @@ var __OS__ = {
   // release: os.release(),
   // loadavg: os.loadavg(),
   totalmem: os.totalmem(),
-  freemem: os.freemem(),
-  cpus: cpus.length + "core(s) - " + cpus[0].model,
+  // freemem: os.freemem(),
+  cpus: cpus.length + " Core - " + cpus[0].model,
+  nics: nics,
+  vhc: vmwareClient,
 };
 
-// console.log(__OS__);
+// console.log(vmwareClient);
+// process.exit(0);
+
+// const spawn = require('child_process').spawnSync;
+// const ls = spawn('wmic', ['-l']);
 
 function init(mainWindow, appVersion) {
+  // WINDOWS
+  if(process.platform === "win32") {
+    const regedit = require("regedit");
+    let regPath = "HKLM\\SOFTWARE\\Wow6432Node\\VMware, Inc.\\VMware VDM\\Client\\";
+
+    if(process.arch !== "x64") {
+      regPath = "HKEY_LOCAL_MACHINE\\Software\\VMware, Inc.\\VMware VDM\\Client\\";
+    }
+
+    vmwareClient = "Not installed";
+    __OS__.vhc = vmwareClient;
+
+    regedit.list(regPath, function(err, result) {
+      if(!err) {
+        for(let key in result) {
+          vmwareClient = "Installed (" + result[key].values.Version.value + ")";
+          __OS__.vhc = vmwareClient;
+        }
+      } else {
+        // console.log(err);
+      }
+
+      initial(mainWindow, appVersion);
+    });
+
+  } else {
+    initial(mainWindow, appVersion);
+  }
+}
+
+function initial(mainWindow, appVersion) {
   let serverInfo = store.get("server-info", {});
   let authInfo = store.get("auth-info", {});
 
@@ -398,6 +452,27 @@ function init(mainWindow, appVersion) {
         .then(function () {
         });
     }
+  });
+
+  ipcMain.on("vm-list-admin", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
+    let vmList = null; 
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+        event.returnValue = retJson;
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+
   });
 
   ipcMain.on("vm-list-refresh", (event, arg) => {
