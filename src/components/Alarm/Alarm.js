@@ -172,7 +172,7 @@ class Alarm extends Component {
         // key: 'createdAt',
         align:'center',
         width: '20%',
-      render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
+        render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
       },
     ];
 
