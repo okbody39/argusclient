@@ -50,7 +50,7 @@ class Settings extends Component {
     let connInfo = localStorage.getItem("ARGUS.CONNINFO");
 
     if(connInfo) {
-      console.log(connInfo);
+      // console.log(connInfo);
       this.setState({
         connInfo: JSON.parse(connInfo),
       });
@@ -198,6 +198,13 @@ class Settings extends Component {
             {/*<Descriptions.Item label="Server Port">{ this.state.connInfo.ServerPort || "" }</Descriptions.Item>*/}
             <Descriptions.Item label="Cluster Port">{ this.state.connInfo.ClusterPort || "" }</Descriptions.Item>
             <Descriptions.Item label="Bridge Port">{ this.state.connInfo.BridgePort || "" }</Descriptions.Item>
+            {
+              (this.state.connInfo.VCServers || []).map((vc) => {
+                return (
+                  <Descriptions.Item key={vc.ip} label="vCenter">{ vc.ip }</Descriptions.Item>
+                )
+              })
+            }
 
             {/*<Descriptions.Item label="Automatic Renewal">YES</Descriptions.Item>*/}
             {/*<Descriptions.Item label="Order time">2018-04-24 18:00:00</Descriptions.Item>*/}

@@ -207,9 +207,6 @@ function initial(mainWindow, appVersion) {
 
           if(jsonData.action === "USER_VM_REFRESH") {
             mainWindow.webContents.send("reload-sig");
-
-
-
           } else if(jsonData.action === "ADM_LOG_MESSAGE") {
             mainWindow.webContents.send("log-message", data.data);
           }
