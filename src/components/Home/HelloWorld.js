@@ -111,7 +111,7 @@ class HelloWorld extends Component {
 
     setTimeout(() => {
       window.ipcRenderer.send("start-app");
-    }, 500);
+    }, 1000);
 
     window.ipcRenderer.on("start-app", (event, arg) => {
 
@@ -201,7 +201,7 @@ class HelloWorld extends Component {
 
   componentWillUnmount() {
     // clearInterval(_TIMER_);
-
+    window.ipcRenderer.removeAllListeners('start-app');
     window.ipcRenderer.removeAllListeners('vm-list');
     window.ipcRenderer.removeAllListeners('vm-screenshot');
     window.ipcRenderer.removeAllListeners('pong');

@@ -454,7 +454,7 @@ class Admin extends Component {
             {
               this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
                 return (
-                  <Descriptions.Item span={2} key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)}%</Descriptions.Item>
+                  <Descriptions.Item span={2} key={disk.DiskPath} label={"Disk("+disk.DiskPath+")"}>{((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)}%</Descriptions.Item>
                 );
               })
             }
@@ -482,7 +482,7 @@ class Admin extends Component {
             {
               this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
                 return (
-                  <Descriptions.Item key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{displaySize(disk.Capacity)}</Descriptions.Item>
+                  <Descriptions.Item key={disk.DiskPath} span={2} label={"Disk("+disk.DiskPath+")"}>{displaySize(disk.Capacity)}</Descriptions.Item>
                 );
               })
             }

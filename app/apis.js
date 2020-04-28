@@ -7,6 +7,10 @@ const isDev = require("electron-is-dev");
 const axios = require('axios');
 const https = require('https');
 
+const {
+  performance,
+} = require('perf_hooks');
+
 const Store = require('electron-store');
 const store = new Store({
   encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
@@ -43,11 +47,103 @@ function autoUpdateCheck(mainWindow) {
   autoUpdater.init(mainWindow);
 }
 
-function init(mainWindow) {
+var __START_TIME__ = performance.now();
+
+let cpus = os.cpus();
+let networkInterfaces = os.networkInterfaces();
+let nics = [];
+
+for (var key in networkInterfaces) {
+  networkInterfaces[key].map((nic) => {
+    if(!nic.internal && nic.address.indexOf(".") != -1) { // nic.family === "IPv4"
+      nics.push({
+        address: nic.address,
+        mac: nic.mac,
+        cidr: nic.cidr,
+      });
+    }
+  });
+}
+
+var vmwareClient = "-";
+var __OS__ = {
+  hostname: os.hostname(),
+  os: os.type() + " " + os.release() + "-" + os.arch(),
+  // type: os.type(),
+  // platform: os.platform(),
+  // arch: os.arch(),
+  // release: os.release(),
+  // loadavg: os.loadavg(),
+  totalmem: os.totalmem(),
+  // freemem: os.freemem(),
+  cpus: cpus.length + " Core - " + cpus[0].model,
+  nics: nics,
+  vhc: vmwareClient,
+};
+
+// console.log(vmwareClient);
+// process.exit(0);
+
+// const spawn = require('child_process').spawnSync;
+// const ls = spawn('wmic', ['-l']);
+
+function init(mainWindow, appVersion) {
+  // WINDOWS
+  if(process.platform === "win32") {
+    const regedit = require("regedit");
+    let regPath = "HKLM\\SOFTWARE\\Wow6432Node\\VMware, Inc.\\VMware VDM\\Client\\";
+
+    if(process.arch !== "x64") {
+      regPath = "HKEY_LOCAL_MACHINE\\Software\\VMware, Inc.\\VMware VDM\\Client\\";
+    }
+
+    vmwareClient = "Not installed";
+    __OS__.vhc = vmwareClient;
+
+    regedit.list(regPath, function(err, result) {
+      if(!err) {
+        for(let key in result) {
+          vmwareClient = "Installed (" + result[key].values.Version.value + ")";
+          __OS__.vhc = vmwareClient;
+        }
+      } else {
+        // console.log(err);
+      }
+
+      initial(mainWindow, appVersion);
+    });
+
+  } else {
+    initial(mainWindow, appVersion);
+  }
+}
+
+function initial(mainWindow, appVersion) {
+  let serverInfo = store.get("server-info", {});
+  let authInfo = store.get("auth-info", {});
+
+  _ARGUS_GATE_ = serverInfo.serverUrl;
+
+  if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0 && authInfo.username) {
+
+    __START_TIME__ = performance.now();
+
+    axios({
+      method: 'post',
+      url: 'http://' + _ARGUS_GATE_ + '/access/',
+      data: {
+        user: authInfo.username,
+        gb: "CLIENT_START",
+        target: appVersion,
+        content: "",
+        // ip: "",
+        result: JSON.stringify(__OS__),
+      }
+    });
+
+  }
 
   ipcMain.on("start-app", (event, arg) => {
-    let serverInfo = store.get("server-info", {});
-    let authInfo = store.get("auth-info", {});
 
     _ARGUS_GATE_ = serverInfo.serverUrl;
 
@@ -111,9 +207,6 @@ function init(mainWindow) {
 
           if(jsonData.action === "USER_VM_REFRESH") {
             mainWindow.webContents.send("reload-sig");
-
-
-
           } else if(jsonData.action === "ADM_LOG_MESSAGE") {
             mainWindow.webContents.send("log-message", data.data);
           }
@@ -290,8 +383,6 @@ function init(mainWindow) {
       .then(function (response) {
         let retJson = response.data;
 
-        // console.log(retJson);
-
         event.reply('client-list', retJson);
       })
       .catch(function (error) {
@@ -358,6 +449,27 @@ function init(mainWindow) {
         .then(function () {
         });
     }
+  });
+
+  ipcMain.on("vm-list-admin", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
+    let vmList = null; 
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+        event.returnValue = retJson;
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+
   });
 
   ipcMain.on("vm-list-refresh", (event, arg) => {
@@ -458,6 +570,139 @@ function init(mainWindow) {
       })
       .then(function () {
       });
+  });
+
+  ipcMain.on("alarm-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/alarm/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('alarm-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("change-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/change/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('change-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("access-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/access/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('access-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("failure-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/history/failure/' + userId;
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('failure-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  let forceQuit = false;
+
+  mainWindow.on("close", function(e) {
+    let url = 'http://' + _ARGUS_GATE_ + '/access/';
+    // let authInfo = store.get("auth-info", {});
+
+    if (!forceQuit) {
+      e.preventDefault();
+
+      var choice = dialog.showMessageBox(mainWindow,
+        {
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Confirm',
+          message: 'Are you sure you want to quit?'
+       });
+  
+      choice.then(function(res){
+         // 0 for Yes
+        if(res.response== 0){
+          let endTime = performance.now();
+          let timeDiff = endTime - __START_TIME__; 
+          timeDiff /= 1000; 
+          let seconds = Math.round(timeDiff);
+
+          axios({
+            method: 'post',
+            url: url,
+            data: {
+              user: authInfo.username,
+              gb: "CLIENT_END",
+              target: appVersion,
+              content: seconds,
+              // ip: "",
+              result: JSON.stringify(__OS__),
+            }
+          });
+          forceQuit = true;
+          mainWindow.close();
+        }
+         // 1 for No
+        if(res.response== 1){
+         // Your Code
+        }
+      });
+    }
+
   });
 
   setTimeout(() => {

@@ -81,7 +81,7 @@ function createWindow() {
       });
     }
 
-    apis.init(mainWindow);
+    apis.init(mainWindow, app.getVersion());
 
   });
 

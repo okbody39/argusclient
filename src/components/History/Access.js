@@ -7,50 +7,14 @@ import {
 } from 'antd';
 import Highlighter from 'react-highlight-words';
 
+import Moment from 'react-moment';
+import 'moment-timezone';
+
 import { Plus } from 'react-feather';
 
 
 // Styles
 import styles from "./Access.scss";
-
-const data = [
-  {
-    created_at: '2020.01.29 09:23:21',
-    type: '로그인',
-    detail: 'yglee',
-    ip: '192.168.0.121',
-    result: '성공',
-  },
-  {
-    created_at: '2020.01.05 10:01:10',
-    type: 'VM접속종료',
-    detail: 'WIN10-INTERNET',
-    ip: '192.168.0.121',
-    result: '성공',
-  },
-  {
-    created_at: '2020.01.05 10:01:10',
-    type: 'VM접속',
-    detail: 'WIN10-INTERNET',
-    ip: '192.168.0.121',
-    result: '성공',
-  },
-  {
-    created_at: '2020.01.05 10:01:10',
-    type: 'VM재기동',
-    detail: 'WIN10-INTERNET',
-    ip: '192.168.0.121',
-    result: '성공',
-  },
-  {
-    created_at: '2020.01.05 10:01:10',
-    type: 'VM접속',
-    detail: 'WIN10-INTERNET',
-    ip: '192.168.0.121',
-    result: '실패',
-  },
-];
-
 
 /**
  * Access
@@ -59,13 +23,105 @@ const data = [
  * @extends {Component}
  */
 class Access extends Component {
+  
   constructor(props) {
     super(props);
     this.state = {
       searchText: '',
       searchedColumn: '',
       visible: false,
+      accessList: [],
+      usedTotalTime: 0,
+      usedThisMonthTime: 0,
+      usedBeforeMonthTime: 0,
+      lastConnectDate: new Date(),
     };
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      window.ipcRenderer.send("access-list", this.props.auth);
+
+      this.setState({
+        loading: true,
+      });
+
+    }, 500);
+
+    window.ipcRenderer.on("access-list", (event, arg) => {
+      let list = arg; // [];
+
+      let usedTotalTime = 0;
+      let usedThisMonthTime = 0;
+      let usedBeforeMonthTime = 0;
+      
+      let lastConnectDate = null;
+
+      var thisMonth = new Date();
+      var thisYYYYMM = thisMonth.getFullYear() + "/" + ( thisMonth.getMonth() + 1 );
+
+      var beforeMonth = new Date();
+      beforeMonth.setMonth(beforeMonth.getMonth() - 1);
+      var beforeYYYYMM = beforeMonth.getFullYear() + "/" + ( beforeMonth.getMonth() + 1 );
+
+      arg.map((a) => {
+        let createdAt = new Date(a.createdAt);
+        let createdYYYYMM = createdAt.getFullYear() + "/" + ( createdAt.getMonth() + 1 );
+        let elapseTime = parseInt(a.content || "0");
+
+        if(lastConnectDate === null) {
+          lastConnectDate = createdAt;
+        }
+
+        usedTotalTime += elapseTime;
+
+
+        if(createdYYYYMM === thisYYYYMM) {
+          usedThisMonthTime += elapseTime;
+        }
+
+        if(createdYYYYMM === beforeYYYYMM) {
+          usedBeforeMonthTime += elapseTime;
+        }
+
+        a.key = a.id;
+
+        switch ( a.gb ) {
+          case "CLIENT_START":
+            a.gb = "클라이언트";
+            a.detail = "클라이언트 접속";
+            a.result = "버전: " + a.target;
+            break;
+          case "CLIENT_END":
+            a.gb = "클라이언트";
+            a.detail = "클라이언트 종료";
+            a.result =  "사용시간: " + a.content + " ms";
+            break;
+          case "VM_START":
+            a.gb = "VM";
+            break;
+          case "VM_END":
+            a.gb = "VM";
+            break;
+          default:
+        }
+
+      });
+
+      this.setState({
+        accessList: list,
+        loading: false,
+        usedTotalTime: usedTotalTime,
+        usedThisMonthTime: usedThisMonthTime,
+        usedBeforeMonthTime: usedBeforeMonthTime,
+        lastConnectDate: lastConnectDate,
+      });
+    });
+
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('access-list');
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -157,17 +213,18 @@ class Access extends Component {
     const columns = [
       {
         title: '일시',
-        dataIndex: 'created_at',
-        key: 'created_at',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
         width: '20%',
-        ...this.getColumnSearchProps('created_at'),
+        ...this.getColumnSearchProps('createdAt'),
+        render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
       },
       {
         title: '구분',
-        dataIndex: 'type',
-        key: 'type',
-        width: '20%',
-        ...this.getColumnSearchProps('type'),
+        dataIndex: 'gb',
+        key: 'gb',
+        width: '15%',
+        ...this.getColumnSearchProps('gb'),
       },
       {
         title: '내용',
@@ -183,11 +240,11 @@ class Access extends Component {
         ...this.getColumnSearchProps('ip'),
       },
       {
-        title: '결과',
+        title: '비고',
         dataIndex: 'result',
         key: 'result',
-        align: 'center',
-        ...this.getColumnSearchProps('result'),
+        align: 'result',
+        // ...this.getColumnSearchProps('result'),
       },
     ];
 
@@ -196,28 +253,28 @@ class Access extends Component {
         <Row gutter={16}>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="총 사용 시간" value={112893} />
+              <Statistic title="총 사용 시간" value={this.state.usedTotalTime} />
             </div>
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="이번달 사용 시간" value={4565} />
+              <Statistic title="이번달 사용 시간" value={this.state.usedThisMonthTime} />
             </div>
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="지난달 사용 시간" value={9756} />
+              <Statistic title="지난달 사용 시간" value={this.state.usedBeforeMonthTime} />
             </div>
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="최종접속" value='3일전' />
+              <Statistic title="최종접속" prefix={<Moment fromNow locale="ko">{this.state.lastConnectDate}</Moment>} value=" "/>
             </div>
           </Col>
         </Row>
         <Table bordered size="middle"
           columns={columns}
-          dataSource={data}
+          dataSource={this.state.accessList}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />
         <Modal
