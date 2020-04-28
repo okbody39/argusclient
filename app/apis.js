@@ -74,7 +74,7 @@ function init(mainWindow) {
             message: 'Disconnect Server, Try again... ',
             buttons: ['Ok'],
           }).then(() => {
-            process.exit(2);
+            // process.exit(2);
           });
 
         };
@@ -87,7 +87,7 @@ function init(mainWindow) {
             message: 'Server is not ready, Try again... ',
             buttons: ['Ok'],
           }).then(() => {
-            process.exit(2);
+            // process.exit(2);
           });
         };
 
