@@ -305,6 +305,29 @@ class Admin extends Component {
     this.setState({ vmName });
   };
 
+  onConsole = () => {
+    let vm = this.state.selectedVm;
+
+    if(!vm.ticket) {
+      alert('notRunning');
+      return;
+    }
+
+    // 1) mksTicket authentication. This is not publicly documented.
+    // Get ticket from https://vcenter_ip/mob/?moid=vm-57&method=acquireMksTicket
+    let url = `wss://${vm.vcIp}:9443/vsphere-client/webconsole/authd?mksTicket=${vm.ticket}&host=${vm.ticketHost}&port=${vm.ticketPort}&cfgFile=${encodeURIComponent(vm.ticketCfgFile)}&sslThumbprint=${vm.ticketSslThumbprint}`;
+
+    // 2) webmksTicket authentication. This is described on a blog http://vittoriop77.blogspot.it/2016/03/vsphere-6-html-console.html
+    // Get ticket from  https://vcenter_ip/mob/?moid=vm-57&method=acquireTicket with ticketType 'webmks'
+    //var url = "wss://vm_ip:443/ticket/5705500be7278979";
+
+    // 3) CloneSessionTicket authentication
+    // Get ticket from https://vcenter_ip/mob/?moid=SessionManager&method=acquireCloneTicket
+    // let url = `wss://${vm.vcIp}/vsphere-client/webconsole/authd?vmId=${vm.mpRef}&vmName=Node1&serverGuid=197cb8a1-4eb3-45ab-a884-fc570c868e49&host=vcenter_ip:443&sessionTicket=cst-VCT-52adf3a2-7b2e-fb7e-0f12-a1e7d66d0c2c--tp-A1-4A-38-40-F8-91-81-B7-44-C2-65-10-B8-4B-25-AB-8B-36-09-C3`;
+
+    alert(url);
+  };
+
   render() {
     return (
       <div className={styles.admin} ref={node => {
@@ -439,13 +462,29 @@ class Admin extends Component {
         >
           <Alert message="디스크 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
 
-            <div style={{display:'flex', flexDirection: 'row'}}>
-              <div style={{width: 250, height: 150, marginBottom: 15, backgroundPosition: 'center center',  backgroundSize: 'cover',  backgroundImage: 'url('+this.state.selectVmScreenShot+')'}}>
+            <div style={{ display:'flex', flexDirection: 'row' }}>
+              <div style={{ width: 250, height: 150, marginBottom: 15, backgroundPosition: 'center center',  backgroundSize: 'cover',  backgroundImage: 'url('+this.state.selectVmScreenShot+')'}}>
                 {/* <Image source={this.state.selectVmScreenShot} /> */}
               </div>
-              <Button style={{marginLeft: 5}} onClick={this.refreshScreenshot}>
-                <Icon type="sync" />
+              <Button style={{ marginLeft: -40 }} onClick={ this.refreshScreenshot } type="link">
+                <Icon type="reload" />
               </Button>
+              <div style={{ display:'flex', flexDirection: 'column' }}>
+                {
+                  // this.state.selectedVm.ticket ?
+                  //   <Text>{ this.state.selectedVm.ticket }</Text>
+                  //   : null
+                }
+                <Button type="success" size="small" icon="code" style={{ marginBottom: 5 }} onClick={this.onConsole}>
+                  Console
+                </Button>
+                <Button type="primary" size="small" icon="poweroff" style={{ marginBottom: 5 }}>
+                  Power on
+                </Button>
+                <Button type="danger" size="small" icon="poweroff" style={{ marginBottom: 5 }}>
+                  Power off
+                </Button>
+              </div>
             </div>
 
 
