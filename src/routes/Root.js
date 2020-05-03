@@ -89,8 +89,8 @@ const Routes = () => (
       <PrivateRoute path="/notice" component={Notice} />
       <PrivateRoute path="/alarm" component={Alarm} />
 
+      <PrivateRoute exact path="/change" component={Change} />
       <PrivateRoute path="/change/password" component={ChangePassword} />
-      <PrivateRoute path="/change" component={Change} />
 
 
       <PrivateRoute path="/history/change" component={HistoryChange} />

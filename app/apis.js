@@ -144,6 +144,8 @@ function initial(mainWindow, appVersion) {
   }
 
   ipcMain.on("start-app", (event, arg) => {
+    serverInfo = store.get("server-info", {});
+    authInfo = store.get("auth-info", {});
 
     _ARGUS_GATE_ = serverInfo.serverUrl;
 
@@ -233,7 +235,7 @@ function initial(mainWindow, appVersion) {
 
     } else {
       // settingThis.run(mainWindow);
-      console.log(serverInfo, authInfo);
+      console.log("apis.js - start-app : ", serverInfo, authInfo);
 
       // dialog.showMessageBox(mainWindow, {
       //   type: 'error',
@@ -279,8 +281,9 @@ function initial(mainWindow, appVersion) {
 
         decVal += decipher.final('utf8');
         let decJson = JSON.parse(decVal);
-
         decJson.serverUrl = arg.serverUrl;
+
+        // console.log(decJson);
 
         store.set("server-info", arg);
         // event.returnValue = true;
@@ -454,7 +457,7 @@ function initial(mainWindow, appVersion) {
   ipcMain.on("vm-list-admin", (event, arg) => {
     let userId = arg;
     let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
-    let vmList = null; 
+    let vmList = null;
 
     axios.get(url, {
       params: {
@@ -672,13 +675,13 @@ function initial(mainWindow, appVersion) {
           title: 'Confirm',
           message: 'Are you sure you want to quit?'
        });
-  
+
       choice.then(function(res){
          // 0 for Yes
         if(res.response== 0){
           let endTime = performance.now();
-          let timeDiff = endTime - __START_TIME__; 
-          timeDiff /= 1000; 
+          let timeDiff = endTime - __START_TIME__;
+          timeDiff /= 1000;
           let seconds = Math.round(timeDiff);
 
           axios({

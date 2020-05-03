@@ -44,7 +44,37 @@ class Change extends Component {
       searchText: '',
       searchedColumn: '',
       visible: false,
+      changeList: [],
     };
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      window.ipcRenderer.send("change-list", this.props.auth);
+
+      this.setState({
+        loading: true,
+      });
+
+    }, 500);
+
+    window.ipcRenderer.on("change-list", (event, arg) => {
+      let list = arg; // [];
+
+      arg.map((a) => {
+        //
+      });
+
+      this.setState({
+        changeList: list,
+        loading: false,
+      });
+    });
+
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('change-list');
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -129,8 +159,8 @@ class Change extends Component {
   };
 
   handleChange = e => {
-    // this.props.history.push('/failure');
-    //
+    this.props.history.push('/change');
+
     // // this.setState({
     // //   visible: false,
     // // });
@@ -189,7 +219,7 @@ class Change extends Component {
           bordered={false}
           title="변경관리"
           extra={
-            <Button onClick={this.handleApply} type="link">
+            <Button onClick={this.handleChange} type="link">
               변경신청 하기
             </Button>
           }
@@ -197,23 +227,23 @@ class Change extends Component {
 
         <Table bordered
           columns={columns}
-          dataSource={data}
+          dataSource={this.state.changeList}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
                size="middle"
         />
-        <Modal
-          title="변경 신청"
-          visible={this.state.visible}
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-        >
-          <p>대상 VM 선택</p>
-          <Select defaultValue="WIN10-INTERNETVM" style={{ width: 300 }} onChange={this.handleChange}>
-            <Option value="WIN10-INTERNETVM">WIN10-INTERNETVM</Option>
-            <Option value="WIN10-INTERNETVM2">WIN10-INTERNETVM2</Option>
-            <Option value="WIN10-INTERNETVM3">WIN10-INTERNETVM3</Option>
-          </Select>
-        </Modal>
+        {/*<Modal*/}
+        {/*  title="변경 신청"*/}
+        {/*  visible={this.state.visible}*/}
+        {/*  onOk={this.handleOk}*/}
+        {/*  onCancel={this.handleCancel}*/}
+        {/*>*/}
+        {/*  <p>대상 VM 선택</p>*/}
+        {/*  <Select defaultValue="WIN10-INTERNETVM" style={{ width: 300 }} onChange={this.handleChange}>*/}
+        {/*    <Option value="WIN10-INTERNETVM">WIN10-INTERNETVM</Option>*/}
+        {/*    <Option value="WIN10-INTERNETVM2">WIN10-INTERNETVM2</Option>*/}
+        {/*    <Option value="WIN10-INTERNETVM3">WIN10-INTERNETVM3</Option>*/}
+        {/*  </Select>*/}
+        {/*</Modal>*/}
       </div>
     );
   }
