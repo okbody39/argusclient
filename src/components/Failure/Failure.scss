@@ -5,6 +5,12 @@
   overflow-y: scroll;
 }
 
+.container_noback {
+  padding: 35px 80px 35px 80px;
+  height: calc(100vh - 130px);
+  overflow-y: scroll;
+}
+
 .container::-webkit-scrollbar {
   display: none;
 }

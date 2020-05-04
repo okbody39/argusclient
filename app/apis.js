@@ -425,16 +425,14 @@ function initial(mainWindow, appVersion) {
   ipcMain.on("vm-list", (event, arg) => {
     let userId = arg;
     let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
-    let vmList = null; // store.get("vm-list");
+    // let vmList = null; // store.get("vm-list");
 
-    if(vmList) {
-      let retJson = vmList;
-      event.reply('vm-list', retJson);
-    } else {
-      axios.get(url, {
-        params: {
-        }
-      })
+    // if(vmList) {
+    //   let retJson = vmList;
+    //   event.reply('vm-list', retJson);
+    // } else {
+      console.log("apis.js - vm-list", url);
+      axios.get(url)
         .then(function (response) {
           let retJson = response.data;
 
@@ -444,6 +442,8 @@ function initial(mainWindow, appVersion) {
             store.set("vm-list", retJson);
           }
 
+          console.log("apis.js - vm-list",retJson);
+
           event.reply('vm-list', retJson);
         })
         .catch(function (error) {
@@ -451,7 +451,8 @@ function initial(mainWindow, appVersion) {
         })
         .then(function () {
         });
-    }
+
+    // }
   });
 
   ipcMain.on("vm-list-admin", (event, arg) => {
@@ -657,6 +658,48 @@ function initial(mainWindow, appVersion) {
       })
       .then(function () {
       });
+  });
+
+  ipcMain.on("failure-diagnosis", (event, arg) => {
+    let retJson = {};
+
+    switch(arg.step) {
+      case 0: // NW
+        retJson = os.networkInterfaces(); 
+        event.returnValue = retJson;
+        break;
+
+      case 1: // SW
+        retJson = {
+          vmwareClient: vmwareClient,
+          // ...__OS__
+        }
+        event.returnValue = retJson;
+        break;
+
+      case 2: // VM
+        let url = 'http://' + _ARGUS_GATE_ + '/vms/' + arg.auth;
+
+        axios.get(url)
+          .then(function (response) {
+            retJson = response.data;
+            event.returnValue = retJson;
+          })
+          .catch(function (error) {
+            event.returnValue = {};
+          });
+        break;
+
+      case 3: // SRV
+        retJson = {
+        }
+        event.returnValue = retJson;
+        break;
+
+      default:
+        event.returnValue = retJson;
+    }
+
   });
 
   let forceQuit = false;

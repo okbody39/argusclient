@@ -15,22 +15,6 @@ import { withRouter } from 'react-router-dom';
 // Styles
 import styles from "./Change.scss";
 
-const data = [
-  {
-    created_at: '2019.12.30',
-    type: '자원변경',
-    detail: 'CPU: 3Ccore, Memory: 2G 증설',
-    result: '완료',
-  },
-  {
-    created_at: '2019.11.30',
-    type: '최초생성',
-    detail: 'Windows10',
-    result: '완료',
-  },
-];
-
-
 /**
  * Change
  *

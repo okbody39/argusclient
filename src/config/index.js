@@ -14,6 +14,7 @@ const ISFULLSCREEN = (path) => {
   let fullscreen = [
     "/signin",
     "/signup",
+    "/diagnosis",
     "/notfound",
   ];
 

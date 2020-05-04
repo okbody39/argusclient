@@ -163,8 +163,12 @@ class Signin extends Component {
                 initialValue: true
               })(<Checkbox className="mr-2">아이디 저장</Checkbox>)}
 
-              <Link to="/signup">
+              <Link to="/signup" className="mr-3">
                 <small>서버 셋팅</small>
+              </Link>
+
+              <Link to="/diagnosis">
+                <small>접속이 안됩니다.</small>
               </Link>
 
             </FormItem>

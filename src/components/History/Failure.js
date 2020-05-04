@@ -50,7 +50,37 @@ class Failure extends Component {
       searchText: '',
       searchedColumn: '',
       visible: false,
+      failureList: [],
     };
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      window.ipcRenderer.send("failure-list", this.props.auth);
+
+      this.setState({
+        loading: true,
+      });
+
+    }, 500);
+
+    window.ipcRenderer.on("failure-list", (event, arg) => {
+      let list = arg; // [];
+
+      arg.map((a) => {
+        //
+      });
+
+      this.setState({
+        failureList: list,
+        loading: false,
+      });
+    });
+
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('failure-list');
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -124,27 +154,27 @@ class Failure extends Component {
   };
 
   handleChange = e => {
-    // this.props.history.push('/failure');
-    //
+    this.props.history.push('/failure');
+    
     // // this.setState({
     // //   visible: false,
     // // });
   };
 
-  handleOk = e => {
-    this.props.history.push('/failure');
+  // handleOk = e => {
+  //   this.props.history.push('/failure');
 
-    // this.setState({
-    //   visible: false,
-    // });
-  };
+  //   // this.setState({
+  //   //   visible: false,
+  //   // });
+  // };
 
-  handleCancel = e => {
-    console.log(e);
-    this.setState({
-      visible: false,
-    });
-  };
+  // handleCancel = e => {
+  //   console.log(e);
+  //   this.setState({
+  //     visible: false,
+  //   });
+  // };
 
 
   render() {
@@ -201,7 +231,7 @@ class Failure extends Component {
           bordered={false}
           title="장애신고"
           extra={
-            <Button onClick={this.handleApply} type="link">
+            <Button onClick={this.handleChange} type="link">
               신고하기
             </Button>
           }
@@ -212,10 +242,10 @@ class Failure extends Component {
         </Button> */}
         <Table bordered size="middle"
           columns={columns}
-          dataSource={data}
+          dataSource={this.state.failureList}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />
-        <Modal
+        {/* <Modal
           title="장애 신고"
           visible={this.state.visible}
           onOk={this.handleOk}
@@ -227,7 +257,7 @@ class Failure extends Component {
             <Option value="WIN10-INTERNETVM2">WIN10-INTERNETVM2</Option>
             <Option value="WIN10-INTERNETVM3">WIN10-INTERNETVM3</Option>
           </Select>
-        </Modal>
+        </Modal> */}
       </div>
     );
   }

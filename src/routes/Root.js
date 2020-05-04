@@ -8,6 +8,7 @@ import Home from "@/screens/Home/Home";
 import Signin from "@/screens/Signin/Signin";
 import Signup from "@/screens/Signup/Signup";
 import Failure from "@/screens/Failure/Failure";
+import Diagnosis from "@/screens/Failure/Failure";
 import Notice from "@/screens/Notice/Notice";
 import Alarm from "@/screens/Alarm/Alarm";
 
@@ -84,6 +85,8 @@ const Routes = () => (
       <Route path="/signin" component={Signin} />
       <Route path="/signup" component={Signup} />
       <Route path="/settings" component={Settings} />
+
+      <Route path="/diagnosis" component={Diagnosis} />
 
       <PrivateRoute path="/failure" component={Failure} />
       <PrivateRoute path="/notice" component={Notice} />

@@ -8,17 +8,14 @@ import {
 } from 'antd';
 const { Step } = Steps;
 const { Paragraph, Text } = Typography;
+import { Link, withRouter } from 'react-router-dom';
 
 import Highlighter from 'react-highlight-words';
 
 import { Plus } from 'react-feather';
 
-
 // Styles
 import styles from "./Failure.scss";
-
-
-
 
 /**
  * Failure
@@ -31,6 +28,9 @@ class Failure extends Component {
     super(props);
     this.state = {
       current: 0,
+      currentDiagnosis: 0,
+      currentStatus: "process", // error
+      diagnosisResult: [],
     };
   }
 
@@ -48,10 +48,51 @@ class Failure extends Component {
     this.setState({ current });
   }
 
+  componentDidMount() {
+    setTimeout(() => {
+      this.doDiagnosis();
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+  }
+
+  doDiagnosis() {
+
+    for(let d=0 ; d<4 ; d++) {
+      let result = window.ipcRenderer.sendSync("failure-diagnosis", { step: d, auth: this.props.auth });
+
+      console.log(result);
+  
+      this.setState({
+        currentDiagnosis: d,
+        diagnosisResult: [...this.state.diagnosisResult, result],
+      });  
+    }
+
+  }
+
+  goSignin() {
+    this.props.history.push("/signin");
+  }
+
   render() {
     const { current } = this.state;
 
     const steps = [
+      {
+        title: '진단',
+        content: (
+          <div className={styles.inner}>
+            <Steps direction="vertical" size="small" current={this.state.currentDiagnosis} status={this.state.currentStatus}>
+              <Step title="네트워크 확인" description="접속을 위한 네트워크 상태를 확인 합니다." />
+              <Step title="필수 SW 설치/상태 확인" description="접속에 필요한 필수SW의 설치 및 상태를 확인합니다." />
+              <Step title="VM 상태 확인" description="할당된 VM이 접속 가능한 상태인지 확인합니다." />
+              <Step title="서버 상태 확인" description="서버의 서비스 상태를 확인 합니다." />
+            </Steps>
+          </div>
+        ),
+      },
       {
         title: '장애 유형 선택',
         content: (
@@ -113,33 +154,24 @@ class Failure extends Component {
     ];
 
     return (
-      <div className={styles.container}>
+      <div className={this.props.auth ? styles.container : styles.container_noback}>
         <Steps current={current} onChange={this.goStep.bind(this)}>
           {steps.map(item => (
             <Step key={item.title} title={item.title}/>
           ))}
         </Steps>
         <div>{steps[current].content}</div>
-        {/*<div className="steps-action">*/}
-        {/*  {current < steps.length - 1 && (*/}
-        {/*    <Button type="primary" onClick={() => this.next()}>*/}
-        {/*      Next*/}
-        {/*    </Button>*/}
-        {/*  )}*/}
-        {/*  {current === steps.length - 1 && (*/}
-        {/*    <Button type="primary" onClick={() => message.success('Processing complete!')}>*/}
-        {/*      Done*/}
-        {/*    </Button>*/}
-        {/*  )}*/}
-        {/*  {current > 0 && (*/}
-        {/*    <Button style={{ marginLeft: 8 }} onClick={() => this.prev()}>*/}
-        {/*      Previous*/}
-        {/*    </Button>*/}
-        {/*  )}*/}
-        {/*</div>*/}
+        { !this.props.auth &&
+        <div className="steps-action">
+          <Button style={{ marginLeft: 8 }} onClick={this.goSignin.bind(this)}>
+            종료
+          </Button>
+        </div>
+        }
+
       </div>
     );
   }
 }
 
-export default Failure;
+export default withRouter(Failure);
