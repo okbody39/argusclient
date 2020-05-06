@@ -86,12 +86,13 @@ class HelloWorld extends Component {
       visible: false,
       fileUploadervisible: false,
       fileList: [],
-      loading: true,
+      loading: false,
       vmName: 'W10-INETRNETVM',
       selectedVm:{},
       vmlist: [],
       vmScreenShot: [],
       isFlushed: false,
+      error: null,
     };
   }
 
@@ -130,21 +131,34 @@ class HelloWorld extends Component {
 
     window.ipcRenderer.on("vm-list", (event, arg) => {
 
-      arg.map((vm) => {
-        if(vm.disk) {
-          vm.disk = JSON.parse(vm.disk);
-          if (vm.disk && vm.disk.length > 0) {
-            vm.disk.sort((a, b) => {
-              return a.DiskPath > b.DiskPath ? 1 : -1
-            })
-          }
-        }
-      });
+      // console.log(arg);
 
-      this.setState({
-        vmlist: arg,
-        loading: false,
-      });
+      if(arg.error) {
+        this.setState({
+          error: {
+            title: "서버 연결 에러",
+            message: "서버와 연결이 원활하지 않습니다. 다시 한번 시도해 주세요. - " + arg.error
+          },
+        });
+      } else {
+        arg.map((vm) => {
+          if(vm.disk) {
+            vm.disk = JSON.parse(vm.disk);
+            if (vm.disk && vm.disk.length > 0) {
+              vm.disk.sort((a, b) => {
+                return a.DiskPath > b.DiskPath ? 1 : -1
+              })
+            }
+          }
+        });
+  
+        this.setState({
+          vmlist: arg,
+          loading: false,
+        });
+      }
+
+     
     });
 
     window.ipcRenderer.on("vm-screenshot", (event, arg) => {
@@ -279,6 +293,15 @@ class HelloWorld extends Component {
   render() {
     return (
       <div className={styles.helloWorld}>
+        { this.state.error &&
+        <Alert
+          message={this.state.error.title}
+          description={this.state.error.message}
+          type="error"
+          showIcon
+          style={{ marginBottom: 10 }}
+        />
+        }
         <Row gutter={[16, 16]}>
           {
             this.state.vmlist.map((vm, i) => {

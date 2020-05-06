@@ -214,6 +214,7 @@ function initial(mainWindow, appVersion) {
           }
 
           if(jsonData.notification) {
+            
             let iconAddress = path.join(__dirname, "../resources/icons/seedclient_icon.ico");
             const notif={
               title: jsonData.title,
@@ -223,6 +224,8 @@ function initial(mainWindow, appVersion) {
             let myNotification = new Notification(notif);
 
             myNotification.show();
+
+            mainWindow.webContents.send("notification-message", notif);
 
             myNotification.onclick = () => {
               // console.log('Notification clicked')
@@ -431,7 +434,9 @@ function initial(mainWindow, appVersion) {
     //   let retJson = vmList;
     //   event.reply('vm-list', retJson);
     // } else {
+      
       console.log("apis.js - vm-list", url);
+
       axios.get(url)
         .then(function (response) {
           let retJson = response.data;
@@ -442,12 +447,13 @@ function initial(mainWindow, appVersion) {
             store.set("vm-list", retJson);
           }
 
-          console.log("apis.js - vm-list",retJson);
+          // console.log("apis.js - vm-list",retJson);
 
           event.reply('vm-list', retJson);
         })
         .catch(function (error) {
           console.error(error);
+          event.reply('vm-list', {error: error});
         })
         .then(function () {
         });
@@ -589,6 +595,27 @@ function initial(mainWindow, appVersion) {
         let retJson = response.data;
 
         event.reply('alarm-list', retJson);
+      })
+      .catch(function (error) {
+        console.error(error);
+      })
+      .then(function () {
+      });
+  });
+
+  ipcMain.on("notice-list", (event, arg) => {
+    let userId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/notice';
+    let list = null;
+
+    axios.get(url, {
+      params: {
+      }
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.reply('notice-list', retJson);
       })
       .catch(function (error) {
         console.error(error);

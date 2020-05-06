@@ -12,21 +12,6 @@ import styles from "./Header.scss";
 import logo from "@/assets/images/seedclient_logo.png"
 import { ISFULLSCREEN } from "@/config";
 
-const notifications = [
-  {
-    title: '시스템 점검 안내',
-    description: '1 hour ago',
-  },
-  {
-    title: '설연휴 특별 이벤트',
-    description: '1 hour ago',
-  },
-  {
-    title: '2020년 시스템 변경 사항 공지',
-    description: '2 hours ago',
-  },
-];
-
 /**
  * Header
  *
@@ -39,7 +24,47 @@ class Header extends Component {
 
     this.state = {
       selectedKeys: [this.props.location.pathname],
+      alarmCount: 0,
+      alarmList: [],
     }
+  }
+
+  componentDidMount() {
+
+    let noti = localStorage.getItem("ARGUS.NOTIFICATION");
+
+    if(noti) {
+
+      console.log(noti);
+      noti = JSON.parse(noti);
+
+      this.setState(noti);
+    }
+    
+    window.ipcRenderer.on("notification-message", (event, arg) => {
+      let alarmCount = this.state.alarmCount + 1;
+      let alarmList = [...this.state.alarmList, arg];
+
+      localStorage.setItem("ARGUS.NOTIFICATION", JSON.stringify({
+        alarmCount: alarmCount,
+        alarmList: alarmList,
+      }));
+
+      this.setState({
+        alarmCount: alarmCount,
+        alarmList: alarmList,
+      });
+    });
+
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('notification-message');
+  }
+
+  goAlarm() {
+    localStorage.setItem("ARGUS.NOTIFICATION", "{}");
+    this.props.history.push("/alarm");
   }
 
   checkUpdate() {
@@ -138,7 +163,7 @@ class Header extends Component {
           <SubMenu
             title={
               <div className={styles.menusubitem}>
-              <Badge count={5}>
+              <Badge count={this.state.alarmCount}>
                   <Bell size={22} strokeWidth={1} />
               </Badge>
               </div>
@@ -153,15 +178,15 @@ class Header extends Component {
               <List
                 className="header-notifications"
                 itemLayout="horizontal"
-                dataSource={notifications}
+                dataSource={this.state.alarmList}
                 // footer={<div>5 Notifications</div>}
                 renderItem={item => (
                   <div className={styles.inner}>
-                    <List.Item>
+                    <List.Item onClick={this.goAlarm.bind(this)}>
                       <List.Item.Meta
                         // avatar={item.avatar}
                         title={<a>{item.title}</a>}
-                        description={<small>{item.description}</small>}
+                        description={<small>{item.body}</small>}
                       />
                     </List.Item>
                   </div>

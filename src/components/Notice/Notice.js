@@ -62,12 +62,29 @@ class Notice extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      list: [],
       searchText: '',
       searchedColumn: '',
       selectedNotice: null,
       visible: false,
       editor: false,
     };
+  }
+
+  componentDidMount() {
+
+    window.ipcRenderer.send("notice-list", this.props.auth);
+
+    window.ipcRenderer.on("notice-list", (event, arg) => {
+      this.setState({
+        list: arg,
+        loading: false,
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    window.ipcRenderer.removeAllListeners('notice-list');
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -282,7 +299,7 @@ class Notice extends Component {
         <Table
           bordered
           columns={columns}
-          dataSource={data}
+          dataSource={this.state.list}
           size="middle"
           // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />

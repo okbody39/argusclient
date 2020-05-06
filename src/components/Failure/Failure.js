@@ -70,6 +70,9 @@ class Failure extends Component {
         diagnosisResult: [...this.state.diagnosisResult, result],
       });  
     }
+    this.setState({
+      currentDiagnosis: 4,
+    });
 
   }
 
@@ -109,7 +112,7 @@ class Failure extends Component {
         title: '세부 유형 선택',
         content: (
           <div className={styles.inner}>
-            <Button block>VM이 보이지 않습니다.</Button>
+            <Button block onClick={this.next.bind(this)}>VM이 보이지 않습니다.</Button>
             <Button block>접속시 로딩시간이 많이 소요됩니다.</Button>
             <Button block onClick={this.next.bind(this)}>접속이 되지 않습니다.</Button>
           </div>
