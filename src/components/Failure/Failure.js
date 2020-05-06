@@ -65,6 +65,7 @@ class Failure extends Component {
       console.log(result);
   
       this.setState({
+        current: 1,
         currentDiagnosis: d,
         diagnosisResult: [...this.state.diagnosisResult, result],
       });  
