@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Typography, Spin,
-  Modal, notification,
+  Modal, notification, Popconfirm,
 } from 'antd';
 const { Text, Paragraph } = Typography;
 const { Dragger } = Upload;
@@ -263,7 +263,55 @@ class HelloWorld extends Component {
   onReset = () => {
     //console.log(this.state.selectedVm);
     let result = window.ipcRenderer.sendSync("vm-reset", this.state.selectedVm.machineId);
+    // alert(result);
+
+    if(result.result) {
+      notification.success({
+        message: 'VM 리셋 성공',
+        description:
+          '정상적으로 리셋 되었습니다.',
+      });
+    } else {
+      notification.error({
+        message: 'VM 리셋 실패',
+        description:
+          '리셋에 실패하였습니다. 잠시후 다시 시도해주세요. - ' + result.error,
+      });
+    }
+
+    this.setState({
+      visible: false,
+    });
+  };
+
+  onRestart = () => {
+    //console.log(this.state.selectedVm);
+    let result = window.ipcRenderer.sendSync("vm-restart", this.state.selectedVm.machineId);
     alert(result);
+
+    this.setState({
+      visible: false,
+    });
+  };
+
+  onFailure = () => {
+    this.props.history.push("/failure");
+
+    this.setState({
+      visible: false,
+    });
+  };
+
+  onChange = () => {
+    this.props.history.push("/change");
+
+    this.setState({
+      visible: false,
+    });
+  };
+
+  onHistoryChange = () => {
+    this.props.history.push("/history/change");
 
     this.setState({
       visible: false,
@@ -407,13 +455,31 @@ class HelloWorld extends Component {
           </Descriptions>
 
           <div className={styles.btngroup}>
-            <Button type="primary" size="small" onClick={this.onReset}>
-              리셋
-            </Button>
-            <Button type="secondary" size="small">
+            <Popconfirm
+              title="데이터 소실 우려가 있습니다. 그래도 리셋하시겠습니까?"
+              onConfirm={this.onReset}
+              //onCancel={this.onClose}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" size="small">
+                리셋
+              </Button>
+            </Popconfirm>
+
+            <Popconfirm
+              title="데이터 소실 우려가 있습니다. 그래도 재시작하시겠습니까?"
+              onConfirm={this.onRestart}
+              //onCancel={this.onClose}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="secondary" size="small">
               재시작
-            </Button>
-            <Button type="danger" size="small">
+              </Button>
+            </Popconfirm>
+            
+            <Button type="danger" size="small" onClick={this.onFailure}>
               장애신고
             </Button>
           </div>
@@ -437,13 +503,13 @@ class HelloWorld extends Component {
           </Descriptions>
 
           <div className={styles.btngroup}>
-            <Button type="primary" size="small">
-              용량 증설
+            <Button type="primary" size="small" onClick={this.onChange}>
+              변경 신청
             </Button>
-            <Button type="secondary" size="small">
+            {/* <Button type="secondary" size="small" onClick={this.onChange}>
               사용기간 연장
-            </Button>
-            <Button type="secondary" size="small">
+            </Button> */}
+            <Button type="secondary" size="small" onClick={this.onHistoryChange}>
               변경 이력
             </Button>
           </div>

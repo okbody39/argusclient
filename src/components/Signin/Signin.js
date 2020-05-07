@@ -67,9 +67,9 @@ class Signin extends Component {
 
         let auth = window.ipcRenderer.sendSync("login", values);
 
-        // console.log(auth);
+        console.log(auth);
 
-        if(auth) {
+        if(auth.result == "true") {
           localStorage.setItem("ARGUS.USERTOKEN", JSON.stringify(values));
           this.props.history.push("/");
         } else {

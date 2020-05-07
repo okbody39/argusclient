@@ -21,8 +21,42 @@ const crypto = require('crypto');
 const ENC_KEY = "bf3c199c2470cb1759907b1e0905c17b";
 const IV = "5185207c72eec9e4";
 
-// const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
-// const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+function encryptStr(val) {
+  const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
+  let value = null;
+
+  if (typeof val === 'object') { // JSON
+      value = JSON.stringify(val);
+  } else {
+      value = '' + val;
+  }
+
+  let encVal = cipher.update(value, 'utf8', 'base64');
+  encVal += cipher.final('base64'); 
+  
+  return encVal;
+
+}
+
+function decryptStr(encVal, defaultVal) {
+  const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+  let decVal = decipher.update(encVal, 'base64', 'utf8');
+  decVal += decipher.final('utf8');
+  let retVal = null;
+
+  if (typeof defaultVal === 'object') {
+      retVal = JSON.parse(decVal);
+    } else if (typeof defaultVal === 'number') {
+      retVal = parseInt(decVal);
+    } else if (typeof defaultVal === 'boolean') {
+      retVal = (decVal == 'true');
+  } else {
+      retVal = '' + decVal;
+  }
+
+  return retVal;
+
+}
 
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 
@@ -346,22 +380,31 @@ function initial(mainWindow, appVersion) {
 
     // console.log(url, arg);
 
+    let data = encryptStr(
+      {
+        username: arg.username,
+        password: arg.password,
+      }
+    );
+
     axios({
       url: url,
       method: 'post',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      data: `username=${encodeURIComponent(arg.username)}&password=${encodeURIComponent(arg.password)}`,
+      // data: `username=${encodeURIComponent(arg.username)}&password=${encodeURIComponent(arg.password)}`,
+      data: `sec=${encodeURIComponent(data)}`,
     })
     .then(function (response) {
       let retJson = response.data;
       // console.log(retJson, typeof retJson);
-      auth = retJson; // === "true";
+      auth = decryptStr(retJson, { result: false }); // === "true";
       // event.returnValue = auth;
 
-      store.set("auth-info", {
-        username: arg.username,
-        password: arg.password,
-      });
+      console.log(auth);
+
+      if(auth.result == "true") {
+        store.set("auth-info", arg);
+      }
 
     })
     .catch(function (error) {
@@ -376,6 +419,58 @@ function initial(mainWindow, appVersion) {
     // } else {
     //   auth = false;
     // }
+
+  });
+
+  ipcMain.on("change-password", (event, arg) => {
+    let serverInfo = store.get("server-info", {});
+
+    _ARGUS_GATE_ = serverInfo.serverUrl;
+
+    let url = 'http://' + _ARGUS_GATE_ + '/changepwd';
+    let result = false;
+
+    let data = encryptStr(
+      {
+        username: arg.username,
+        currentPassword: arg.currentPassword,
+        newPassword: arg.newPassword,
+      }
+    );
+
+    // console.log(data);
+
+    axios({
+      url: url,
+      method: 'put',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: `sec=${encodeURIComponent(data)}`,
+      // data: `currentPassword=${encodeURIComponent(arg.currentPassword)}&newPassword=${encodeURIComponent(arg.newPassword)}`,
+    })
+    .then(function (response) {
+      let retJson = response.data;
+      // console.log(retJson, typeof retJson);
+      // result = retJson; // === "true";
+      result = decryptStr(retJson, { result: false }); // === "true";
+      // event.returnValue = auth;
+
+      // console.log(result);
+
+      if(result.result == "true") {
+        store.set("auth-info", {
+          username: arg.username,
+          password: arg.newPassword,
+        });
+      }
+      
+
+    })
+    .catch(function (error) {
+      console.error(error);
+    })
+    .then(function () {
+      event.returnValue = result;
+    });
 
   });
 
@@ -409,14 +504,34 @@ function initial(mainWindow, appVersion) {
       method: 'put',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       data: `machineId=${encodeURIComponent(machineId)}`,
-  })
+    })
      .then((response) => {
         let retJson = response.data;
-        event.returnValue = retJson;
+        event.returnValue = {result: true};
       })
       .catch((err) => {
-          console.error(err);
-          event.returnValue = err;
+          // console.error(err);
+          event.returnValue = {result: false, error: err};
+      });
+  });
+
+  ipcMain.on("vm-restart", (event, arg) => {
+    let machineId = arg;
+    let url = 'http://' + _ARGUS_GATE_ + '/vms/restart';
+
+    axios({
+      url: url,
+      method: 'put',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: `machineId=${encodeURIComponent(machineId)}`,
+    })
+     .then((response) => {
+        let retJson = response.data;
+        event.returnValue = {result: true};
+      })
+      .catch((err) => {
+          // console.error(err);
+          event.returnValue = {result: false, error: err};
       });
   });
 

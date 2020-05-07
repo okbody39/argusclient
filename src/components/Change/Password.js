@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import {
   Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
   Upload, Icon, message, Badge, Alert, Modal,
-  Steps, Result, Typography,
+  Steps, Result, Typography, notification,
   Table, Input, Form, Slider, Radio, Select, Checkbox,InputNumber,
 } from 'antd';
 const FormItem = Form.Item;
@@ -30,6 +30,7 @@ class Password extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: null,
     };
   }
 
@@ -37,32 +38,56 @@ class Password extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        console.log('Received values of form: ', values);
+        let param = values;
+        param.username = this.props.auth;
+
+        let result = window.ipcRenderer.sendSync("change-password", param);
+
+        // console.log('Received values of form: ', values, result);
+
+        if(result.result == "false") {
+          this.setState({
+            error: {
+              title: "비밀번호 변경 에러",
+              message: "비밀번호 변경에 실패하였습니다. - " + result.reason
+            },
+          });
+        } else if(result.result == "true") {
+          this.setState({
+            error: null,
+          });
+          notification.success({
+            message: '비밀번호 변경 성공',
+            description:
+              '정상적으로 비밀번호를 변경하였습니다. 다시 로그인 해주세요.',
+          });
+          this.props.history.push("/signin");
+        }
       }
     });
   };
 
-  handleConfirmBlur = e => {
-    const { value } = e.target;
-    this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-  };
+  // handleConfirmBlur = e => {
+  //   const { value } = e.target;
+  //   this.setState({ confirmDirty: this.state.confirmDirty || !!value });
+  // };
 
-  compareToFirstPassword = (rule, value, callback) => {
-    const { form } = this.props;
-    if (value && value !== form.getFieldValue('password')) {
-      callback('Two passwords that you enter is inconsistent!');
-    } else {
-      callback();
-    }
-  };
+  // compareToFirstPassword = (rule, value, callback) => {
+  //   const { form } = this.props;
+  //   if (value && value !== form.getFieldValue('password')) {
+  //     callback('Two passwords that you enter is inconsistent!');
+  //   } else {
+  //     callback();
+  //   }
+  // };
 
-  validateToNextPassword = (rule, value, callback) => {
-    const { form } = this.props;
-    if (value && this.state.confirmDirty) {
-      form.validateFields(['confirm'], { force: true });
-    }
-    callback();
-  };
+  // validateToNextPassword = (rule, value, callback) => {
+  //   const { form } = this.props;
+  //   if (value && this.state.confirmDirty) {
+  //     form.validateFields(['confirm'], { force: true });
+  //   }
+  //   callback();
+  // };
 
   render() {
     const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
@@ -71,7 +96,7 @@ class Password extends Component {
       wrapperCol: { span: 14 },
     };
 
-    const passwordError = isFieldTouched('password') && getFieldError('password');
+    // const passwordError = isFieldTouched('password') && getFieldError('password');
 
     return (
       <div className={styles.container}>
@@ -87,32 +112,26 @@ class Password extends Component {
           </Typography>
           <Form {...formItemLayout} onSubmit={this.handleSubmit}>
 
-            <Form.Item label="Password" hasFeedback>
-              {getFieldDecorator('password', {
+            <Form.Item label="현재 비밀번호" hasFeedback>
+              {getFieldDecorator('currentPassword', {
                 rules: [
                   {
                     required: true,
                     message: 'Please input your password!',
-                  },
-                  {
-                    validator: this.validateToNextPassword,
-                  },
+                  }
                 ],
               })(<Input.Password />)}
             </Form.Item>
 
-            <Form.Item label="Confirm Password" hasFeedback>
-              {getFieldDecorator('confirm', {
+            <Form.Item label="새로운 비밀번호" hasFeedback>
+              {getFieldDecorator('newPassword', {
                 rules: [
                   {
                     required: true,
-                    message: 'Please confirm your password!',
-                  },
-                  {
-                    validator: this.compareToFirstPassword,
-                  },
+                    message: 'Please your new password!',
+                  }
                 ],
-              })(<Input.Password onBlur={this.handleConfirmBlur} />)}
+              })(<Input.Password />)}
             </Form.Item>
 
             <Form.Item wrapperCol={{ span: 12, offset: 6 }}>
@@ -121,6 +140,15 @@ class Password extends Component {
               </Button>
             </Form.Item>
           </Form>
+          { this.state.error &&
+            <Alert
+              message={this.state.error.title}
+              description={this.state.error.message}
+              type="error"
+              showIcon
+              style={{ marginTop: 10 }}
+            />
+          }
         </div>
       </div>
     );
