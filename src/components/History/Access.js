@@ -35,6 +35,7 @@ class Access extends Component {
       usedThisMonthTime: 0,
       usedBeforeMonthTime: 0,
       lastConnectDate: new Date(),
+      loading: true,
     };
   }
 
@@ -273,6 +274,7 @@ class Access extends Component {
           </Col>
         </Row>
         <Table bordered size="middle"
+          loading={this.state.loading}
           columns={columns}
           dataSource={this.state.accessList}
           pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}

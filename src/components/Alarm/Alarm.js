@@ -30,6 +30,7 @@ class Alarm extends Component {
       searchedColumn: '',
       selectedNotice: null,
       visible: false,
+      loading: true,
     };
   }
 
@@ -186,10 +187,11 @@ class Alarm extends Component {
           title="알림내역"
         ></Card>
         <Table bordered
-               size="middle"
-          columns={columns}
-          dataSource={this.state.list}
-          // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+              size="middle"
+              columns={columns}
+              dataSource={this.state.list}
+              loading={this.state.loading}
+              // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />
         <Modal
           title={this.state.selectedNotice && this.state.selectedNotice.title || ""}

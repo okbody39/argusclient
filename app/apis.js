@@ -1,8 +1,11 @@
 const os = require('os');
 const { app, BrowserWindow, Menu, remote, ipcMain, dialog, Notification } = require("electron");
 const path = require("path");
+const fs = require('fs');
 const url = require("url");
 const isDev = require("electron-is-dev");
+
+const {spawn, exec} = require('child_process');
 
 const axios = require('axios');
 const https = require('https');
@@ -320,9 +323,14 @@ function initial(mainWindow, appVersion) {
         let decJson = JSON.parse(decVal);
         decJson.serverUrl = arg.serverUrl;
 
-        // console.log(decJson);
+        // console.log(decJson, arg);
 
-        store.set("server-info", arg);
+        store.set("server-info", {
+          serverUrl: arg.serverUrl,
+          ViewServers: decJson.ViewServers,
+          Domain: decJson.Domain,
+        });
+
         // event.returnValue = true;
 
         // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
@@ -537,7 +545,171 @@ function initial(mainWindow, appVersion) {
 
   ipcMain.on("vm-connect", (event, arg) => {
     let vmName = arg;
-    event.returnValue = 'connect: ' + vmName;
+    let osver = process.platform;
+
+    serverInfo = store.get("server-info", {});
+    authInfo = store.get("auth-info", {});
+
+    // console.log(serverInfo, authInfo);
+
+    let serverurl = serverInfo.ViewServers[Math.floor(Math.random() * serverInfo.ViewServers.length)];
+
+    let json = {
+      serverurl: serverurl,
+      username: authInfo.username,
+      password: authInfo.password,
+      domainname: serverInfo.Domain,
+      desktopname: vmName,
+    };
+
+    // console.log(json);
+
+    // .serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}
+
+    // event.returnValue = 'connect: ' + vmName;
+
+    if(osver === "darwin") {
+      const psList = require('ps-list');
+      psList().then((ps) => {
+        // console.log(ps);
+        let isExist = false;
+        ps.map((p) => {
+          if(p.cmd.indexOf('VMware Horizon Client') != -1) {
+            console.log(p);
+            isExist = true;
+          }
+        });
+
+        if(isExist) {
+          let nextCmd = `osascript -e 'quit app "VMware Horizon Client"'`;
+          exec(nextCmd, (err, stdout, stderr) => {
+            dialog.showErrorBox('정보', `다시 시도해 주세요.`);
+          });
+
+        } else {
+
+          let fpath = "/Applications/VMware\\ Horizon\\ Client.app/Contents/MacOS/vmware-view";
+          let cmd = `${fpath} --serverURL="${json.serverurl}" --userName="${json.username}" --password="${json.password}" --domainName="${json.domainname}" --desktopName="${json.desktopname}" --standAlone`;
+
+          exec(cmd, (err, stdout, stderr) => {
+            if (err) {
+              console.error(err);
+              dialog.showErrorBox('에러', `실행 중 에러가 발생했습니다.. \n${err}\n${cmd}`);
+              return;
+            }
+          });
+
+          let password = json.password.replace(/\\/gi, "");
+          let nextCmd = `osascript `+
+              // `-e 'delay 1' `+
+              `-e 'tell app "System Events"' ` +
+              // `-e   'if exists (window 1 of process "vmware-view") then' `+
+              // `-e     'tell process "vmware-view" to quit' ` +
+              // `-e   'end if' ` +
+              `-e   'delay 1' `+
+              `-e   'tell process "vmware-view"' `+
+              `-e     'click button 2 of sheet 1 of window 1' ` +
+              `-e     'delay 1' `+
+              `-e     'set value of text field 2 of group 1 of window 1 to "${json.username}"' ` +
+              `-e     'set value of text field 1 of group 1 of window 1 to "${password}"' ` +
+              `-e     'tell app "VMware Horizon Client" to activate' ` +
+              `-e     'delay 1' `+
+              `-e     'click button 1 of window 1' ` +
+              `-e ' end tell' ` +
+              `-e 'end tell' `;
+
+          let nextCmd2 = `osascript `+
+              `-e 'tell app "System Events"' ` +
+              `-e   'delay 1' `+
+              `-e   'tell process "vmware-view"' `+
+              `-e     'set value of text field "brokerAddressTextField" of group 1 of window 1 to "${json.serverurl}"' ` +
+              `-e     'click button 1 of window 1' ` +
+              `-e     'delay 1' `+
+              `-e     'click button 2 of sheet 1 of window 1' ` +
+              `-e     'delay 1' `+
+              // `-e     'set value of text field "UsernameTextField" of group 1 of window 1 to "${password}"' ` +
+              // `-e     'set value of text field "PasswordTextField" of group 1 of window 1 to "222"' ` +
+              // `-e     'delay 5' `+
+              `-e     'set focused of text field "UsernameTextField" of group 1 of window 1 to true' ` +
+              `-e     'set value of attribute "AXValue" of text field "UsernameTextField" of group 1 of window 1 to "${json.username}"' ` +
+              `-e     'delay 0.2' `+
+              `-e     'set focused of text field "PasswordTextField" of group 1 of window 1 to true' ` +
+              `-e     'set value of attribute "AXValue" of text field "PasswordTextField" of group 1 of window 1 to "${password}"' ` +
+              // `-e     'delay 0.2' `+
+              // `-e     'set focused of pop up button "DomainPopupButton" of group 1 of window 1 to true' ` +
+              // `-e     'set value of attribute "AXValue" of pop up button "DomainPopupButton" of group 1 of window 1 to "SEED02"' ` +
+              // `-e     'click button 1 of window 1' ` +
+              // `-e     'set value of text field "UsernameTextField" of group 1 of window 1 to "${json.username}"' ` +
+              // `-e     'set value of attribute "AXValue" of text field "PasswordTextField" of group 1 of window 1 to ""' ` +
+              // `-e     'delay 1' `+
+              // `-e     'set value of text field "PasswordTextField" of group 1 of window 1 to "${password}"' ` +
+              `-e     'delay 0.5' `+
+              `-e     'tell app "VMware Horizon Client" to activate' ` +
+              `-e     'click button 1 of window 1' ` +
+              `-e   'end tell' ` +
+              `-e 'end tell' `;
+
+          exec(nextCmd, (err, stdout, stderr) => {
+            if (err) {
+              exec(nextCmd2, (err, stdout, stderr) => {
+                // console.log(nextCmd2);
+                // dialog.showErrorBox('에러', "접속창을 닫으시고 다시 접속을 시도해주세요.");
+                if (err) {
+                  console.error(err);
+                  // dialog.showErrorBox('에러', "다시 접속을 시도해주세요.");
+                  return;
+                }
+              });
+            }
+          });
+        }
+      });
+
+      ///////// WINDOWS ///////////
+
+    } else if(osver === "win32") {
+      let vmwarePath = '\\VmWare\\VMware Horizon View Client\\vmware-view.exe';
+      let findPath = [
+        path.join(process.env['ProgramFiles(x86)'] || '', vmwarePath),
+        path.join(process.env.ProgramFiles || '', vmwarePath),
+        path.join(process.env.ProgramW6432 || '', vmwarePath),
+      ];
+      let isInstalled = false;
+
+      findPath.some((fpath) => {
+        if(fs.existsSync(fpath)) {
+
+          let cmd = `"${fpath}" --serverURL "${json.serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}" --standAlone`;
+
+          exec(cmd, (err, stdout, stderr) => {
+            if (err) {
+              console.error(err);
+              dialog.showErrorBox('에러', `실행 중 에러가 발생했습니다.. \n${err}\n${cmd}`)
+              return;
+            }
+          });
+
+          isInstalled = true;
+          return isInstalled;
+        }
+      });
+
+      if(!isInstalled) { // 미설치
+        dialog.showErrorBox('소프트웨어 미설치', 'VMWare Horizon View Client가 설치되지 않았습니다.')
+      }
+
+    } else {
+      let fpath = "vmware-view";
+      let cmd = `"${fpath}" --nonInteractive --serverURL="${json.serverurl}" --userName="${json.username}" --password="${json.password}" --domainName="${json.domainname}" --desktopName="${json.desktopname}"`;
+
+      exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          console.error(err);
+          dialog.showErrorBox('에러', `실행 중 에러가 발생했습니다.. \n${err}\n${cmd}`)
+          return;
+        }
+      });
+    }
   });
 
   ipcMain.on("vm-list", (event, arg) => {

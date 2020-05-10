@@ -3,6 +3,8 @@ import React, { Component } from "react";
 import { Layout, Menu, Badge, List, Notification, Avatar, Icon } from "antd";
 import { Link, withRouter, Router } from 'react-router-dom';
 import { Settings, Bell, Triangle, User, RefreshCcw } from 'react-feather';
+import Moment from 'react-moment';
+import 'moment-timezone';
 
 const { SubMenu } = Menu;
 
@@ -35,7 +37,7 @@ class Header extends Component {
 
     if(noti) {
 
-      console.log(noti);
+      // console.log(noti);
       noti = JSON.parse(noti);
 
       this.setState(noti);
@@ -43,7 +45,19 @@ class Header extends Component {
     
     window.ipcRenderer.on("notification-message", (event, arg) => {
       let alarmCount = this.state.alarmCount + 1;
-      let alarmList = [...this.state.alarmList, arg];
+      let newItem = {
+        ...arg,
+        created_at: new Date(),
+      };
+
+      // console.log(newItem);
+
+      let alarmList = [newItem, ...this.state.alarmList];
+
+      if(alarmCount > 6) {
+        // alarmList
+        alarmList.pop();
+      }
 
       localStorage.setItem("ARGUS.NOTIFICATION", JSON.stringify({
         alarmCount: alarmCount,
@@ -179,7 +193,8 @@ class Header extends Component {
                 className="header-notifications"
                 itemLayout="horizontal"
                 dataSource={this.state.alarmList}
-                // footer={<div>5 Notifications</div>}
+                footer={<div style={{marginLeft: 20, marginRight: 20}}>최근 6개만 표시됩니다.</div>}
+                // loadMore={this.state.alarmList.length > 6 ? <div style={{textAlign: 'center', height: 32, marginTop: 12}}>최근 6개만 표시됩니다.</div> : null}
                 renderItem={item => (
                   <div className={styles.inner}>
                     <List.Item onClick={this.goAlarm.bind(this)}>
@@ -188,6 +203,7 @@ class Header extends Component {
                         title={<a>{item.title}</a>}
                         description={<small>{item.body}</small>}
                       />
+                      <div style={{marginLeft: 15}}><small><Moment fromNow locale="ko">{item.created_at}</Moment></small></div>
                     </List.Item>
                   </div>
                 )}

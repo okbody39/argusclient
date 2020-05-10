@@ -112,7 +112,7 @@ class HelloWorld extends Component {
 
     setTimeout(() => {
       window.ipcRenderer.send("start-app");
-    }, 1000);
+    }, 500);
 
     window.ipcRenderer.on("start-app", (event, arg) => {
 
@@ -247,10 +247,30 @@ class HelloWorld extends Component {
 
   showDrawer = (selectedVm) => {
     // console.log(selectedVm);
+    // this.state.selectedVm.state
+    // this.state.selectedVm.disk.map((disk) => {
+    // ((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)
+    // "디스크 사용량 임계치 도달 (95% 이상)" 
+    let selectedVmError = "";
+
+    if(selectedVm.state != "running") {
+      selectedVmError = "VM이 꺼져있습니다.";
+    }
+
+    selectedVm.disk.map((disk) => {
+      let per = (disk.Capacity - disk.FreeSpace) / disk.Capacity * 100;
+
+      if(per > 95) {
+        selectedVmError = "디스크 사용량 임계치 도달 (95% 이상)";
+      }
+
+    });
+
     this.setState({
       selectedVm: selectedVm,
       vmName: selectedVm.displayName,
       visible: true,
+      selectedVmError: selectedVmError,
     });
   };
 
@@ -318,8 +338,11 @@ class HelloWorld extends Component {
     });
   };
 
-  onConnect = () => {
-    window.ipcRenderer.send("ping", "What's up?");
+  onConnect = (vmName) => {
+
+    console.log(this.state.selectedVm);
+
+    window.ipcRenderer.send("vm-connect", vmName);
     this.setState({
       visible: false,
     });
@@ -329,8 +352,11 @@ class HelloWorld extends Component {
     // e.stopPropagation();
     // e.nativeEvent.stopImmediatePropagation();
 
-    let result = window.ipcRenderer.sendSync("vm-connect", vmName);
-    alert(result);
+    // let result = window.ipcRenderer.sendSync("vm-connect", vmName);
+    // alert(result);
+
+    window.ipcRenderer.send("vm-connect", vmName);
+
   };
 
   onChangeVmName = vmName => {
@@ -375,9 +401,9 @@ class HelloWorld extends Component {
                       <div key="play-square" onClick={this.connectVM.bind(this, vm.id)}>
                         <Icon type="play-square" />
                       </div>,
-                      <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
-                        <Icon type="cloud-upload" />
-                      </div>,
+                      // <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
+                      //   <Icon type="cloud-upload" />
+                      // </div>,
 
                       <div key="setting" onClick={this.showDrawer.bind(this, vm)}>
                         <Icon type="setting" />
@@ -440,8 +466,9 @@ class HelloWorld extends Component {
           visible={this.state.visible}
           bodyStyle={{ overflow: "auto", height: "calc(100vh - 110px)" }}
         >
-          <Alert message="디스크 사용량 임계치 도달 (95% 이상)" type="error" /><br/>
-
+          { this.state.selectedVmError &&
+            <Alert message={this.state.selectedVmError} type="error" style={{marginBottom: 15}} />
+          }
           <Descriptions bordered title="VM 상태" size="small" column={2}>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
             {
@@ -529,7 +556,7 @@ class HelloWorld extends Component {
           >
             기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-            <Button onClick={this.onConnect} type="success">
+            <Button onClick={this.onConnect.bind(this, this.state.selectedVm.id)} type="success">
               접속
             </Button>
 
