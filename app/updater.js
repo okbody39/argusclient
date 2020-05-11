@@ -6,9 +6,10 @@ const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
 
+/*
 const { autoUpdater } = require("electron-updater");
 
-const server = 'http://211.232.94.233:1337';
+const server = 'http://cielcloud.iptime.org:8011'; // 'http://211.232.94.233:1337';
 const platform = `${os.platform()}_${os.arch()}`;
 const feed = `${server}/update/${platform}`;
 
@@ -17,6 +18,12 @@ autoUpdater.setFeedURL(feed);
 autoUpdater.logger = require("electron-log");
 autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoInstallOnAppQuit = true;
+*/
+
+const autoUpdater = require('electron-simple-updater');
+const updateServer = 'http://cielcloud.iptime.org:8011';
+
+autoUpdater.init(`${updateServer}/updates.json`);
 
 let modalWindow;
 
@@ -33,14 +40,13 @@ function init(mainWindow) {
   }
 
   autoUpdater.on('update-available', (info) => {
-
     updateModal(mainWindow);
 
-    // autoUpdater.logger.info('Update available.' + JSON.stringify(info));
+    autoUpdater.logger.info('Update available.' + JSON.stringify(info));
     setTimeout(() => {
       if(modalWindow) {
-        modalWindow.webContents.send('status-data', "Update available.");
-        modalWindow.webContents.send('version-data', info);
+        modalWindow.webContents.send('status-data', "Update available." + JSON.stringify(info));
+        // modalWindow.webContents.send('version-data', info);
       }
     }, 2000);
 
@@ -48,7 +54,7 @@ function init(mainWindow) {
 
   autoUpdater.on('error', (err) => {
     // if(modalWindow) {
-      modalWindow.webContents.send('status-data', "Error in auto-updater.");
+    modalWindow.webContents.send('status-data', "Error in auto-updater." + JSON.stringify(err));
     // } else {
     //   autoUpdater.logger.info('Error in auto-updater... ' + JSON.stringify(err));
     // }
@@ -57,9 +63,16 @@ function init(mainWindow) {
 
   });
 
+  /*
   autoUpdater.on('download-progress', (progressObj) => {
     // autoUpdater.logger.info('Download progress... ' + progressObj.percent + '%');
     modalWindow.webContents.send('progress-data', progressObj.percent);
+  });
+  */
+
+  autoUpdater.on('update-downloading', (progressObj) => {
+    // console.log('Download progress... ');
+    modalWindow.webContents.send('status-data', "Download progress...");
   });
 
   autoUpdater.on('update-downloaded', (info) => {

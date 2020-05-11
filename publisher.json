@@ -3,9 +3,9 @@
     "module": "ftp",
     "host": "cielcloud.iptime.org",
     "port": 8012,
-    "username": "ftproot",
+    "user": "ftproot",
     "password": "VMware1!",
-    "remotePath": "/",
-    "remoteUrl": "http://cielcloud.iptime.org:8011"
+    "remotePath": "/updates",
+    "remoteUrl": "http://cielcloud.iptime.org:8011/updates"
   }
 }
