@@ -23,16 +23,16 @@
     "build:clean": "rimraf -rf dist",
     "build:copy": "copyfiles -u 1 public/* public/**/* dist -e public/index.html",
     "prebuild": "npm run build:clean && npm run build:copy",
-    "prepackage:all": "rimraf -rf dist",
+    "prepackage:all": "rimraf -rf release",
     "postpackage:mac": "electron-builder build",
     "postpackage:pack": "electron-builder --win --x64 --dir",
     "postpackage:win": "electron-builder build --win --x64",
     "postpackage:linux": "electron-builder build --linux --x64",
     "postpackage:all": "electron-builder build -mwl",
     "build:all": "npm run build && npm run prepackage:all &&  npm run postpackage:all",
-    "build:mac": "npm run prepackage:all &&  npm run postpackage:mac",
-    "build:win": "npm run prepackage:all &&  npm run postpackage:win",
-    "build:linux": "npm run prepackage:all &&  npm run postpackage:linux",
+    "build:mac": "npm run build && npm run prepackage:all &&  npm run postpackage:mac",
+    "build:win": "npm run build && npm run prepackage:all &&  npm run postpackage:win",
+    "build:linux": "npm run build && npm run prepackage:all &&  npm run postpackage:linux",
     "publish:linux": "publish ./publisher.json linux-x64-prod",
     "publish:mac": "publish ./publisher.json darwin-x64-prod",
     "publish:win": "publish -d ./publisher.json win32-x64-prod"
@@ -122,12 +122,12 @@
     "webpack-merge": "^4.2.2"
   },
   "updater": {
-    "url": "http://cielcloud.iptime.org:8011/updates/{platform}-{arch}-{channel}.json"
+    "url": "https://raw.githubusercontent.com/okbody39/argusclient/master/updates/{platform}-{arch}-{channel}.json"
   },
   "build": {
     "productName": "SeedClient",
     "appId": "net.dfocus.seedclient",
-    "asar": false,
+    "asar": true,
     "files": [
       "dist",
       "app",
@@ -155,7 +155,9 @@
     },
     "win": {
       "target": [
-        "squirrel"
+        "squirrel",
+        "nsis",
+        "zip"
       ],
       "icon": "./resources/icons/seedclient_icon.ico",
       "certificateFile": "./resources/www.dfocus.net.pfx",
@@ -187,7 +189,7 @@
     },
     "directories": {
       "buildResources": "resources",
-      "output": "dist/"
+      "output": "release"
     }
   },
   "jest": {

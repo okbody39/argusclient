@@ -21,13 +21,20 @@ autoUpdater.autoInstallOnAppQuit = true;
 */
 
 const autoUpdater = require('electron-simple-updater');
-const updateServer = 'http://cielcloud.iptime.org:8011';
+// const updateServer = 'http://cielcloud.iptime.org:8011';
 
-autoUpdater.init(`${updateServer}/updates.json`);
+let updateServer = `https://raw.githubusercontent.com/okbody39/argusclient/master/updates/${process.platform}-${process.arch}-prod.json`;
+
+autoUpdater.init(updateServer);
+
+// console.log(updateServer, autoUpdater);
 
 let modalWindow;
 
 function init(mainWindow) {
+
+
+  updateModal(mainWindow);
 
   if(isDev) {
     // updateModal(mainWindow);
@@ -36,8 +43,10 @@ function init(mainWindow) {
     //   modalWindow.webContents.send('version-data', {version: "1.1.16"});
     // }, 2000);
     //
-    return;
+    // return;
   }
+
+
 
   autoUpdater.on('update-available', (info) => {
     updateModal(mainWindow);

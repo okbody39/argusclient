@@ -1,11 +1,7 @@
 {
   "transport": {
-    "module": "ftp",
-    "host": "cielcloud.iptime.org",
-    "port": 8012,
-    "user": "ftproot",
-    "password": "VMware1!",
-    "remotePath": "/updates",
-    "remoteUrl": "http://cielcloud.iptime.org:8011/updates"
+    "module": "github",
+    "token": "7b603f5bda0bc0ffa16c72df782bcca812b9f7aa",
+    "repository": "okbody39/argusclient"
   }
 }
