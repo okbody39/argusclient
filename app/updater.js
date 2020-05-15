@@ -23,9 +23,13 @@ autoUpdater.autoInstallOnAppQuit = true;
 const autoUpdater = require('electron-simple-updater');
 // const updateServer = 'http://cielcloud.iptime.org:8011';
 
-let updateServer = `https://raw.githubusercontent.com/okbody39/argusclient/master/updates/${process.platform}-${process.arch}-prod.json`;
+let updateServer = "https://raw.githubusercontent.com/okbody39/argusclient/master/updates/{platform}-{arch}-{channel}.json";
 
-autoUpdater.init(updateServer);
+autoUpdater.init({
+  autoDownload: true,
+  checkUpdateOnStart: true,
+  url: updateServer
+});
 
 // console.log(updateServer, autoUpdater);
 
@@ -34,7 +38,7 @@ let modalWindow;
 function init(mainWindow) {
 
 
-  updateModal(mainWindow);
+  // updateModal(mainWindow);
 
   if(isDev) {
     // updateModal(mainWindow);
@@ -81,7 +85,7 @@ function init(mainWindow) {
 
   autoUpdater.on('update-downloading', (progressObj) => {
     // console.log('Download progress... ');
-    modalWindow.webContents.send('status-data', "Download progress...");
+    modalWindow.webContents.send('status-data', "Download progress..."  + JSON.stringify(progressObj));
   });
 
   autoUpdater.on('update-downloaded', (info) => {
