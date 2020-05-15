@@ -2,6 +2,7 @@
   "transport": {
     "module": "github",
     "token": "7b603f5bda0bc0ffa16c72df782bcca812b9f7aa",
-    "repository": "okbody39/argusclient"
+    "repository": "okbody39/argusclient",
+    "path": "release"
   }
 }
