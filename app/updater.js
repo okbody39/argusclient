@@ -1,7 +1,7 @@
 "use strict";
 
 const os = require('os');
-const { app, BrowserWindow, Menu, remote, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, remote, ipcMain, dialog } = require("electron");
 const path = require("path");
 const url = require("url");
 const isDev = require("electron-is-dev");
@@ -35,7 +35,7 @@ autoUpdater.init({
 
 let modalWindow;
 
-function init(mainWindow) {
+function init(mainWindow, isCheck) {
 
 
   // updateModal(mainWindow);
@@ -50,18 +50,42 @@ function init(mainWindow) {
     // return;
   }
 
+  autoUpdater.on('update-not-available', (info) => {
 
+    // updateModal(mainWindow);
+    autoUpdater.logger.info('Update not available ...');
+
+    if(isCheck) {
+      autoUpdater.removeAllListeners();
+      dialog.showMessageBox(mainWindow,
+        {
+          type: 'info',
+          title: 'Update check',
+          message: '최신 버전을 사용 중입니다!'
+        });
+    }
+
+
+    // setTimeout(() => {
+    //   if(modalWindow) {
+    //     modalWindow.webContents.send('status-data', "Update available.");
+    //     modalWindow.webContents.send('version-data', info.version);
+    //   }
+    // }, 2000);
+
+  });
 
   autoUpdater.on('update-available', (info) => {
     updateModal(mainWindow);
 
-    autoUpdater.logger.info('Update available.' + JSON.stringify(info));
-    setTimeout(() => {
-      if(modalWindow) {
-        modalWindow.webContents.send('status-data', "Update available." + JSON.stringify(info));
-        // modalWindow.webContents.send('version-data', info);
-      }
-    }, 2000);
+    // autoUpdater.logger.info('Update available ... ' + JSON.stringify(info));
+
+    // setTimeout(() => {
+    //   if(modalWindow) {
+    //     modalWindow.webContents.send('status-data', "Update available.");
+    //     modalWindow.webContents.send('version-data', info.version);
+    //   }
+    // }, 2000);
 
   });
 
@@ -72,7 +96,10 @@ function init(mainWindow) {
     //   autoUpdater.logger.info('Error in auto-updater... ' + JSON.stringify(err));
     // }
 
-    modalWindow.close();
+    setTimeout(() => {
+      autoUpdater.removeAllListeners();
+      modalWindow.close();
+    }, 5000);
 
   });
 
@@ -82,16 +109,24 @@ function init(mainWindow) {
     modalWindow.webContents.send('progress-data', progressObj.percent);
   });
   */
-
+  // update-downloading
   autoUpdater.on('update-downloading', (progressObj) => {
     // console.log('Download progress... ');
-    modalWindow.webContents.send('status-data', "Download progress..."  + JSON.stringify(progressObj));
+    autoUpdater.logger.info('Downloading ... ' + JSON.stringify(progressObj));
+
+    setTimeout(() => {
+      if(modalWindow) {
+        modalWindow.webContents.send('status-data', "Downloading... please wait a moment");
+        modalWindow.webContents.send('version-data', progressObj.version);
+      }
+    }, 2000);
   });
 
   autoUpdater.on('update-downloaded', (info) => {
     autoUpdater.logger.info('Downloaded ... ' + JSON.stringify(info));
     modalWindow.webContents.send('status-data', "Update downloaded; will restart in 5 seconds");
     setTimeout(() => {
+      autoUpdater.removeAllListeners();
       autoUpdater.quitAndInstall();
     }, 5000);
   });
@@ -132,7 +167,10 @@ function updateModal(parent) {
     }
   });
   modalWindow.on('closed', () => {
+
+    autoUpdater.removeAllListeners();
     modalWindow = null;
+
   });
 
   let indexPath;

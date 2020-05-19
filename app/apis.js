@@ -35,8 +35,8 @@ function encryptStr(val) {
   }
 
   let encVal = cipher.update(value, 'utf8', 'base64');
-  encVal += cipher.final('base64'); 
-  
+  encVal += cipher.final('base64');
+
   return encVal;
 
 }
@@ -80,8 +80,8 @@ const aboutThis = require('./about');
 const autoUpdater = require('./updater');
 // const settingThis = require('./setting');
 
-function autoUpdateCheck(mainWindow) {
-  autoUpdater.init(mainWindow);
+function autoUpdateCheck(mainWindow, isCheck) {
+  autoUpdater.init(mainWindow, isCheck);
 }
 
 var __START_TIME__ = performance.now();
@@ -251,7 +251,7 @@ function initial(mainWindow, appVersion) {
           }
 
           if(jsonData.notification) {
-            
+
             let iconAddress = path.join(__dirname, "../resources/icons/seedclient_icon.ico");
             const notif={
               title: jsonData.title,
@@ -369,7 +369,7 @@ function initial(mainWindow, appVersion) {
   });
 
   ipcMain.on("check-update", (event, arg) => {
-    autoUpdateCheck(mainWindow);
+    autoUpdateCheck(mainWindow, true);
   });
 
   ipcMain.on("ping", (event, arg) => {
@@ -470,7 +470,7 @@ function initial(mainWindow, appVersion) {
           password: arg.newPassword,
         });
       }
-      
+
 
     })
     .catch(function (error) {
@@ -721,7 +721,7 @@ function initial(mainWindow, appVersion) {
     //   let retJson = vmList;
     //   event.reply('vm-list', retJson);
     // } else {
-      
+
       console.log("apis.js - vm-list", url);
 
       axios.get(url)
@@ -979,7 +979,7 @@ function initial(mainWindow, appVersion) {
 
     switch(arg.step) {
       case 0: // NW
-        retJson = os.networkInterfaces(); 
+        retJson = os.networkInterfaces();
         event.returnValue = retJson;
         break;
 
@@ -1054,7 +1054,9 @@ function initial(mainWindow, appVersion) {
             }
           });
           forceQuit = true;
-          mainWindow.close();
+          setTimeout(() => {
+            mainWindow.close();
+          }, 1000);
         }
          // 1 for No
         if(res.response== 1){
@@ -1066,7 +1068,7 @@ function initial(mainWindow, appVersion) {
   });
 
   setTimeout(() => {
-    autoUpdateCheck(mainWindow);
+    autoUpdateCheck(mainWindow, false);
   }, 500);
 
 }

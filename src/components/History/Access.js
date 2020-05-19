@@ -16,6 +16,8 @@ import { Plus } from 'react-feather';
 // Styles
 import styles from "./Access.scss";
 
+const moment = require("moment");
+
 /**
  * Access
  *
@@ -23,7 +25,7 @@ import styles from "./Access.scss";
  * @extends {Component}
  */
 class Access extends Component {
-  
+
   constructor(props) {
     super(props);
     this.state = {
@@ -55,7 +57,7 @@ class Access extends Component {
       let usedTotalTime = 0;
       let usedThisMonthTime = 0;
       let usedBeforeMonthTime = 0;
-      
+
       let lastConnectDate = null;
 
       var thisMonth = new Date();
@@ -96,7 +98,7 @@ class Access extends Component {
           case "CLIENT_END":
             a.gb = "클라이언트";
             a.detail = "클라이언트 종료";
-            a.result =  "사용시간: " + a.content + " ms";
+            a.result =  "사용시간: " + a.content + " sec";
             break;
           case "VM_START":
             a.gb = "VM";
@@ -254,17 +256,23 @@ class Access extends Component {
         <Row gutter={16}>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="총 사용 시간" value={this.state.usedTotalTime} />
+              <Statistic title="총 사용 시간" value={moment().startOf('day')
+                .seconds(this.state.usedTotalTime)
+                .format('H:mm:ss')} />
             </div>
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="이번달 사용 시간" value={this.state.usedThisMonthTime} />
+              <Statistic title="이번달 사용 시간" value={moment().startOf('day')
+                .seconds(this.state.usedThisMonthTime)
+                .format('H:mm:ss')} />
             </div>
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="지난달 사용 시간" value={this.state.usedBeforeMonthTime} />
+              <Statistic title="지난달 사용 시간" value={moment().startOf('day')
+                .seconds(this.state.usedBeforeMonthTime)
+                .format('H:mm:ss')} />
             </div>
           </Col>
           <Col span={6}>
