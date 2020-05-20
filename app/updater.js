@@ -65,7 +65,6 @@ function init(mainWindow, isCheck) {
         });
     }
 
-
     // setTimeout(() => {
     //   if(modalWindow) {
     //     modalWindow.webContents.send('status-data', "Update available.");

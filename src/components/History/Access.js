@@ -67,14 +67,22 @@ class Access extends Component {
       beforeMonth.setMonth(beforeMonth.getMonth() - 1);
       var beforeYYYYMM = beforeMonth.getFullYear() + "/" + ( beforeMonth.getMonth() + 1 );
 
-      arg.map((a) => {
+      arg.map((a, idx) => {
         let createdAt = new Date(a.createdAt);
         let createdYYYYMM = createdAt.getFullYear() + "/" + ( createdAt.getMonth() + 1 );
         let elapseTime = parseInt(a.content || "0");
 
-        if(lastConnectDate === null) {
+        if(lastConnectDate === null && idx > 0 && a.gb === "CLIENT_START") {
           lastConnectDate = createdAt;
         }
+
+        // if(lastConnectDate === null) {
+        //   let diff = new Date() - createdAt;
+        //   // console.log("====>", diff);
+        //   if(diff > 5000) {
+        //     lastConnectDate = createdAt;
+        //   }
+        // }
 
         usedTotalTime += elapseTime;
 
