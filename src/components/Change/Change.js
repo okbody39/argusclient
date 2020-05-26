@@ -35,6 +35,7 @@ class Change extends Component {
       current: 0,
       result: {},
       selectedComp: null,
+      selectedType: null,
     };
 
     this.ChangeType = [
@@ -54,10 +55,22 @@ class Change extends Component {
   setResult(result) {
     const current = this.state.current + 1;
 
+    let param = {};
+    param.username = this.props.auth;
+    param.gb = this.state.selectedType;
+    param.content = result;
+
+    console.log(JSON.stringify(param));
+    
+    let reply = window.ipcRenderer.sendSync("change-apply", param);
+
+    console.log(JSON.stringify(reply));
+
     this.setState({
       result: result,
       current: current,
     });
+
   }
 
   next(id) {
@@ -68,6 +81,7 @@ class Change extends Component {
 
       if(comp.id === id) {
         this.setState({
+          selectedType: comp.id,
           selectedComp: comp.component,
           current: current,
         });

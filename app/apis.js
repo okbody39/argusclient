@@ -827,7 +827,7 @@ function initial(mainWindow, appVersion) {
 
   ipcMain.on("vm-screenshot", (event, arg) => {
     let url = 'http://' + _ARGUS_GATE_ + '/vms/image/';
-    let vmList = store.get("vm-list");
+    let vmList = store.get("vm-list") || [];
 
     vmList.map((vm) => {
       axios.get(url + vm.id, {})
@@ -930,6 +930,45 @@ function initial(mainWindow, appVersion) {
       })
       .then(function () {
       });
+  });
+
+  ipcMain.on("change-apply", (event, arg) => {
+    let serverInfo = store.get("server-info", {});
+
+    _ARGUS_GATE_ = serverInfo.serverUrl;
+
+    let url = 'http://' + _ARGUS_GATE_ + '/change';
+    
+    let data = {
+      user: arg.username,
+      gb: arg.gb,
+      target: arg.content.vmId,
+      content: JSON.stringify(arg.content),
+      status: 'APPLY',
+      approver: '',
+    };
+
+    axios({
+      url: url,
+      method: 'post',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: encodeURI(`user=${data.user}&gb=${data.gb}&target=${data.target}&content=${data.content}&status=${data.status}&approver=${data.approver}`),
+    })
+    .then(function (response) {
+      let retJson = response.data;
+
+      // console.log("OK", retJson);
+
+      event.returnValue = "OK";
+
+    })
+    .catch(function (error) {
+      console.log("ERROR", error);
+      event.returnValue = "ERROR";
+    })
+    .then(function () {
+      // event.returnValue = auth;
+    });
   });
 
   ipcMain.on("access-list", (event, arg) => {

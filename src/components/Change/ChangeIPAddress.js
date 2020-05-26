@@ -90,7 +90,7 @@ class ChangeIPAddress extends Component {
 
     form.validateFields((err, values)  => {
       if (!err) {
-        // console.log(values);
+        console.log(values);
         this.props.setResult(values);
       }
     });
@@ -126,7 +126,26 @@ class ChangeIPAddress extends Component {
           )}
         </Form.Item>
 
-        <Form.Item label="Select[multiple]">
+        <Form.Item label="IP 주소">
+          {getFieldDecorator('ipaddress', {
+            rules: [
+              { 
+                required: true, 
+                message: 'IP주소를 입력하세요.', 
+                // type: 'array' 
+              },
+              // {
+              //   type: "regexp",
+              //   pattern: new RegExp(/^(?!\.)((^|\.)([1-9]?\d|1\d\d|2(5[0-5]|[0-4]\d))){4}$/),
+              //   message: 'IP주소 형식이 맞지 않습니다.', 
+              // },
+            ],
+          })(
+            <Input placeholder="xxx.xxx.xxx.xxx" />
+          )}
+        </Form.Item>
+
+        {/* <Form.Item label="Select[multiple]">
           {getFieldDecorator('select-multiple', {
             rules: [
               // { required: true, message: 'Please select your favourite colors!', type: 'array' },
@@ -190,7 +209,8 @@ class ChangeIPAddress extends Component {
               </Row>
             </Checkbox.Group>,
           )}
-        </Form.Item>
+        </Form.Item> */}
+
         <Form.Item wrapperCol={{ span: 12, offset: 6 }}>
           <Button type="primary" htmlType="submit">
             Submit
