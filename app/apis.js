@@ -613,9 +613,7 @@ function initial(mainWindow, appVersion) {
     };
 
     // console.log(json);
-
     // .serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}
-
     // event.returnValue = 'connect: ' + vmName;
 
     if(osver === "darwin") {
