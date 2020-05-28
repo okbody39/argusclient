@@ -17,6 +17,18 @@ import { withRouter } from 'react-router-dom';
 // Styles
 import styles from "./Change.scss";
 
+const _DICT_ = {
+  "CHANGE_RESOURCE": "자원 증설",
+  "CHANGE_IP": "IP 변경",
+  "APPLY": "신청",
+  "DONE": "완료",
+  "DOING": "진행중",
+  "REJECT": "거절",
+};
+const getDictValue = (key) => {
+  return _DICT_[key];
+}
+
 /**
  * Change
  *
@@ -175,7 +187,7 @@ class Change extends Component {
           { text: 'IP변경', value: 'CHANGE_IP'},
         ],
         onFilter: (value, record) => record.gb.indexOf(value) === 0,
-        render: (text, record) => <div>{text}</div>
+        render: (text, record) => <div>{getDictValue(text)}</div>
       },
       {
         title: '내용',
@@ -196,6 +208,7 @@ class Change extends Component {
           { text: '거절', value: 'REJECT'},
         ],
         onFilter: (value, record) => record.status.indexOf(value) === 0,
+        render: (text, record) => <div>{getDictValue(text)}</div>
       },
     ];
 

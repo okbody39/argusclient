@@ -12,6 +12,8 @@ const { Option } = Select;
 const { Paragraph, Text } = Typography;
 
 import Highlighter from 'react-highlight-words';
+
+
 import { Plus } from 'react-feather';
 import { withRouter } from "react-router-dom";
 
@@ -21,6 +23,7 @@ import styles from "./Change.scss";
 // Sub components
 import ChangeResource from "./ChangeResource";
 import ChangeIPAddress from "./ChangeIPAddress";
+
 /**
  * Change
  *
@@ -61,7 +64,7 @@ class Change extends Component {
     param.content = result;
 
     console.log(JSON.stringify(param));
-    
+
     let reply = window.ipcRenderer.sendSync("change-apply", param);
 
     console.log(JSON.stringify(reply));

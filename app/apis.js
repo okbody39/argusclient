@@ -118,6 +118,41 @@ var __OS__ = {
   vhc: vmwareClient,
 };
 
+function checkClient() {
+  if(process.platform === "win32") {
+    const regedit = require("regedit");
+    let regPath = "HKLM\\SOFTWARE\\Wow6432Node\\VMware, Inc.\\VMware VDM\\Client\\";
+
+    if (process.arch !== "x64") {
+      regPath = "HKEY_LOCAL_MACHINE\\Software\\VMware, Inc.\\VMware VDM\\Client\\";
+    }
+
+    let ret = "Not installed";
+
+    regedit.list(regPath, function (err, result) {
+      if (!err) {
+        for (let key in result) {
+          ret = "Installed (" + result[key].values.Version.value + ")";
+        }
+      }
+      return ret;
+    });
+
+  } else if(process.platform === "darwin") {
+    let path = "/Applications/VMware Horizon Client.app";
+    try {
+      if (fs.existsSync(path)) {
+        return "Installed";
+      }
+    } catch(err) {
+      // console.error(err)
+      return "-";
+    }
+  } else {
+    return "-";
+  }
+}
+
 // console.log(vmwareClient);
 // process.exit(0);
 
@@ -125,34 +160,49 @@ var __OS__ = {
 // const ls = spawn('wmic', ['-l']);
 
 function init(mainWindow, appVersion) {
-  // WINDOWS
-  if(process.platform === "win32") {
-    const regedit = require("regedit");
-    let regPath = "HKLM\\SOFTWARE\\Wow6432Node\\VMware, Inc.\\VMware VDM\\Client\\";
 
-    if(process.arch !== "x64") {
-      regPath = "HKEY_LOCAL_MACHINE\\Software\\VMware, Inc.\\VMware VDM\\Client\\";
-    }
+  vmwareClient = checkClient();
+  __OS__.vhc = vmwareClient;
 
-    vmwareClient = "Not installed";
-    __OS__.vhc = vmwareClient;
+  initial(mainWindow, appVersion);
 
-    regedit.list(regPath, function(err, result) {
-      if(!err) {
-        for(let key in result) {
-          vmwareClient = "Installed (" + result[key].values.Version.value + ")";
-          __OS__.vhc = vmwareClient;
-        }
-      } else {
-        // console.log(err);
-      }
-
-      initial(mainWindow, appVersion);
-    });
-
-  } else {
-    initial(mainWindow, appVersion);
-  }
+  // // WINDOWS
+  // if(process.platform === "win32") {
+  //   const regedit = require("regedit");
+  //   let regPath = "HKLM\\SOFTWARE\\Wow6432Node\\VMware, Inc.\\VMware VDM\\Client\\";
+  //
+  //   if (process.arch !== "x64") {
+  //     regPath = "HKEY_LOCAL_MACHINE\\Software\\VMware, Inc.\\VMware VDM\\Client\\";
+  //   }
+  //
+  //   vmwareClient = "Not installed";
+  //   __OS__.vhc = vmwareClient;
+  //
+  //   regedit.list(regPath, function (err, result) {
+  //     if (!err) {
+  //       for (let key in result) {
+  //         vmwareClient = "Installed (" + result[key].values.Version.value + ")";
+  //         __OS__.vhc = vmwareClient;
+  //       }
+  //     } else {
+  //       // console.log(err);
+  //     }
+  //
+  //     initial(mainWindow, appVersion);
+  //   });
+  // } else if(process.platform === "darwin") {
+  //   let path = "/Applications/VMware Horizon Client.app";
+  //   try {
+  //     if (fs.existsSync(path)) {
+  //       vmwareClient = "Installed";
+  //     }
+  //   } catch(err) {
+  //     console.error(err)
+  //   }
+  //   initial(mainWindow, appVersion);
+  // } else {
+  //   initial(mainWindow, appVersion);
+  // }
 }
 
 function initial(mainWindow, appVersion) {
@@ -308,7 +358,7 @@ function initial(mainWindow, appVersion) {
     // 셋팅이 유효하면 store에 입력후 재기동 한다.
     // 유효하지 않으면 다시 입력
 
-    // console.log(arg);
+    console.log(arg);
 
     if(arg.serverUrl) {
       let url = "http://" + arg.serverUrl + "/conninfo";
@@ -938,7 +988,7 @@ function initial(mainWindow, appVersion) {
     _ARGUS_GATE_ = serverInfo.serverUrl;
 
     let url = 'http://' + _ARGUS_GATE_ + '/change';
-    
+
     let data = {
       user: arg.username,
       gb: arg.gb,
@@ -1023,6 +1073,9 @@ function initial(mainWindow, appVersion) {
         break;
 
       case 1: // SW
+        vmwareClient = checkClient();
+        __OS__.vhc = vmwareClient;
+
         retJson = {
           vmwareClient: vmwareClient,
           // ...__OS__
@@ -1053,6 +1106,46 @@ function initial(mainWindow, appVersion) {
         event.returnValue = retJson;
     }
 
+  });
+
+  ipcMain.on("failure-apply", (event, arg) => {
+    let serverInfo = store.get("server-info", {});
+
+    _ARGUS_GATE_ = serverInfo.serverUrl;
+
+    let url = 'http://' + _ARGUS_GATE_ + '/failure';
+
+    let data = {
+      user: arg.username,
+      gb: arg.gb,
+      target: arg.content.vmId,
+      content: JSON.stringify(arg.content),
+      status: 'APPLY',
+      result: '',
+      worker: '',
+    };
+
+    axios({
+      url: url,
+      method: 'post',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: encodeURI(`user=${data.user}&gb=${data.gb}&target=${data.target}&content=${data.content}&status=${data.status}&result=${data.result}&worker=${data.worker}`),
+    })
+      .then(function (response) {
+        let retJson = response.data;
+
+        // console.log("OK", retJson);
+
+        event.returnValue = "OK";
+
+      })
+      .catch(function (error) {
+        console.log("ERROR", error);
+        event.returnValue = "ERROR";
+      })
+      .then(function () {
+        // event.returnValue = auth;
+      });
   });
 
   let forceQuit = false;

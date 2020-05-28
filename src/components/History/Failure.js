@@ -9,6 +9,8 @@ import {
 const { Option } = Select;
 
 import Highlighter from 'react-highlight-words';
+import Moment from 'react-moment';
+import 'moment-timezone';
 
 import { Plus } from 'react-feather';
 
@@ -16,26 +18,17 @@ import { Plus } from 'react-feather';
 // Styles
 import styles from "./Failure.scss";
 
-const data = [
-  {
-    created_at: '2020.01.28 09:23:04',
-    type: '접속 장애',
-    detail: 'WIN10-INTERNETVM 접속 장애',
-    status: '작업중',
-    result: '-',
-    worker: '-',
-  },
-  {
-    created_at: '2019.11.28 09:23:04',
-    type: '접속 장애',
-    detail: 'WIN10-INTERNETVM 접속 장애',
-    status: '완료',
-    result: 'VM재기동',
-    worker: 'SELF',
-  },
-
-];
-
+const _DICT_ = {
+  "CHANGE_RESOURCE": "자원 증설",
+  "CHANGE_IP": "IP 변경",
+  "APPLY": "신청",
+  "DONE": "완료",
+  "DOING": "진행중",
+  "REJECT": "거절",
+};
+const getDictValue = (key) => {
+  return _DICT_[key];
+}
 
 /**
  * Failure
@@ -51,6 +44,7 @@ class Failure extends Component {
       searchedColumn: '',
       visible: false,
       failureList: [],
+      loading: true,
     };
   }
 
@@ -155,7 +149,7 @@ class Failure extends Component {
 
   handleChange = e => {
     this.props.history.push('/failure');
-    
+
     // // this.setState({
     // //   visible: false,
     // // });
@@ -181,24 +175,25 @@ class Failure extends Component {
     const columns = [
       {
         title: '일시',
-        dataIndex: 'created_at',
-        key: 'created_at',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
         // width: '20%',
-        ...this.getColumnSearchProps('created_at'),
+        ...this.getColumnSearchProps('createdAt'),
+        render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
       },
       {
         title: '유형',
-        dataIndex: 'type',
-        key: 'type',
+        dataIndex: 'gb',
+        key: 'gb',
         align: 'center',
         // width: '20%',
-        ...this.getColumnSearchProps('type'),
+        ...this.getColumnSearchProps('gb'),
       },
       {
         title: '세부내용',
-        dataIndex: 'detail',
-        key: 'detail',
-        ...this.getColumnSearchProps('detail'),
+        dataIndex: 'content',
+        key: 'content',
+        ...this.getColumnSearchProps('content'),
       },
       {
         title: '상태',
@@ -206,12 +201,14 @@ class Failure extends Component {
         align: 'center',
         key: 'status',
         ...this.getColumnSearchProps('status'),
+        render: (text, record) => <div>{getDictValue(text)}</div>
       },
       {
         title: '조치결과',
         dataIndex: 'result',
         key: 'result',
         ...this.getColumnSearchProps('result'),
+        render: (text, record) => <div>{getDictValue(text)}</div>
       },
       {
         title: '작업자',
@@ -241,9 +238,10 @@ class Failure extends Component {
           장애신고 하기
         </Button> */}
         <Table bordered size="middle"
-          columns={columns}
-          dataSource={this.state.failureList}
-          pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+               loading={this.state.loading}
+              columns={columns}
+              dataSource={this.state.failureList}
+              pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
         />
         {/* <Modal
           title="장애 신고"
