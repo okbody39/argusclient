@@ -8,6 +8,8 @@ import {
 } from 'antd';
 const { Step } = Steps;
 const { Paragraph, Text } = Typography;
+const { TextArea } = Input;
+
 import { Link, withRouter } from 'react-router-dom';
 
 import Highlighter from 'react-highlight-words';
@@ -41,8 +43,13 @@ class Failure extends Component {
       current: 0,
       currentDiagnosis: 0,
       currentStatus: "process", // error
+      diagnosisReport: {},
       diagnosisResult: [],
       diagnosisErrors: [],
+
+      failureDetailType: [],
+      failureEtcText: "",
+
       guideTitle: "관리자 문의 필요",
       guideSubTitle: "재기동후에도 VM 접속이 안될 경우, 고장신고를 해주시기 바랍니다.",
       guideExtra: [
@@ -56,13 +63,91 @@ class Failure extends Component {
     };
   }
 
-  next() {
+  onChange = (e) => {
+    console.log(e.target.value)
+    this.setState({ failureEtcText: e.target.value });
+  };
+
+  next(type) {
     const current = this.state.current + 1;
-    this.setState({ current });
+    let failureDetailType = [];
+    let detailTypes = {
+      "CONNECT": [
+        { key: "CONNECT-1", text: "가상머신에 접속이 되지 않습니다."},
+        { key: "CONNECT-2", text: "가상머신이 보이지 않습니다."},
+        { key: "CONNECT-3", text: "속도가 느립니다."},
+      ],
+      "INSTALL": [
+        { key: "INSTALL-1", text: "VMware Horizon Client를 설치했는데 설치되지 않았다고 메세지가 뜹니다."},
+      ],
+      "USAGE": [
+        { key: "USAGE-1", text: "가상머신의 자원을(CPU, 메모리, 디스크 등) 증설하고 싶습니다."},
+        { key: "USAGE-2", text: "가상머신에 IP주소를 변경하고 싶습니다."},
+        { key: "USAGE-3", text: "가상머신에 파일을 업로드 또는 다운로드하고 싶습니다."},
+        { key: "USAGE-4", text: "비밀번호를 변경하고 싶습니다."},
+      ],
+    }
+
+    if(this.state.current === 1) {
+      if(type === "ETC") {
+        failureDetailType.push(
+          <div>
+            <TextArea
+              key="ETC-TEXT"
+              onChange={this.onChange}
+              placeholder="운영자에게 문의하실 사항을 입력해 주세요."
+              autoSize={{ minRows: 3, maxRows: 5 }}
+              style={{ marginBottom: 10 }}
+            />
+            <Button block onClick={this.next.bind(this, {key: "ETC", text: ""})} key="ETC">내용을 전송합니다.</Button>
+          </div>
+        )
+      } else {
+        detailTypes[type].map((t) => {
+          failureDetailType.push(
+            <Button block onClick={this.next.bind(this, t)} key={t.key}>{t.text}</Button>
+          )
+        });
+      }
+
+      this.setState({
+        failureDetailType,
+      });
+
+    }
+
+    if(this.state.current === 2) {
+
+      // result: this.state.diagnosisErrors,
+      // detail: this.state.diagnosisReport
+
+      /*
+      guideTitle: "관리자 문의 필요",
+      guideSubTitle: "재기동후에도 VM 접속이 안될 경우, 고장신고를 해주시기 바랍니다.",
+      guideExtra: [
+        <Button type="primary" onClick={this.onReport.bind(this)} key="121212">
+          재기동
+        </Button>,
+        <Button key="buy" onClick={this.onReport.bind(this)}>
+          고장신고
+        </Button>,
+      ]
+      */
+
+      this.setState({
+        selectedType: type.key,
+        diagnosisErrors: type.key ==="ETC" ? [this.state.failureEtcText] : [type.text],
+      });
+    }
+
+    this.setState({
+      current,
+    });
   }
 
   prev() {
     const current = this.state.current - 1;
+
     this.setState({ current });
   }
 
@@ -101,8 +186,10 @@ class Failure extends Component {
     }
 
     // console.log(this.state.diagnosisResult);
-
+    let result = [];
+    let resultQuide = null;
     let diag_result = {};
+
     // 0 : NW
     let diag_nw = this.state.diagnosisResult[0];
     let myip = [];
@@ -116,17 +203,17 @@ class Failure extends Component {
     });
 
     if(myip.length > 0) {
-      diag_result.network = myip;
+      diag_result.network = { result: true, content: myip };
     } else {
-      diag_result.network = "-";
+      diag_result.network = { result: false, content: diag_nw };
     }
 
     // 1 : Client
     let diag_sw = this.state.diagnosisResult[1];
     if((diag_sw["vmwareClient"] || "" ).indexOf("Installed") !== -1) {
-      diag_result.client = diag_sw["vmwareClient"];
+      diag_result.client = { result: true, content: diag_sw["vmwareClient"] };
     } else {
-      diag_result.client = "-";
+      diag_result.client = { result: false, content: diag_sw["vmwareClient"] };
     }
 
     // 2 : MY VM
@@ -144,31 +231,31 @@ class Failure extends Component {
       }
     });
     if(myvm.length > 0) {
-      diag_result.vm = myvm;
+      diag_result.vm = { result: true, content: myvm };
     } else {
-      diag_result.vm = "-";
+      diag_result.vm = { result: false, content: diag_vm };
     }
 
     // 3 : Server
     let diag_svr = this.state.diagnosisResult[3];
 
-    if(diag_svr.avg > 10) {
-      diag_result.service = "-";
+    if(diag_svr.avg < 10) {
+      diag_result.service = { result: true, content: diag_svr };
     } else {
-      diag_result.service = diag_svr;
+      diag_result.service = { result: false, content: diag_svr };
     }
 
     // console.log(diag_result);
 
-    let result = [];
-    let resultQuide = null;
+
     Object.keys(diag_result).forEach(function(k){
-      if(diag_result[k] === "-") {
+      if(!diag_result[k].result) {
         switch(k) {
           case "network":
             result.push("네트워크가 끊어져 있습니다.");
 
             resultQuide = {
+              selectedType: "DIAGNOSIS",
               guideTitle: "네트워크 재설정",
               guideSubTitle: "접속하신 컴퓨터의 네트워크 환경 설정을 다시 확인해 주시기 바랍니다.",
               guideExtra: [
@@ -184,6 +271,7 @@ class Failure extends Component {
             result.push("VMware Horizon Client가 설치 되지 않았습니다.");
 
             resultQuide = {
+              selectedType: "DIAGNOSIS",
               guideTitle: "필수 프로그램 확인",
               guideSubTitle: "접속을 위한 필수 프로그램이 설치되어 있지 않습니다. (VMware Horizon Client)",
               guideExtra: [
@@ -199,6 +287,7 @@ class Failure extends Component {
             result.push("사용 가능한 가상머신이 없습니다.");
 
             resultQuide = {
+              selectedType: "DIAGNOSIS",
               guideTitle: "가상머신 확인",
               guideSubTitle: "사용자에게 할당된 가상머신이 없습니다. 고장신고해주세요.",
               guideExtra: [
@@ -212,8 +301,9 @@ class Failure extends Component {
 
             case "service":
               result.push("서버와의 통신이 불안정합니다.");
-  
+
               resultQuide = {
+                selectedType: "DIAGNOSIS",
                 guideTitle: "서버 상태 확인",
                 guideSubTitle: "서버의 상태가 불안정 합니다. 관리자에게 상황을 통보하였습니다.",
                 guideExtra: [
@@ -222,7 +312,7 @@ class Failure extends Component {
                   </Button>,
                 ]
               };
-  
+
               break;
           }
       }
@@ -237,6 +327,7 @@ class Failure extends Component {
       current: result.length > 0 ? 3 : 1,
       currentDiagnosis: 4,
       diagnosisErrors: result,
+      diagnosisReport: diag_result,
     });
 
   }
@@ -250,11 +341,19 @@ class Failure extends Component {
 
     param.username = this.props.auth;
     param.gb = this.state.selectedType;
-    param.content = result;
+    param.content = {
+      result: this.state.diagnosisErrors,
+      detail: this.state.diagnosisReport
+    };
+    param.status = "APPLY";
 
-    console.log(JSON.stringify(param));
+    // console.log(JSON.stringify(param));
 
-    // let reply = window.ipcRenderer.sendSync("failure-apply", param);
+    if(this.state.selectedType) {
+      //
+    } else {
+      window.ipcRenderer.sendSync("failure-apply", param);
+    }
 
     this.props.history.push('/history/failure');
   }
@@ -280,10 +379,10 @@ class Failure extends Component {
         title: '장애 유형 선택',
         content: (
           <div className={styles.inner}>
-            <Button block onClick={this.next.bind(this)}>접속 문제</Button>
-            <Button block>설치 문의</Button>
-            <Button block>사용 문의</Button>
-            <Button block>기타 문의</Button>
+            <Button block onClick={this.next.bind(this, "CONNECT")}>접속 문제</Button>
+            <Button block onClick={this.next.bind(this, "INSTALL")}>설치 문의</Button>
+            <Button block onClick={this.next.bind(this, "USAGE")}>사용 문의</Button>
+            <Button block onClick={this.next.bind(this, "ETC")}>기타 문의</Button>
           </div>
         ),
       },
@@ -291,9 +390,11 @@ class Failure extends Component {
         title: '세부 유형 선택',
         content: (
           <div className={styles.inner}>
-            <Button block onClick={this.next.bind(this)}>VM이 보이지 않습니다.</Button>
-            <Button block>접속시 로딩시간이 많이 소요됩니다.</Button>
-            <Button block onClick={this.next.bind(this)}>접속이 되지 않습니다.</Button>
+            {
+              this.state.failureDetailType.map((detailType) => {
+                return detailType;
+              })
+            }
           </div>
         ),
       },

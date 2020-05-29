@@ -19,7 +19,7 @@ import { Plus } from 'react-feather';
 import styles from "./Failure.scss";
 
 const _DICT_ = {
-  "CHANGE_RESOURCE": "자원 증설",
+  "DIAGNOSIS": "진단",
   "CHANGE_IP": "IP 변경",
   "APPLY": "신청",
   "DONE": "완료",
