@@ -7,6 +7,7 @@ const isDev = require("electron-is-dev");
 
 const {spawn, exec} = require('child_process');
 
+const tcpp = require('tcp-ping');
 const axios = require('axios');
 const https = require('https');
 
@@ -1095,9 +1096,20 @@ function initial(mainWindow, appVersion) {
         break;
 
       case 3: // SRV
-        retJson = {
-        }
-        event.returnValue = retJson;
+
+        let srvAddress = _ARGUS_GATE_.split(":");
+
+        tcpp.ping({ address: srvAddress[0], port: srvAddress[1] }, function(err, data) {
+          // console.log(data);
+          event.returnValue = data;
+        });
+
+        // tcpp.probe(srvAddress[0], srvAddress[1], function(err, available) {
+        //   // console.log(available);
+        //   event.returnValue = available;
+        // });
+
+        // event.returnValue = retJson;
         break;
 
       default:

@@ -12732,6 +12732,11 @@ tar@^2.0.0:
     fstream "^1.0.12"
     inherits "2"
 
+tcp-ping@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/tcp-ping/-/tcp-ping-0.1.1.tgz#02dd7f42b5bf7d7cb78d5b7aacefa155fd8f7c0c"
+  integrity sha1-At1/QrW/fXy3jVt6rO+hVf2PfAw=
+
 temp-file@^3.3.7:
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/temp-file/-/temp-file-3.3.7.tgz#686885d635f872748e384e871855958470aeb18a"

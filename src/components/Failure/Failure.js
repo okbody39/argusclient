@@ -123,7 +123,7 @@ class Failure extends Component {
 
     // 1 : Client
     let diag_sw = this.state.diagnosisResult[1];
-    if(diag_sw["vmwareClient"].indexOf("Installed") !== -1) {
+    if((diag_sw["vmwareClient"] || "" ).indexOf("Installed") !== -1) {
       diag_result.client = diag_sw["vmwareClient"];
     } else {
       diag_result.client = "-";
@@ -150,7 +150,13 @@ class Failure extends Component {
     }
 
     // 3 : Server
-    diag_result.service = "";
+    let diag_svr = this.state.diagnosisResult[3];
+
+    if(diag_svr.avg > 10) {
+      diag_result.service = "-";
+    } else {
+      diag_result.service = diag_svr;
+    }
 
     // console.log(diag_result);
 
@@ -203,7 +209,22 @@ class Failure extends Component {
             };
 
             break;
-        }
+
+            case "service":
+              result.push("서버와의 통신이 불안정합니다.");
+  
+              resultQuide = {
+                guideTitle: "서버 상태 확인",
+                guideSubTitle: "서버의 상태가 불안정 합니다. 관리자에게 상황을 통보하였습니다.",
+                guideExtra: [
+                  <Button key="buy" onClick={() => this.onReport()}>
+                    고장신고
+                  </Button>,
+                ]
+              };
+  
+              break;
+          }
       }
     });
 
