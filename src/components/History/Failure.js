@@ -177,7 +177,7 @@ class Failure extends Component {
         title: '일시',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        // width: '20%',
+        width: '20%',
         ...this.getColumnSearchProps('createdAt'),
         render: (text, record) => <Moment format="YYYY-MM-DD HH:mm:ss">{text}</Moment>
       },
@@ -194,6 +194,7 @@ class Failure extends Component {
         dataIndex: 'content',
         key: 'content',
         ...this.getColumnSearchProps('content'),
+        render: (text, record) => <div>{JSON.parse(text).result}</div>
       },
       {
         title: '상태',

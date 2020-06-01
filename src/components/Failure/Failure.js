@@ -64,7 +64,7 @@ class Failure extends Component {
   }
 
   onChange = (e) => {
-    console.log(e.target.value)
+    // console.log(e.target.value)
     this.setState({ failureEtcText: e.target.value });
   };
 
@@ -73,23 +73,89 @@ class Failure extends Component {
     let failureDetailType = [];
     let detailTypes = {
       "CONNECT": [
-        { key: "CONNECT-1", text: "가상머신에 접속이 되지 않습니다."},
-        { key: "CONNECT-2", text: "가상머신이 보이지 않습니다."},
-        { key: "CONNECT-3", text: "속도가 느립니다."},
+        {
+          key: "CONNECT-1", text: "가상머신에 접속이 되지 않습니다.",
+          guide: {
+            guideTitle: "관리자 문의 필요",
+            guideSubTitle: "재기동후에도 VM 접속이 안될 경우, 고장신고를 해주시기 바랍니다.",
+            guideExtra: ["재기동", "고장신고"],
+          }
+        },
+        {
+          key: "CONNECT-2", text: "가상머신이 보이지 않습니다.",
+          guide: {
+            guideTitle: "관리자 문의 필요",
+            guideSubTitle: "고장신고를 해주시기 바랍니다.",
+            guideExtra: ["고장신고"],
+          }
+        },
+        {
+          key: "CONNECT-3", text: "속도가 느립니다.",
+          guide: {
+            guideTitle: "관리자 문의 필요",
+            guideSubTitle: "고장신고를 해주시기 바랍니다.",
+            guideExtra: ["고장신고"],
+          }
+        },
       ],
       "INSTALL": [
-        { key: "INSTALL-1", text: "VMware Horizon Client를 설치했는데 설치되지 않았다고 메세지가 뜹니다."},
+        {
+          key: "INSTALL-1", text: "VMware Horizon Client를 설치했는데 설치되지 않았다고 메세지가 뜹니다.",
+          guide: {
+            guideTitle: "필수 SW 설치",
+            guideSubTitle: "설치된 프로그램 재 설치후 다시 접속해 주시기 바라며, 계속 문제 발생시 고장신고해 주시기 바랍니다.",
+            guideExtra: ["고장신고"],
+          }
+        },
       ],
       "USAGE": [
-        { key: "USAGE-1", text: "가상머신의 자원을(CPU, 메모리, 디스크 등) 증설하고 싶습니다."},
-        { key: "USAGE-2", text: "가상머신에 IP주소를 변경하고 싶습니다."},
-        { key: "USAGE-3", text: "가상머신에 파일을 업로드 또는 다운로드하고 싶습니다."},
-        { key: "USAGE-4", text: "비밀번호를 변경하고 싶습니다."},
+        {
+          key: "USAGE-1", text: "가상머신의 자원을(CPU, 메모리, 디스크 등) 증설하고 싶습니다.",
+          guide: {
+            guideTitle: "자원 증설",
+            guideSubTitle: "화면이동 버튼을 눌러서 자원증설을 신청하면, 관리자 승인후 적용됩니다.",
+            guideExtra: ["이동|/change"],
+          }
+        },
+        {
+          key: "USAGE-2", text: "가상머신에 IP주소를 변경하고 싶습니다.",
+          guide: {
+            guideTitle: "IP 변경",
+            guideSubTitle: "화면이동 버튼을 눌러서 IP변경을 신청하면, 관리자 승인후 적용됩니다.",
+            guideExtra: ["이동|/change"],
+          }
+        },
+        {
+          key: "USAGE-3", text: "가상머신에 파일을 업로드 또는 다운로드하고 싶습니다.",
+          guide: {
+            guideTitle: "관리자 문의 필요",
+            guideSubTitle: "원천적으로 가상머신에 파일의 입출력은 제한됩니다. 필요시 관리자에게 문의 바랍니다.",
+            guideExtra: ["고장신고"],
+          }
+        },
+        {
+          key: "USAGE-4", text: "비밀번호를 변경하고 싶습니다.",
+          guide: {
+            guideTitle: "비밀번호 변경",
+            guideSubTitle: "화면이동 버튼을 눌러서 비밀번호를 변경합니다.",
+            guideExtra: ["이동|/change/password"],
+          }
+        },
       ],
     }
 
+    // 장애 유형 선택
     if(this.state.current === 1) {
       if(type === "ETC") {
+        let tt = {
+          key: "ETC", text: "",
+          guide: {
+            guideTitle: "관리자 문의 필요",
+            guideSubTitle: "고장신고를 클릭하시면 입력하신 문의 사항이 신고됩니다.",
+            guideExtra: ["고장신고"],
+          }
+        };
+
         failureDetailType.push(
           <div>
             <TextArea
@@ -99,7 +165,7 @@ class Failure extends Component {
               autoSize={{ minRows: 3, maxRows: 5 }}
               style={{ marginBottom: 10 }}
             />
-            <Button block onClick={this.next.bind(this, {key: "ETC", text: ""})} key="ETC">내용을 전송합니다.</Button>
+            <Button block onClick={this.next.bind(this, tt)} key="ETC">내용을 전송합니다.</Button>
           </div>
         )
       } else {
@@ -116,28 +182,66 @@ class Failure extends Component {
 
     }
 
+    // 세부 유형 선택
     if(this.state.current === 2) {
+      let guideExtra = [];
 
-      // result: this.state.diagnosisErrors,
-      // detail: this.state.diagnosisReport
+      type.guide.guideExtra.map((btn) => {
+        switch(btn) {
+          case "재기동":
+            guideExtra.push(
+              <Button type="primary" onClick={this.onReport.bind(this)}>
+                재기동
+              </Button>
+            );
+            break;
 
-      /*
-      guideTitle: "관리자 문의 필요",
-      guideSubTitle: "재기동후에도 VM 접속이 안될 경우, 고장신고를 해주시기 바랍니다.",
-      guideExtra: [
-        <Button type="primary" onClick={this.onReport.bind(this)} key="121212">
-          재기동
-        </Button>,
-        <Button key="buy" onClick={this.onReport.bind(this)}>
-          고장신고
-        </Button>,
-      ]
-      */
+          case "고장신고":
+            guideExtra.push(
+              <Button onClick={this.onReport.bind(this)}>
+                고장신고
+              </Button>
+            );
+            break;
 
-      this.setState({
-        selectedType: type.key,
-        diagnosisErrors: type.key ==="ETC" ? [this.state.failureEtcText] : [type.text],
+          case "다운로드":
+            guideExtra.push(
+              <Button type="primary" onClick={() => this.onReport()}>
+                프로그램 다운로드
+              </Button>
+            );
+            break;
+          default:
+            if(btn.indexOf("이동|") !== -1) {
+
+              guideExtra.push(
+                <Button type="primary" onClick={() => this.goUrl(btn.replace("이동|",""))}>
+                  화면이동
+                </Button>
+              );
+
+            }
+        }
       });
+
+      if(type.key === "ETC") {
+        this.setState({
+          selectedType: type.key,
+          guideTitle: type.guide.guideTitle,
+          guideSubTitle: type.guide.guideSubTitle,
+          guideExtra: guideExtra,
+        });
+      } else {
+        this.setState({
+          selectedType: type.key,
+          guideTitle: type.guide.guideTitle,
+          guideSubTitle: type.guide.guideSubTitle,
+          guideExtra: guideExtra,
+          failureEtcText: type.text,
+        });
+      }
+
+
     }
 
     this.setState({
@@ -328,6 +432,7 @@ class Failure extends Component {
       currentDiagnosis: 4,
       diagnosisErrors: result,
       diagnosisReport: diag_result,
+      failureEtcText: result.length > 0 ?  result[0] + "등 " + result.length + "건" : "",
     });
 
   }
@@ -336,23 +441,29 @@ class Failure extends Component {
     this.props.history.push("/signin");
   }
 
+  goUrl(url) {
+    this.props.history.push(url);
+  }
+
   onReport() {
     let param = {};
 
     param.username = this.props.auth;
     param.gb = this.state.selectedType;
     param.content = {
-      result: this.state.diagnosisErrors,
+      // result: this.state.selectedType === "ETC" ? this.state.failureEtcText : this.state.diagnosisErrors[0] + "등 " + this.state.diagnosisErrors.length + "건",
+      result: this.state.failureEtcText,
       detail: this.state.diagnosisReport
     };
     param.status = "APPLY";
 
-    // console.log(JSON.stringify(param));
+    console.log(this.state.selectedType, JSON.stringify(param));
 
     if(this.state.selectedType) {
       //
-    } else {
       window.ipcRenderer.sendSync("failure-apply", param);
+    } else {
+      // window.ipcRenderer.sendSync("failure-apply", param);
     }
 
     this.props.history.push('/history/failure');
