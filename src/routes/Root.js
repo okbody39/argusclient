@@ -31,6 +31,7 @@ import AdminFailure from "@/screens/Admin/Failure";
 import AdminNotice from "@/screens/Admin/Notice";
 import AdminAlarm from "@/screens/Admin/Alarm";
 import AdminReport from "@/screens/Admin/Report";
+import AdminNetwork from "@/screens/Admin/Network";
 
 function PrivateRoute ({component: Component, ...rest}) {
   let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
@@ -110,7 +111,7 @@ const Routes = () => (
       <PrivateRoute path="/admin/notice" component={AdminNotice} />
       <PrivateRoute path="/admin/alarm" component={AdminAlarm} />
       <PrivateRoute path="/admin/report" component={AdminReport} />
-
+      <PrivateRoute path="/admin/network" component={AdminNetwork} />
     </Switch>
   </HashRouter>
 );

@@ -10,6 +10,8 @@ const { Step } = Steps;
 const { Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
+const async = require('async');
+
 import { Link, withRouter } from 'react-router-dom';
 
 import Highlighter from 'react-highlight-words';
@@ -61,6 +63,10 @@ class Failure extends Component {
         </Button>,
       ]
     };
+
+    // this.doDiagnosis = this.doDiagnosis.bind(this);
+    this.setStateFunc = this.setStateFunc.bind(this);
+
   }
 
   onChange = (e) => {
@@ -276,7 +282,18 @@ class Failure extends Component {
   componentWillUnmount() {
   }
 
+  setStateFunc(step) {
+    let auth = this.props.auth;
+    let result = window.ipcRenderer.sendSync("failure-diagnosis", { step: step, auth: auth });
+
+    this.setState({
+      currentDiagnosis: step,
+      diagnosisResult: [...this.state.diagnosisResult, result],
+    });
+  }
+
   doDiagnosis() {
+    let auth = this.props.auth;
 
     for(let d=0 ; d<4 ; d++) {
       let result = window.ipcRenderer.sendSync("failure-diagnosis", { step: d, auth: this.props.auth });
@@ -288,6 +305,35 @@ class Failure extends Component {
         diagnosisResult: [...this.state.diagnosisResult, result],
       });
     }
+
+    // async.waterfall([
+    //   function(callback) {
+    //     this.setStateFunc(0);
+    //
+    //     callback(null);
+    //   },
+    //   function(callback) {
+    //     this.setStateFunc(1);
+    //
+    //     callback(null);
+    //   },
+    //   function(callback) {
+    //     this.setStateFunc(2);
+    //
+    //     callback(null);
+    //   },
+    //   function(callback) {
+    //     this.setStateFunc(3);
+    //
+    //     callback(null);
+    //   },
+    //
+    // ], function (err, result) {
+    //   // result now equals 'done'
+    // });
+
+
+
 
     // console.log(this.state.diagnosisResult);
     let result = [];

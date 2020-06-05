@@ -6,6 +6,7 @@ const url = require("url");
 const isDev = require("electron-is-dev");
 
 const {spawn, exec} = require('child_process');
+const async = require('async');
 
 const tcpp = require('tcp-ping');
 const axios = require('axios');

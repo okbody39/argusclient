@@ -99,7 +99,7 @@ class Header extends Component {
 
           <Menu.Item key="/admin/approve" >
             <Link to="/admin/approve">
-              <Badge count={1}>
+              <Badge count={0}>
                 승인
               </Badge>
             </Link>
@@ -107,14 +107,22 @@ class Header extends Component {
 
           <Menu.Item key="/admin/failure" >
               <Link to="/admin/failure">
-                <Badge count={5}>
+                <Badge count={0}>
                   장애
                 </Badge>
               </Link>
           </Menu.Item>
 
           <Menu.Item key="/admin/report" >
-            <Link to="/admin/report"> 통계 </Link>
+            <Link to="/admin/report">
+              통계
+            </Link>
+          </Menu.Item>
+
+          <Menu.Item key="/admin/network" >
+            <Link to="/admin/network">
+              네트워크
+            </Link>
           </Menu.Item>
 
           {/*<Menu.Item key="/history/failure">*/}
@@ -123,6 +131,7 @@ class Header extends Component {
           {/*<Menu.Item key="/history/access">*/}
           {/*  <Link to="/history/access">접속이력</Link>*/}
           {/*</Menu.Item>*/}
+
         </Menu>
 
         <span className="mr-auto" />
@@ -176,59 +185,60 @@ class Header extends Component {
           {/*  </Menu.Item>*/}
           {/*</SubMenu>*/}
 
-          <SubMenu
-            title={
-              <div className={styles.menusubitem}>
-                <Settings size={22} strokeWidth={1} />
-              </div>
-            }
-            popupClassName={styles.popup}
-          >
+          {/*<SubMenu*/}
+          {/*  title={*/}
+          {/*    <div className={styles.menusubitem}>*/}
+          {/*      <Settings size={22} strokeWidth={1} />*/}
+          {/*    </div>*/}
+          {/*  }*/}
+          {/*  popupClassName={styles.popup}*/}
+          {/*>*/}
 
-            <Menu.Item  style={{width: 200}}>
-              <Link to="/admin/notice">
-                <Icon type="notification" />
-                <span>공지사항</span>
+          {/*  <Menu.Item  style={{width: 200}}>*/}
+          {/*    <Link to="/admin/notice">*/}
+          {/*      <Icon type="notification" />*/}
+          {/*      <span>공지사항</span>*/}
 
-              </Link>
-            </Menu.Item>
-            <Menu.Item>
-              <Link to="/admin/alarm">
-                <Icon type="bell" />
-                <span>알림목록</span>
-              </Link>
-            </Menu.Item>
+          {/*    </Link>*/}
+          {/*  </Menu.Item>*/}
+          {/*  <Menu.Item>*/}
+          {/*    <Link to="/admin/alarm">*/}
+          {/*      <Icon type="bell" />*/}
+          {/*      <span>알림목록</span>*/}
+          {/*    </Link>*/}
+          {/*  </Menu.Item>*/}
 
-            <Menu.Divider />
+          {/*  <Menu.Divider />*/}
 
-            <Menu.Item onClick={this.about.bind(this)}>
-              <Icon type="download" />
-              <span>About SeedClient</span>
-            </Menu.Item>
+          {/*  <Menu.Item onClick={this.about.bind(this)}>*/}
+          {/*    <Icon type="download" />*/}
+          {/*    <span>About SeedClient</span>*/}
+          {/*  </Menu.Item>*/}
 
-            <Menu.Item>
-              <Link to="/settings">
-                <Icon type="setting" />
-                <span>설정</span>
-              </Link>
-            </Menu.Item>
-            <Menu.Item onClick={this.checkUpdate.bind(this)}>
-                <Icon type="download" />
-                <span>업데이트 확인</span>
-            </Menu.Item>
-            <Menu.Item>
-              <Link to="/change/password">
-                <Icon type="safety-certificate" />
-                <span>비밀번호 변경</span>
-              </Link>
-            </Menu.Item>
-            <Menu.Item>
-              <Link to="/signin">
-                <Icon type="logout" />
-                <span>로그아웃</span>
-              </Link>
-            </Menu.Item>
-          </SubMenu>
+          {/*  <Menu.Item>*/}
+          {/*    <Link to="/settings">*/}
+          {/*      <Icon type="setting" />*/}
+          {/*      <span>설정</span>*/}
+          {/*    </Link>*/}
+          {/*  </Menu.Item>*/}
+          {/*  <Menu.Item onClick={this.checkUpdate.bind(this)}>*/}
+          {/*      <Icon type="download" />*/}
+          {/*      <span>업데이트 확인</span>*/}
+          {/*  </Menu.Item>*/}
+          {/*  <Menu.Item>*/}
+          {/*    <Link to="/change/password">*/}
+          {/*      <Icon type="safety-certificate" />*/}
+          {/*      <span>비밀번호 변경</span>*/}
+          {/*    </Link>*/}
+          {/*  </Menu.Item>*/}
+          {/*  <Menu.Item>*/}
+          {/*    <Link to="/signin">*/}
+          {/*      <Icon type="logout" />*/}
+          {/*      <span>로그아웃</span>*/}
+          {/*    </Link>*/}
+          {/*  </Menu.Item>*/}
+          {/*</SubMenu>*/}
+
         </Menu>
 
       </Layout.Header>
