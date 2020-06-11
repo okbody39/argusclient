@@ -107,6 +107,7 @@ class Admin extends Component {
       // ],
       vmScreenShot: [],
       isFlushed: false,
+      hosts: [],
     };
   }
 
@@ -132,10 +133,13 @@ class Admin extends Component {
     // }, 500);
 
 
+
     setTimeout(() => {
+      let hosts = window.ipcRenderer.sendSync("host-list", "all");
       window.ipcRenderer.send("vm-list", "all");
 
       this.setState({
+        hosts: hosts,
         loading: true,
       });
     }, 500);
@@ -162,6 +166,12 @@ class Admin extends Component {
         if(vm.disk && vm.disk.length > 0) {
           vm.disk.sort((a, b) => { return a.DiskPath > b.DiskPath ?  1 : -1 } )
         }
+
+        this.state.hosts.map((host) => {
+          if(host.moRef === vm.host) {
+            vm.host = host;
+          }
+        });
       });
 
       this.setState({
@@ -375,6 +385,8 @@ class Admin extends Component {
                         </Badge>
                         <SubTitle>{vm.state && vm.state.toUpperCase() || "-"}</SubTitle>
                         <Description>{vm.ipAddress || "-"}</Description>
+                        {/*<Description>{typeof vm.host === "object" ? vm.host.name : "-"}</Description>*/}
+                        {/*<Description>{JSON.stringify(vm.host)}</Description>*/}
                         <Icon type="star" theme="filled" style={{fontSize: 18, color: i === 3 || i === 1 ? 'gold': vm.statusColor || 'gray', position: 'absolute', right: 5, bottom: 5}}/>
                       </Caption>
                     </Figure>
@@ -489,6 +501,7 @@ class Admin extends Component {
 
 
           <Descriptions bordered title="VM 상태" size="small" column={2}>
+            <Descriptions.Item label="Host" span={2}>{JSON.stringify(this.state.selectedVm.host)}</Descriptions.Item>
             <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
             {
               this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {

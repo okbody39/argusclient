@@ -762,6 +762,24 @@ function initial(mainWindow, appVersion) {
     }
   });
 
+  ipcMain.on("host-list", (event, arg) => {
+    let url = 'http://' + _ARGUS_GATE_ + '/host/all';
+
+    axios.get(url)
+      .then(function (response) {
+        let retJson = response.data;
+
+        event.returnValue =  retJson;
+      })
+      .catch(function (error) {
+        console.error(error);
+        event.returnValue =  {error: error};
+      })
+      .then(function () {
+      });
+
+  });
+
   ipcMain.on("vm-list", (event, arg) => {
     let userId = arg;
     let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
