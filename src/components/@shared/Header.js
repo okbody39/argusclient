@@ -150,20 +150,6 @@ class Header extends Component {
 
           <Menu.Item>
             <Link to={{
-              pathname: "/admin/client",
-              // state: "Reset"
-            }}>
-              <div className={styles.menusubitem}>
-                {/*<Icon type="user" style={{ fontSize: 22 }} />*/}
-                {/*<Icon type="smile" theme="outlined" />*/}
-                {/*<UserSwitchOutlined style={{ fontSize: 22 }}/>*/}
-                <User size={22} strokeWidth={1} />
-              </div>
-            </Link>
-          </Menu.Item>
-
-          <Menu.Item>
-            <Link to={{
               pathname: "/home",
               state: "Reset"
             }}>

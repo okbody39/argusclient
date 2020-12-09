@@ -1,6 +1,6 @@
 {
-  "name": "SeedClient",
-  "version": "0.2.7",
+  "name": "SeedConnector",
+  "version": "1.0.0",
   "description": "SeedVDI, SeedCloud",
   "license": "UNLICENSE",
   "private": true,
@@ -65,7 +65,8 @@
     "regedit": "^3.0.3",
     "styled-components": "^5.0.1",
     "tcp-ping": "^0.1.1",
-    "ws": "^7.2.3"
+    "ws": "^7.2.3",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@babel/core": "^7.8.3",

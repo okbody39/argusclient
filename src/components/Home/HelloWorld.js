@@ -118,7 +118,7 @@ class HelloWorld extends Component {
 
       if(arg === "OK") {
         window.ipcRenderer.send("vm-list", this.props.auth);
-        window.ipcRenderer.send("vm-screenshot");
+        // window.ipcRenderer.send("vm-screenshot");
 
         this.setState({
           loading: true,
@@ -140,6 +140,7 @@ class HelloWorld extends Component {
             message: "서버와 연결이 원활하지 않습니다. 다시 한번 시도해 주세요. - " + arg.error
           },
         });
+        this.props.history.push('/signin');
       } else {
         arg.map((vm) => {
           if(vm.disk) {

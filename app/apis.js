@@ -2,6 +2,7 @@ const os = require('os');
 const { app, BrowserWindow, Menu, remote, ipcMain, dialog, Notification } = require("electron");
 const path = require("path");
 const fs = require('fs');
+const convert = require('xml-js');
 const url = require("url");
 const isDev = require("electron-is-dev");
 
@@ -62,6 +63,38 @@ function decryptStr(encVal, defaultVal) {
   return retVal;
 
 }
+
+const removeJsonTextAttribute = function(value, parentElement) {
+  try {
+    const parentOfParent = parentElement._parent;
+    const pOpKeys = Object.keys(parentElement._parent);
+    const keyNo = pOpKeys.length;
+    const keyName = pOpKeys[keyNo - 1];
+    const arrOfKey = parentElement._parent[keyName];
+    const arrOfKeyLen = arrOfKey.length;
+    if (arrOfKeyLen > 0) {
+      const arr = arrOfKey;
+      const arrIndex = arrOfKey.length - 1;
+      arr[arrIndex] = value;
+    } else {
+      parentElement._parent[keyName] = value;
+    }
+  } catch (e) {}
+};
+
+let options = {
+  compact: true,
+  trim: true,
+  ignoreDeclaration: true,
+  ignoreInstruction: true,
+  ignoreAttributes: true,
+  ignoreComment: true,
+  ignoreCdata: true,
+  ignoreDoctype: true,
+  textFn: removeJsonTextAttribute
+};
+
+let _cookie = "";
 
 const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 
@@ -233,6 +266,12 @@ function initial(mainWindow, appVersion) {
   }
 
   ipcMain.on("start-app", (event, arg) => {
+
+    event.reply('start-app', 'OK');
+    return;
+
+
+
     serverInfo = store.get("server-info", {});
     authInfo = store.get("auth-info", {});
 
@@ -363,43 +402,16 @@ function initial(mainWindow, appVersion) {
     console.log(arg);
 
     if(arg.serverUrl) {
-      let url = "http://" + arg.serverUrl + "/conninfo";
+      let json =  {
+        serverUrl: arg.serverUrl,
+        ViewServers: arg.serverUrl,
+        Domain: "",
+      };
 
-      axios.get(url)
-      .then(function (response) {
+      store.set("server-info", json);
+      event.reply('setting-update', json);
 
-        let encVal = response.data;
-        let decVal = decipher.update(encVal, 'base64', 'utf8');
-
-        decVal += decipher.final('utf8');
-        let decJson = JSON.parse(decVal);
-        decJson.serverUrl = arg.serverUrl;
-
-        // console.log(decJson, arg);
-
-        store.set("server-info", {
-          serverUrl: arg.serverUrl,
-          ViewServers: decJson.ViewServers,
-          Domain: decJson.Domain,
-        });
-
-        // event.returnValue = true;
-
-        // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
-        // app.exit(0);
-
-        event.reply('setting-update', decJson);
-
-      })
-      .catch(function (error) {
-        console.error(error);
-        // console.log(arg);
-        event.reply('setting-update', false);
-      })
-      .then(function () {
-      });
     } else {
-      // alert('ERROR');
       event.reply('setting-update', false);
     }
 
@@ -432,53 +444,91 @@ function initial(mainWindow, appVersion) {
 
   ipcMain.on("login", (event, arg) => {
     let serverInfo = store.get("server-info", {});
+    let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+<broker version="15.0">
+<do-submit-authentication>
+    <screen>
+    <name>windows-password</name>
+    <params>
+        <param>
+        <name>username</name>
+        <values>
+            <value>${arg.username}</value>
+        </values>
+        </param>
+        <param>
+        <name>domain</name>
+        <values>
+            <value>${arg.domain}</value>
+        </values>
+        </param>
+        <param>
+        <name>password</name>
+        <values>
+            <value>${arg.password}</value>
+        </values>
+        </param>
+    </params>
+    </screen>
+    <environment-information>
+        <info name="Type">Windows</info>
+        <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+        <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+    </environment-information>
+</do-submit-authentication>
+</broker>`;
 
-    _ARGUS_GATE_ = serverInfo.serverUrl;
+  let reqUrl = `https://${serverInfo.serverUrl}/broker/xml`;
+  let auth = false;
 
-    let url = 'http://' + _ARGUS_GATE_ + '/auth';
-    let auth = false;
+  try {
+      _cookie = fs.readFileSync("_cookie").toString();
+  } catch {}
 
-    // console.log(url, arg);
+  
+  axios.post(reqUrl, sendXml, {
+      withCredentials: true,
+      headers: {
+          'Content-Type': 'text/xml;charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+          'Cookie': _cookie,
+      },
+      httpsAgent: new https.Agent({
+          rejectUnauthorized: false
+      }),
+  })
+  .then((response) => {
+      let headers = response.headers['set-cookie'];
+      _cookie = (headers || []).join(";");
 
-    let data = encryptStr(
-      {
-        username: arg.username,
-        password: arg.password,
+      if(_cookie) {
+          fs.writeFileSync("_cookie", _cookie);
       }
-    );
 
-    axios({
-      url: url,
-      method: 'post',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      // data: `username=${encodeURIComponent(arg.username)}&password=${encodeURIComponent(arg.password)}`,
-      data: `sec=${encodeURIComponent(data)}`,
-    })
-    .then(function (response) {
-      let retJson = response.data;
-      // console.log(retJson, typeof retJson);
-      auth = decryptStr(retJson, { result: false }); // === "true";
-      // event.returnValue = auth;
+      let json = JSON.parse(convert.xml2json(response.data, options));
+      let loginResult = json.broker["submit-authentication"]; 
+              
+      // if(loginResult.result === "partial") {
+      //     let errs = loginResult.authentication.screen.params.param;
+      //     // console.log(errs);
+      //     for(let idx in errs) {
+      //         let err = errs[idx];
 
-      console.log(auth);
+      //         if(err.name === "error") {
+      //             console.log(err.values.value);
+      //         }
+      //     }
+          
+      // } else {
+      //     console.log(loginResult.result, loginResult["error-code"], loginResult["error-message"]);
+      // }
 
-      if(auth.result == "true") {
-        store.set("auth-info", arg);
-      }
+      // console.log(loginResult.result, loginResult.result === "ok");
 
-    })
-    .catch(function (error) {
-      console.error(error);
-    })
-    .then(function () {
-      event.returnValue = auth;
-    });
+      event.returnValue = loginResult.result === "ok";
+     
+  });
 
-    // if(arg.username === "mhkim") {
-    //   auth = true;
-    // } else {
-    //   auth = false;
-    // }
 
   });
 
@@ -534,24 +584,6 @@ function initial(mainWindow, appVersion) {
 
   });
 
-
-  // CLIENTSl
-
-  ipcMain.on("client-list", (event, arg) => {
-    let url = 'http://' + _ARGUS_GATE_ + '/clients/all';
-
-    axios.get(url)
-      .then(function (response) {
-        let retJson = response.data;
-
-        event.reply('client-list', retJson);
-      })
-      .catch(function (error) {
-        console.error(error);
-      })
-      .then(function () {
-      });
-  });
 
   // VMS
 
@@ -762,110 +794,137 @@ function initial(mainWindow, appVersion) {
     }
   });
 
-  ipcMain.on("host-list", (event, arg) => {
-    let url = 'http://' + _ARGUS_GATE_ + '/host/all';
-
-    axios.get(url)
-      .then(function (response) {
-        let retJson = response.data;
-
-        event.returnValue =  retJson;
-      })
-      .catch(function (error) {
-        console.error(error);
-        event.returnValue =  {error: error};
-      })
-      .then(function () {
-      });
-
-  });
-
   ipcMain.on("vm-list", (event, arg) => {
-    let userId = arg;
-    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
-    // let vmList = null; // store.get("vm-list");
+    let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+<broker version="15.0">
+  <get-tunnel-connection>
+    <certificate-thumbprint-algorithms>
+      <algorithm>SHA-1</algorithm>
+      <algorithm>SHA-256</algorithm>
+    </certificate-thumbprint-algorithms>
+  </get-tunnel-connection>
+  <get-user-global-preferences/>
+  <get-launch-items>
+    <desktops>
+      <supported-protocols>
+        <protocol>
+          <name>PCOIP</name>
+        </protocol>
+        <protocol>
+          <name>RDP</name>
+        </protocol>
+        <protocol>
+          <name>BLAST</name>
+        </protocol>
+      </supported-protocols>
+    </desktops>
+    <applications>
+      <supported-types>
+        <type>
+          <name>remote</name>
+          <supported-protocols>
+            <protocol>
+              <name>PCOIP</name>
+            </protocol>
+            <protocol>
+              <name>BLAST</name>
+            </protocol>
+          </supported-protocols>
+        </type>
+      </supported-types>
+    </applications>
+    <application-sessions/>
+    <shadow-sessions>
+      <supported-protocols>
+        <protocol>
+          <name>BLAST</name>
+        </protocol>
+      </supported-protocols>
+    </shadow-sessions>
+    <environment-information>
+      <info name="IP_Address">${__OS__.nics[0].address}</info>
+      <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+      <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+      <info name="Machine_Domain">WORKGROUP</info>
+      <info name="Machine_Name">DESKTOP-TEST</info>
+      <info name="Client_ID"></info>
+      <info name="Type">Windows</info>
+      <info name="Machine_FQDN"></info>
+      <info name="Client_Version">8.0.0-16531419</info>
+    </environment-information>
+  </get-launch-items>
+</broker>`;
+let serverInfo = store.get("server-info", {});
 
-    // if(vmList) {
-    //   let retJson = vmList;
-    //   event.reply('vm-list', retJson);
-    // } else {
+  let reqUrl = `https://${serverInfo.serverUrl}/broker/xml`;
+  let auth = false;
 
-      console.log("apis.js - vm-list", url);
+  try {
+      _cookie = fs.readFileSync("_cookie").toString();
+  } catch {}
 
-      axios.get(url)
-        .then(function (response) {
-          let retJson = response.data;
+  console.log(_cookie);
+  
+  axios.post(reqUrl, sendXml, {
+      withCredentials: true,
+      headers: {
+          'Content-Type': 'text/xml;charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+          'Cookie': _cookie,
+      },
+      httpsAgent: new https.Agent({
+          rejectUnauthorized: false
+      }),
+  })
+  .then((response) => {
+      let headers = response.headers['set-cookie'];
+      _cookie = (headers || []).join(";");
 
-          if(userId === 'all') {
-            store.set("vm-list-admin", retJson);
-          } else {
-            store.set("vm-list", retJson);
+      if(_cookie) {
+          fs.writeFileSync("_cookie", _cookie);
+      }
+
+      let json = JSON.parse(convert.xml2json(response.data, options));
+      
+      let itemsResult = json.broker["launch-items"];
+      let vmlist = [];
+      try {
+          let vms = itemsResult.desktops.desktop;
+          for(let i in vms) {
+              let vm = vms[i];
+
+              // statusColor
+              // basicState
+              // operatingSystem
+              // displayName
+
+              vmlist.push({
+                statusColor: "",
+                basicState: "",
+                operatingSystem:"",
+                displayName: vm.name,
+              });
+
+              // console.log(vm.id, vm.name, vm.type, vm.state, vm["in-maintenance-mode"]);
           }
 
-          // console.log("apis.js - vm-list",retJson);
+          store.set("vm-list", vmlist);
+          event.reply('vm-list', vmlist);
 
-          event.reply('vm-list', retJson);
-        })
-        .catch(function (error) {
-          console.error(error);
-          event.reply('vm-list', {error: error});
-        })
-        .then(function () {
-        });
-
-    // }
-  });
-
-  ipcMain.on("vm-list-admin", (event, arg) => {
-    let userId = arg;
-    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
-    let vmList = null;
-
-    axios.get(url, {
-      params: {
+      } catch {
+        event.reply('vm-list', {error: itemsResult["error-message"]});
+        // console.log(itemsResult.result, itemsResult["error-code"], itemsResult["error-message"]);
       }
-    })
-      .then(function (response) {
-        let retJson = response.data;
-        event.returnValue = retJson;
-      })
-      .catch(function (error) {
-        console.error(error);
-      })
-      .then(function () {
-      });
+
+      
+     
+  });
+    
 
   });
-
+  
   ipcMain.on("vm-list-refresh", (event, arg) => {
-    let userId = arg;
-    let vmList = store.get("vm-list");
-    let url = 'http://' + _ARGUS_GATE_ + '/vms/' + userId;
-
-    axios.get(url, {
-      params: {
-      }
-    })
-      .then(function (response) {
-        vmList.map((vm) => {
-          let index = response.data.findIndex(obj => obj.id === vm.id);
-          if(index != -1) {
-            vm.basicState = response.data[index].basicState;
-          }
-        });
-
-        if(userId === 'all') {
-          store.set("vm-list-admin", retJson);
-        } else {
-          store.set("vm-list", retJson);
-        }
-        event.reply('vm-list', vmList);
-      })
-      .catch(function (error) {
-        console.error(error);
-      })
-      .then(function () {
-      });
+    event.reply('vm-list', vmlist);
   });
 
   ipcMain.on("vm-list-reset", (event, arg) => {
@@ -879,11 +938,7 @@ function initial(mainWindow, appVersion) {
       .then(function (response) {
         let retJson = response.data;
 
-        if(userId === 'all') {
-          store.set("vm-list-admin", retJson);
-        } else {
-          store.set("vm-list", retJson);
-        }
+        store.set("vm-list", retJson);
         event.reply('vm-list', retJson);
       })
       .catch(function (error) {
@@ -920,22 +975,7 @@ function initial(mainWindow, appVersion) {
     });
   });
 
-  ipcMain.on("vm-screenshot-admin", (event, arg) => {
-    let url = 'http://' + _ARGUS_GATE_ + '/vms/image/' + arg;
-
-    axios.get(url, {})
-      .then(function (response) {
-
-        event.reply('vm-screenshot', response.data);
-
-      })
-      .catch(function (error) {
-
-        event.reply('vm-screenshot', BlackScreen);
-      })
-      .then(function () {
-      });
-  });
+  
 
   ipcMain.on("alarm-list", (event, arg) => {
     let userId = arg;

@@ -23,16 +23,6 @@ import HistoryAccess from "@/screens/History/Access";
 
 import VMCreate from "@/screens/VM/Create";
 
-// ADMIN
-import Admin from "@/screens/Admin/Admin";
-import AdminClient from "@/screens/Admin/Client";
-import AdminApprove from "@/screens/Admin/Approve";
-import AdminFailure from "@/screens/Admin/Failure";
-import AdminNotice from "@/screens/Admin/Notice";
-import AdminAlarm from "@/screens/Admin/Alarm";
-import AdminReport from "@/screens/Admin/Report";
-import AdminNetwork from "@/screens/Admin/Network";
-
 function PrivateRoute ({component: Component, ...rest}) {
   let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
   let UserToken = localStorage.getItem("ARGUS.USERTOKEN") || "{}";
@@ -102,16 +92,7 @@ const Routes = () => (
       <PrivateRoute path="/history/access" component={HistoryAccess} />
 
       <PrivateRoute path="/vm/create" component={VMCreate} />
-
-      {/* ADMIN */}
-      <PrivateRoute exact path='/admin' component={Admin} />
-      <PrivateRoute path="/admin/client" component={AdminClient} />
-      <PrivateRoute path="/admin/approve" component={AdminApprove} />
-      <PrivateRoute path="/admin/failure" component={AdminFailure} />
-      <PrivateRoute path="/admin/notice" component={AdminNotice} />
-      <PrivateRoute path="/admin/alarm" component={AdminAlarm} />
-      <PrivateRoute path="/admin/report" component={AdminReport} />
-      <PrivateRoute path="/admin/network" component={AdminNetwork} />
+      
     </Switch>
   </HashRouter>
 );

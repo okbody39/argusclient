@@ -1,7 +1,7 @@
 // Libs
 import React, {Component, useReducer} from "react";
 import { Button, Checkbox, Form, Input, message, Row, Card, notification } from 'antd';
-import { Eye, Mail, Triangle, User } from 'react-feather';
+import { Eye, Mail, Triangle, User, Share2 } from 'react-feather';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
@@ -67,9 +67,7 @@ class Signin extends Component {
 
         let auth = window.ipcRenderer.sendSync("login", values);
 
-        console.log(auth);
-
-        if(auth.result == "true") {
+        if(auth) {
           localStorage.setItem("ARGUS.USERTOKEN", JSON.stringify(values));
           this.props.history.push("/");
         } else {
@@ -149,6 +147,24 @@ class Signin extends Component {
                   }
                   type="password"
                   placeholder="비밀번호"
+                />
+              )}
+            </FormItem>
+
+            <FormItem label="도메인">
+              {form.getFieldDecorator('domain', {
+                rules: [{ required: true, message: '도메인을 입력하세요!' }]
+              })(
+                <Input
+                  prefix={
+                    <Share2
+                      size={16}
+                      strokeWidth={1}
+                      style={{ color: 'rgba(0,0,0,.25)' }}
+                    />
+                  }
+                  type="text"
+                  placeholder="도메인"
                 />
               )}
             </FormItem>
