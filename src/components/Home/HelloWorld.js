@@ -14,7 +14,10 @@ import FileBrowser from 'react-keyed-file-browser';
 import { Plus } from 'react-feather';
 
 import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
-// import win7preview from '@/assets/images/preview/windows7.gif';
+
+import win1 from '@/assets/images/preview/windows_1.png';
+import win2 from '@/assets/images/preview/windows_2.png';
+import win3 from '@/assets/images/preview/windows_3.png';
 
 const props = {
   name: 'file',
@@ -100,7 +103,7 @@ class HelloWorld extends Component {
     // console.log(this.props.location.state, nextProps.location.state);
 
     if(nextProps.location.state === "Reset") {
-      window.ipcRenderer.send("vm-list-reset", this.props.auth);
+      window.ipcRenderer.send("vm-list", this.props.auth);
       window.ipcRenderer.send("vm-screenshot");
       this.setState({
         loading: true,
@@ -142,24 +145,24 @@ class HelloWorld extends Component {
         });
         this.props.history.push('/signin');
       } else {
-        arg.map((vm) => {
-          if(vm.disk) {
-            vm.disk = JSON.parse(vm.disk);
-            if (vm.disk && vm.disk.length > 0) {
-              vm.disk.sort((a, b) => {
-                return a.DiskPath > b.DiskPath ? 1 : -1
-              })
-            }
-          }
-        });
-  
+        // arg.map((vm) => {
+        //   if(vm.disk) {
+        //     vm.disk = JSON.parse(vm.disk);
+        //     if (vm.disk && vm.disk.length > 0) {
+        //       vm.disk.sort((a, b) => {
+        //         return a.DiskPath > b.DiskPath ? 1 : -1
+        //       })
+        //     }
+        //   }
+        // });
+
         this.setState({
           vmlist: arg,
           loading: false,
         });
       }
 
-     
+
     });
 
     window.ipcRenderer.on("vm-screenshot", (event, arg) => {
@@ -251,7 +254,7 @@ class HelloWorld extends Component {
     // this.state.selectedVm.state
     // this.state.selectedVm.disk.map((disk) => {
     // ((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)
-    // "디스크 사용량 임계치 도달 (95% 이상)" 
+    // "디스크 사용량 임계치 도달 (95% 이상)"
     let selectedVmError = "";
 
     if(selectedVm.state != "running") {
@@ -341,7 +344,7 @@ class HelloWorld extends Component {
 
   onConnect = (vmName) => {
 
-    console.log(this.state.selectedVm);
+
 
     window.ipcRenderer.send("vm-connect", vmName);
     this.setState({
@@ -383,14 +386,14 @@ class HelloWorld extends Component {
               return (
                 <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
                   <Card
-                    bodyStyle={{padding: 12}}
+                    bodyStyle={{padding: 0}}
                     // hoverable
                     style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
                     // onClick={this.showDrawer}
                     cover={
                       <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
                         <Image
-                          source={this.state.vmScreenShot[vm.id]}
+                          source={win3}
                         />
                         <Caption className={`header`}>
                           <Title>{vm.displayName}</Title>
@@ -399,9 +402,10 @@ class HelloWorld extends Component {
                       </Figure>
                     }
                     actions={[
-                      <div key="play-square" onClick={this.connectVM.bind(this, vm.id)}>
+                      <div key="play-square" onClick={this.connectVM.bind(this, vm.name)}>
                         <Icon type="play-square" />
                       </div>,
+
                       // <div key="play-square" onClick={this.fileUploader.bind(this, vm.id)}>
                       //   <Icon type="cloud-upload" />
                       // </div>,
@@ -411,8 +415,8 @@ class HelloWorld extends Component {
                       </div>,
                     ]}
                   >
-                    <Badge status="processing" color={vm.statusColor || 'gray'} />
-                    <Text style={{position: 'absolute'}}>{vm.basicState || "-"}</Text>
+                    {/*<Badge status="processing" color={vm.statusColor || 'gray'} />*/}
+                    {/*<Text style={{position: 'absolute'}}>{vm.basicState || "-"}</Text>*/}
                   </Card>
                 </Col>
                 // <Col key={i} lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
@@ -443,15 +447,15 @@ class HelloWorld extends Component {
             </Figure>
           </Col> */}
 
-          <Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >
-            <Card hoverable onClick={() => this.props.history.push("/vm/create")}>
-              <Spin spinning={this.state.loading}  size="large" tip="Loading...">
-              <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>
-                {this.state.loading ? null : <Plus size={100} color="lightgrey" />}
-              </div>
-              </Spin>
-            </Card>
-          </Col>
+          {/*<Col lg={{span: 6}} md={{span:8}} sm={{span:12}} xs={{span:24}} >*/}
+          {/*  <Card hoverable onClick={() => this.props.history.push("/vm/create")}>*/}
+          {/*    <Spin spinning={this.state.loading}  size="large" tip="Loading...">*/}
+          {/*    <div style={{height: 195, display: 'flex', justifyContent: 'center', alignItems: "center"}}>*/}
+          {/*      {this.state.loading ? null : <Plus size={100} color="lightgrey" />}*/}
+          {/*    </div>*/}
+          {/*    </Spin>*/}
+          {/*  </Card>*/}
+          {/*</Col>*/}
 
         </Row>
 
@@ -506,7 +510,7 @@ class HelloWorld extends Component {
               재시작
               </Button>
             </Popconfirm>
-            
+
             <Button type="danger" size="small" onClick={this.onFailure}>
               장애신고
             </Button>
@@ -557,7 +561,7 @@ class HelloWorld extends Component {
           >
             기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-            <Button onClick={this.onConnect.bind(this, this.state.selectedVm.id)} type="success">
+            <Button onClick={this.onConnect.bind(this, this.state.selectedVm.name)} type="success">
               접속
             </Button>
 

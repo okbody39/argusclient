@@ -194,6 +194,13 @@ class Change extends Component {
         dataIndex: 'content',
         key: 'content',
         ...this.getColumnSearchProps('content'),
+        render: (text, record) => {
+          let json = JSON.parse(text);
+          let vmId = json.vmId;
+          delete json.vmId;
+
+          return (<div>{vmId}<br/>{JSON.stringify(json)}</div>);
+        }
       },
       {
         title: '결과',

@@ -44,7 +44,7 @@ class ChangeResource extends Component {
       }
 
       form.setFieldsValue({
-        vmId: selectedVm.id,
+        vmId: selectedVm.vmId,
         cpu: parseInt(selectedVm.numCore),
         memory: selectedVm.memory / 1024,
 
@@ -74,7 +74,7 @@ class ChangeResource extends Component {
         selectedVm = vm;
 
         form.setFieldsValue({
-          vmId: selectedVm.id,
+          vmId: selectedVm.vmId,
           cpu: parseInt(selectedVm.numCore),
           memory: selectedVm.memory / 1024,
         });
@@ -118,7 +118,7 @@ class ChangeResource extends Component {
               {
                 this.state.vmList.map((v) => {
                   return (
-                    <Option key={v.id} value={v.id}>{v.displayName}</Option>
+                    <Option key={v.vmId} value={v.vmId}>{v.displayName}</Option>
                   )
                 })
               }

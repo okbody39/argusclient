@@ -41,7 +41,7 @@ class Signin extends Component {
     let connInfo = JSON.parse(ConnInfo);
 
     if(connInfo.serverUrl && connInfo.serverUrl.length > 0 && connInfo.serverUrl !== "undefined") {
-      //
+      window.ipcRenderer.sendSync("logout");
     } else {
       this.props.history.push("/signup");
     }
@@ -151,23 +151,23 @@ class Signin extends Component {
               )}
             </FormItem>
 
-            <FormItem label="도메인">
-              {form.getFieldDecorator('domain', {
-                rules: [{ required: true, message: '도메인을 입력하세요!' }]
-              })(
-                <Input
-                  prefix={
-                    <Share2
-                      size={16}
-                      strokeWidth={1}
-                      style={{ color: 'rgba(0,0,0,.25)' }}
-                    />
-                  }
-                  type="text"
-                  placeholder="도메인"
-                />
-              )}
-            </FormItem>
+            {/*<FormItem label="도메인">*/}
+            {/*  {form.getFieldDecorator('domain', {*/}
+            {/*    rules: [{ required: true, message: '도메인을 입력하세요!' }]*/}
+            {/*  })(*/}
+            {/*    <Input*/}
+            {/*      prefix={*/}
+            {/*        <Share2*/}
+            {/*          size={16}*/}
+            {/*          strokeWidth={1}*/}
+            {/*          style={{ color: 'rgba(0,0,0,.25)' }}*/}
+            {/*        />*/}
+            {/*      }*/}
+            {/*      type="text"*/}
+            {/*      placeholder="도메인"*/}
+            {/*    />*/}
+            {/*  )}*/}
+            {/*</FormItem>*/}
 
             <FormItem>
               <Button type="primary" htmlType="submit" block className="mb-3">

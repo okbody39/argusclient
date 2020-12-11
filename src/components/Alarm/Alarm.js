@@ -191,7 +191,7 @@ class Alarm extends Component {
               columns={columns}
               dataSource={this.state.list}
               loading={this.state.loading}
-              // pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+              pagination={{ defaultPageSize: 8, showSizeChanger: false, pageSizeOptions: ['10', '20', '30']}}
         />
         <Modal
           title={this.state.selectedNotice && this.state.selectedNotice.title || ""}
