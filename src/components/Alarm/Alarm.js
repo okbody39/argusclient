@@ -1,13 +1,12 @@
 // Libs
 import React, { Component } from "react";
 import {
-  Card, Row, Col, Drawer, Button, Descriptions, Divider, Switch,
-  Upload, Icon, message, Badge, Alert, Modal,
+  Card, Button, Icon, Modal,
   Table, Input,
 } from 'antd';
-import Highlighter from 'react-highlight-words';
-
-import { Plus } from 'react-feather';
+// import Highlighter from 'react-highlight-words';
+//
+// import { Plus } from 'react-feather';
 
 import Moment from 'react-moment';
 import 'moment-timezone';

@@ -293,7 +293,7 @@ class Access extends Component {
           loading={this.state.loading}
           columns={columns}
           dataSource={this.state.accessList}
-          pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30']}}
+          pagination={{ defaultPageSize: 8, showSizeChanger: false, pageSizeOptions: ['10', '20', '30']}}
         />
         <Modal
           title="변경 신청"

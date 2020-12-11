@@ -203,6 +203,8 @@ function init(mainWindow, appVersion) {
 
 }
 
+let __CONNECT__ = true;
+
 function initial(mainWindow, appVersion) {
     let serverInfo = store.get("server-info", {});
     let authInfo = store.get("auth-info", {});
@@ -236,12 +238,15 @@ function initial(mainWindow, appVersion) {
 
         ws = new WebSocket('ws://' + _ARGUS_GATE_ + '/ws/' + authInfo.username);
         ws.on('open', function() {
+            mainWindow.webContents.send("connect-message", "CONNECT");
             // console.log('socket open');
         });
         ws.on('error', function() {
             // console.log('socket error');
         });
         ws.on('close', function() {
+            __CONNECT__ = false;
+            mainWindow.webContents.send("connect-message", "DISCONNECT");
             dialog.showMessageBox(mainWindow, {
                 type: 'error',
                 title: 'Server connection Error',
@@ -290,6 +295,19 @@ function initial(mainWindow, appVersion) {
             }
         });
     };
+
+    ipcMain.on("connect-message-sync", (event, arg) => {
+        // mainWindow.webContents.send("connect-message", __CONNECT__ ? "CONNECT" : "DISCONNECT");
+
+        if(__CONNECT__) {
+            //
+        } else {
+            // wsConnect();
+        }
+
+        event.returnValue = __CONNECT__ ? "CONNECT" : "DISCONNECT";
+
+    });
 
     ipcMain.on("start-app", (event, arg) => {
 
@@ -795,13 +813,15 @@ function initial(mainWindow, appVersion) {
                 for(let i in vms) {
                     let vm = vms[i];
 
+                    // console.log(vm);
+
                     vmlist.push({
                         statusColor: "",
-                        basicState: "",
+                        basicState: typeof vm.type === "object" ? "" : vm.type,
                         operatingSystem:"",
                         displayName: vm.name,
                         name: vm.name,
-                        state: "",
+                        state: typeof vm.state === "object" ? "no session" : vm.state,
                         disk: [],
                         numCore: 1,
                         memory: 1,

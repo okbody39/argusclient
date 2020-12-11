@@ -1,8 +1,8 @@
 // Libs
 import React, { Component } from "react";
-import { Layout, Menu, Badge, Icon } from "antd";
+import { Layout, Menu, Badge, Icon, notification } from "antd";
 import { Link, withRouter } from 'react-router-dom';
-import { Bell, RefreshCcw, AlignJustify } from 'react-feather';
+import { Bell, RefreshCcw, AlignJustify, Wifi, WifiOff } from 'react-feather';
 
 const { SubMenu } = Menu;
 
@@ -26,6 +26,7 @@ class Header extends Component {
             selectedKeys: [this.props.location.pathname],
             alarmCount: 0,
             alarmList: [],
+            connect: "CONNECT",
         }
     }
 
@@ -40,6 +41,12 @@ class Header extends Component {
 
             this.setState(noti);
         }
+
+        window.ipcRenderer.on("connect-message", (event, arg) => {
+            this.setState({
+                connect: arg,
+            });
+        });
 
         window.ipcRenderer.on("notification-message", (event, arg) => {
             let alarmCount = this.state.alarmCount + 1;
@@ -71,6 +78,7 @@ class Header extends Component {
     }
 
     componentWillUnmount() {
+        window.ipcRenderer.removeAllListeners('connect-message');
         window.ipcRenderer.removeAllListeners('notification-message');
     }
 
@@ -105,6 +113,26 @@ class Header extends Component {
         // ipcRenderer.send("check-update", "");
 
         // console.log("check-update");
+    }
+
+    checkConnect() {
+        let connect = window.ipcRenderer.sendSync("connect-message-sync");
+
+        notification.config({
+            placement: 'topLeft',
+        });
+
+        if(connect === "CONNECT") {
+            notification.success({
+                message: '서버 연결 검사',
+                description: '서버와의 통신에 문제가 없습니다.',
+            });
+        } else {
+            notification.error({
+                message: '서버 연결 검사',
+                description: '서버와의 통신에 문제가 있습니다.',
+            });
+        }
     }
 
     render() {
@@ -144,15 +172,27 @@ class Header extends Component {
                 <Menu mode="horizontal" className={styles.menu}>
 
 
-                    <Menu.Item>
-                        <Link to={{
-                            pathname: "/home",
-                            state: "Reset"
-                        }}>
+                    {/*<Menu.Item>*/}
+                    {/*    <Link to={{*/}
+                    {/*        pathname: "/home",*/}
+                    {/*        state: "Reset"*/}
+                    {/*    }}>*/}
+                    {/*        <div className={styles.menusubitem}>*/}
+                    {/*            <RefreshCcw size={22} strokeWidth={1} />*/}
+                    {/*        </div>*/}
+                    {/*    </Link>*/}
+                    {/*</Menu.Item>*/}
+
+                    <Menu.Item onClick={this.checkConnect.bind(this)}>
+                        {/*<Link to={{*/}
+                        {/*    pathname: "/home",*/}
+                        {/*}}>*/}
                             <div className={styles.menusubitem}>
-                                <RefreshCcw size={22} strokeWidth={1} />
+                                {this.state.connect === "CONNECT" ?
+                                    <Wifi size={22} strokeWidth={1} /> : <WifiOff size={22} strokeWidth={1} color={"red"} />
+                                }
                             </div>
-                        </Link>
+                        {/*</Link>*/}
                     </Menu.Item>
 
                     <Menu.Item onClick={this.goAlarm.bind(this)}>
