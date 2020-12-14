@@ -588,20 +588,41 @@ function initial(mainWindow, appVersion) {
           if(json.password.indexOf('<') !== -1) {
               json.password = json.password.replace(/\</gi, '^<');
           }
-      
+
       } else {
-          if(json.password.indexOf('\\') !== -1) {
-              json.password = json.password.replace(/\\/gi, '\\\\');
-          }
-          if(json.password.indexOf("`") !== -1) {
-              json.password = json.password.replace(/\`/gi, "\\`");
-          }
-          if(json.password.indexOf("$") !== -1) {
-              json.password = json.password.replace(/\$/gi, "\\$");
-          }
-          if(json.password.indexOf('"') !== -1) {
-              json.password = json.password.replace(/\"/gi, '\\"');
-          }
+            if(json.password.indexOf('\\') !== -1) {
+                json.password = json.password.replace(/\\/gi, '\\\\');
+            }
+            if(json.password.indexOf("`") !== -1) {
+                json.password = json.password.replace(/\`/gi, "\\`");
+            }
+            if(json.password.indexOf("$") !== -1) {
+                json.password = json.password.replace(/\$/gi, "\\$");
+            }
+            if(json.password.indexOf('"') !== -1) {
+                json.password = json.password.replace(/\"/gi, '\\"');
+            }
+            if(json.password.indexOf('&') !== -1) {
+                json.password = json.password.replace(/\&/gi, '\\&');
+            }
+            if(json.password.indexOf("'") !== -1) {
+                json.password = json.password.replace(/\'/gi, "\\'");
+            }
+            if(json.password.indexOf("(") !== -1) {
+                json.password = json.password.replace(/\(/gi, "\\(");
+            }
+            if(json.password.indexOf(")") !== -1) {
+                json.password = json.password.replace(/\)/gi, "\\)");
+            }
+            if(json.password.indexOf("<") !== -1) {
+                json.password = json.password.replace(/\</gi, "\\<");
+            }
+            if(json.password.indexOf(">") !== -1) {
+                json.password = json.password.replace(/\>/gi, "\\>");
+            }
+            if(json.password.indexOf(";") !== -1) {
+                json.password = json.password.replace(/\;/gi, "\\;");
+            }
       }
 
         // console.log(json);
