@@ -572,6 +572,38 @@ function initial(mainWindow, appVersion) {
             desktopname: vmName,
         };
 
+        if(process.platform === "win32") {
+          if(json.password.indexOf('^') !== -1) {
+              json.password = json.password.replace(/\^/gi, '^^');
+          }
+          if(json.password.indexOf('&') !== -1) {
+              json.password = json.password.replace(/\&/gi, '^&');
+          }
+          if(json.password.indexOf('"') !== -1) {
+              json.password = json.password.replace(/\"/gi, '\"');
+          }
+          if(json.password.indexOf('>') !== -1) {
+              json.password = json.password.replace(/\>/gi, '^>');
+          }
+          if(json.password.indexOf('<') !== -1) {
+              json.password = json.password.replace(/\</gi, '^<');
+          }
+      
+      } else {
+          if(json.password.indexOf('\\') !== -1) {
+              json.password = json.password.replace(/\\/gi, '\\\\');
+          }
+          if(json.password.indexOf("`") !== -1) {
+              json.password = json.password.replace(/\`/gi, "\\`");
+          }
+          if(json.password.indexOf("$") !== -1) {
+              json.password = json.password.replace(/\$/gi, "\\$");
+          }
+          if(json.password.indexOf('"') !== -1) {
+              json.password = json.password.replace(/\"/gi, '\\"');
+          }
+      }
+
         // console.log(json);
         // .serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}
         // event.returnValue = 'connect: ' + vmName;
