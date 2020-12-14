@@ -20,9 +20,15 @@ if(!isDev) {
 
 let mainWindow;
 
+app.commandLine.appendSwitch('--lang', 'ko');
+app.commandLine.appendSwitch('--no-sandbox');
+
 if (process.platform === "win32") {
   app.commandLine.appendSwitch("high-dpi-support", "true");
   app.commandLine.appendSwitch("force-device-scale-factor", "1");
+}
+if(process.platform === "darwin") {
+    app.dock.hide();
 }
 
 function createWindow() {
