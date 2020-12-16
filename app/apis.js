@@ -596,7 +596,7 @@ function initial(mainWindow, appVersion) {
         const child = new BrowserWindow({ 
                     parent: mainWindow, 
                     modal: true, 
-                    show: true, 
+                    show: false, 
                     width: 1500, 
                     height: 1000, 
                     webPreferences: {
@@ -643,17 +643,22 @@ function initial(mainWindow, appVersion) {
                             child.show();
                             _INTERVALCNT_ = 0;
                             clearInterval(_INTERVAL_);
+                            event.reply("vm-connect", "DONE");
                         }
 
                         if(curUrl.indexOf("#/launchitems") !== -1) {
+
                             child.webContents.executeJavaScript(`
-                                setTimeout(() => {
+                                setTimeout(() => {
                                     document.getElementById('${vmId}').click(); 
                                 }, 0);
-                            `).then().catch();
-                        } else {
-                            _INTERVALCNT_ ++;
+                            `)
+                            .then()
+                            .catch();
+                        
                         }
+
+                        _INTERVALCNT_ ++;
 
                         // INTERVAL Count 초과시 에러 발생
                         if(_INTERVALCNT_ > 10) {
@@ -661,7 +666,11 @@ function initial(mainWindow, appVersion) {
                             _INTERVALCNT_ = 0;
                             clearInterval(_INTERVAL_);
 
-                            dialog.showErrorBox('접속 에러', '접속에 실패하였습니다. 잠시후 다시 시도해 주시고, 문제가 계속 발생시 관리자에게 문의해 주시기 바랍니다.');
+                            child.close();
+
+                            event.reply("vm-connect", "ERROR");
+
+                            dialog.showErrorBox('접속 에러', '접속에 실패하였습니다. 잠시 후 다시 시도해 주시고, 문제가 계속 발생시 관리자에게 문의해 주시기 바랍니다.');
                         }
 
                     }, 1000);

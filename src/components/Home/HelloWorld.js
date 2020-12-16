@@ -8,6 +8,7 @@ import {
 const { Text } = Typography;
 const { Dragger } = Upload;
 // const { Meta } = Card;
+import LoadingOverlay from 'react-loading-overlay';
 
 import { withRouter } from 'react-router-dom';
 // import FileBrowser from 'react-keyed-file-browser';
@@ -89,6 +90,8 @@ class HelloWorld extends Component {
             visible: false,
             fileUploadervisible: false,
             fileList: [],
+
+            connectLoading: false,
             loading: false,
             vmName: 'W10-INETRNETVM',
             selectedVm:{},
@@ -167,6 +170,22 @@ class HelloWorld extends Component {
                 });
             }
 
+
+        });
+
+        window.ipcRenderer.on("vm-connect", (event, arg) => {
+
+            if(arg === "DONE") {
+
+                this.setState({
+                    connectLoading: false,
+                });
+               
+            } else {
+                this.setState({
+                    connectLoading: false,
+                });
+            }
 
         });
 
@@ -352,6 +371,7 @@ class HelloWorld extends Component {
         window.ipcRenderer.send("vm-connect", vm);
         this.setState({
             visible: false,
+            connectLoading: true,
         });
     };
 
@@ -363,6 +383,9 @@ class HelloWorld extends Component {
         // alert(result);
 
         window.ipcRenderer.send("vm-connect", vm);
+        this.setState({
+            connectLoading: true,
+        });
 
     };
 
@@ -373,7 +396,13 @@ class HelloWorld extends Component {
 
     render() {
         return (
+            <LoadingOverlay
+                    active={this.state.connectLoading}
+                    spinner
+                    text='Loading your content...'
+                    >
             <div className={styles.helloWorld}>
+                
                 { this.state.error &&
                 <Alert
                     message={this.state.error.title}
@@ -383,7 +412,7 @@ class HelloWorld extends Component {
                     style={{ marginBottom: 10 }}
                 />
                 }
-                {/*<Spin spinning={this.state.loading}  size="large" tip="Loading..." />*/}
+                {/* <Spin spinning={this.state.connectLoading}  size="large" tip="Loading..." /> */}
                 <Row gutter={[16, 16]}>
 
                     {
@@ -600,6 +629,8 @@ class HelloWorld extends Component {
 
                 </Modal>
             </div>
+                </LoadingOverlay>
+
         );
     }
 }
