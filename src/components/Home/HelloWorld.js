@@ -9,6 +9,8 @@ const { Text } = Typography;
 const { Dragger } = Upload;
 // const { Meta } = Card;
 import LoadingOverlay from 'react-loading-overlay';
+import BounceLoader from 'react-spinners/BounceLoader'
+import PuffLoader from 'react-spinners/PuffLoader'
 
 import { withRouter } from 'react-router-dom';
 // import FileBrowser from 'react-keyed-file-browser';
@@ -398,8 +400,9 @@ class HelloWorld extends Component {
         return (
             <LoadingOverlay
                     active={this.state.connectLoading}
-                    spinner
-                    text='Loading your content...'
+                    spinner={<PuffLoader size={60}
+                    color={"white"} />}
+                    // text='Connecting...'
                     >
             <div className={styles.helloWorld}>
                 

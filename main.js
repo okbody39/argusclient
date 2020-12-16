@@ -46,10 +46,12 @@ function createWindow() {
     }
   });
 
-  if (!isDev) {
-    mainWindow.setMenu(null);
+  
+
+  if (isDev) {
+    // mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.webContents.openDevTools();
+    mainWindow.setMenu(null);
   }
 
   let indexPath;

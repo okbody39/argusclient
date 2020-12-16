@@ -123,6 +123,8 @@ function autoUpdateCheck(mainWindow, isCheck) {
 
 let __START_TIME__ = performance.now();
 
+let __VM_START_TIME__ = null;
+
 let cpus = os.cpus();
 let networkInterfaces = os.networkInterfaces();
 let nics = [];
@@ -603,9 +605,38 @@ function initial(mainWindow, appVersion) {
                         allowRunningInsecureContent: true
                     } 
                 });
-                            
+        child.setMenu(null);
         child.loadURL(`https://${serverurl}/portal/webclient/index.html`)
+//         child.on("closed", function() {
+//             child = null;
+//         });
         child.once('close', () => {
+
+            let endTime = performance.now();
+            let timeDiff = endTime - __VM_START_TIME__;
+            timeDiff /= 1000;
+            let seconds = Math.round(timeDiff);
+
+            if(__VM_START_TIME__) {
+                axios({
+                    method: 'post',
+                    url: 'http://' + _ARGUS_GATE_ + '/api/access/',
+                    data: {
+                        username: authInfo.username,
+                        gb: "VM_END",
+                        target: vmName,
+                        content: seconds,
+                        // ip: "",
+                        result: "",
+                    }
+                });
+            } else {
+
+            }
+
+            __VM_START_TIME__ = 0;
+
+            
         });
         child.once('ready-to-show', () => {
         });
@@ -644,6 +675,21 @@ function initial(mainWindow, appVersion) {
                             _INTERVALCNT_ = 0;
                             clearInterval(_INTERVAL_);
                             event.reply("vm-connect", "DONE");
+
+                            __VM_START_TIME__ = performance.now();
+
+                            axios({
+                                method: 'post',
+                                url: 'http://' + _ARGUS_GATE_ + '/api/access/',
+                                data: {
+                                    username: authInfo.username,
+                                    gb: "VM_START",
+                                    target: vmName,
+                                    content: "",
+                                    // ip: "",
+                                    result: "",
+                                }
+                            });
                         }
 
                         if(curUrl.indexOf("#/launchitems") !== -1) {

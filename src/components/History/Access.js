@@ -110,9 +110,13 @@ class Access extends Component {
             break;
           case "VM_START":
             a.gb = "VM";
+            a.detail = "접속 시작";
+            a.result =  a.target;
             break;
           case "VM_END":
             a.gb = "VM";
+            a.detail = "접속 종료";
+            a.result =  a.target + ": " + a.content + " sec";
             break;
           default:
         }
