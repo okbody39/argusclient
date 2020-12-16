@@ -33,12 +33,14 @@ class Settings extends Component {
         let ConnInfo = localStorage.getItem("ARGUS.CONNINFO") || "{}";
         let connInfo= JSON.parse(ConnInfo);
 
+
+
         this.state = {
             // username: "",
             // password: "",
             loading: false,
             serverUrl: connInfo.serverUrl,
-            connInfo: {},
+            connInfo: { ViewServers: [] },
         };
 
         // this.history = useHistory();
@@ -189,7 +191,7 @@ class Settings extends Component {
 
                     <Descriptions title="Connection Info" bordered column={2}>
                         <Descriptions.Item label="Domain">{ this.state.connInfo.Domain || "" }</Descriptions.Item>
-                        <Descriptions.Item label="View Server">{ (this.state.connInfo.ViewServers || []).join(", ") }</Descriptions.Item>
+                        <Descriptions.Item label="View Server">{ this.state.connInfo.ViewServers.join(", ") }</Descriptions.Item>
                     </Descriptions>
 
                 </div>

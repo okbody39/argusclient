@@ -126,6 +126,11 @@ class HelloWorld extends Component {
                 this.setState({
                     loading: true,
                 });
+
+            } else if(arg === "INVALIDSESSION") {
+                this.props.history.push('/signin');
+               
+
             } else if(arg === "INVALIDSETTING") {
                 this.props.history.push('/settings');
             }
@@ -342,24 +347,22 @@ class HelloWorld extends Component {
         });
     };
 
-    onConnect = (vmName) => {
-
-
-
-        window.ipcRenderer.send("vm-connect", vmName);
+    onConnect = (vm) => {
+        console.log(vm);
+        window.ipcRenderer.send("vm-connect", vm);
         this.setState({
             visible: false,
         });
     };
 
-    connectVM = (vmName) => {
+    connectVM = (vm) => {
         // e.stopPropagation();
         // e.nativeEvent.stopImmediatePropagation();
 
         // let result = window.ipcRenderer.sendSync("vm-connect", vmName);
         // alert(result);
 
-        window.ipcRenderer.send("vm-connect", vmName);
+        window.ipcRenderer.send("vm-connect", vm);
 
     };
 
@@ -405,7 +408,7 @@ class HelloWorld extends Component {
                                             </Figure>
                                         }
                                         actions={[
-                                            <div key="play-square" onClick={this.connectVM.bind(this, vm.name)}>
+                                            <div key="play-square" onClick={this.connectVM.bind(this, vm)}>
                                                 <Icon type="play-square" />
                                             </div>,
 
@@ -542,7 +545,7 @@ class HelloWorld extends Component {
                     >
                         기본 VM 설정 <Switch defaultChecked className="mr-3"/>
 
-                        <Button onClick={this.onConnect.bind(this, this.state.selectedVm.name)} type="success">
+                        <Button onClick={this.onConnect.bind(this, this.state.selectedVm )} type="success">
                             접속
                         </Button>
 

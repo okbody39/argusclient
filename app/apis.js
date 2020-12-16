@@ -23,6 +23,8 @@ const store = new Store({
 });
 
 const __VIEWSERVER__ = 0;
+let _INTERVAL_ = null;
+let _INTERVALCNT_ = 0;
 
 const crypto = require('crypto');
 
@@ -327,8 +329,22 @@ function initial(mainWindow, appVersion) {
             event.reply('start-app', 'OK');
 
         } else {
+
+            if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0) {
+                if(authInfo.username) {
+                } else {
+                    event.reply('start-app', 'INVALIDSESSION');    
+                    return;
+                }
+            } else {
+
+            }
+
+            
             // settingThis.run(mainWindow);
-            console.log("apis.js - start-app : ", serverInfo, authInfo);
+
+            store.set("server-info", {});
+            store.set("auth-info", {});
 
             // dialog.showMessageBox(mainWindow, {
             //   type: 'error',
@@ -375,8 +391,6 @@ function initial(mainWindow, appVersion) {
                 decVal += decipher.final('utf8');
                 let decJson = JSON.parse(decVal);
                 decJson.serverUrl = arg.serverUrl;
-
-                // console.log(decJson, arg);
 
                 store.set("server-info", {
                     serverUrl: arg.serverUrl,
@@ -520,7 +534,10 @@ function initial(mainWindow, appVersion) {
     });
 
     ipcMain.on("logout", (event, arg) => {
+
+        
         let serverInfo = store.get("server-info", {});
+        
         let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
         let sendXml = `<?xml version='1.0' encoding='UTF-8'?>
 <broker version='15.0'>
@@ -554,7 +571,9 @@ function initial(mainWindow, appVersion) {
     });
 
     ipcMain.on("vm-connect", (event, arg) => {
-        let vmName = arg;
+        let vm = arg;
+        let vmName = vm.name
+        let vmId = vm.vmId;
         let osver = process.platform;
 
         serverInfo = store.get("server-info", {});
@@ -571,6 +590,88 @@ function initial(mainWindow, appVersion) {
             domainname: serverInfo.Domain,
             desktopname: vmName,
         };
+
+        //////////////////////////////
+
+        const child = new BrowserWindow({ 
+                    parent: mainWindow, 
+                    modal: true, 
+                    show: true, 
+                    width: 1500, 
+                    height: 1000, 
+                    webPreferences: {
+                        allowRunningInsecureContent: true
+                    } 
+                });
+                            
+        child.loadURL(`https://${serverurl}/portal/webclient/index.html`)
+        child.once('close', () => {
+        });
+        child.once('ready-to-show', () => {
+        });
+        child.webContents.on('did-finish-load', () => {
+            let currentUrl = child.webContents.getURL();
+            let username = json.username +"@" + json.domainname;
+            let password = json.password;
+            
+            setTimeout(() =>{
+                child.webContents.executeJavaScript(`
+                    setTimeout(() => {
+                        document.querySelector('input[name="username"]').value = '${username}'; 
+                        document.querySelector('input[name="password"]').value = '${password}';
+                                
+                        setTimeout(() => {
+                            var evt = document.createEvent("HTMLEvents"); 
+                            evt.initEvent("change", false, true); 
+                                    
+                            document.getElementById('username').dispatchEvent(evt);
+                            document.getElementById('password').dispatchEvent(evt);
+
+                            setTimeout(function() { 
+                                document.getElementById("loginButton").click(); 
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                `).then().catch();
+
+                setTimeout(() => {
+                    _INTERVAL_ = setInterval(() => {
+                        let curUrl = child.webContents.getURL();
+                        // console.log(">>>>", curUrl);
+
+                        if(curUrl.indexOf("#/desktop") !== -1) {
+                            child.show();
+                            _INTERVALCNT_ = 0;
+                            clearInterval(_INTERVAL_);
+                        }
+
+                        if(curUrl.indexOf("#/launchitems") !== -1) {
+                            child.webContents.executeJavaScript(`
+                                setTimeout(() => {
+                                    document.getElementById('${vmId}').click(); 
+                                }, 0);
+                            `).then().catch();
+                        } else {
+                            _INTERVALCNT_ ++;
+                        }
+
+                        // INTERVAL Count 초과시 에러 발생
+                        if(_INTERVALCNT_ > 10) {
+                            child.show();
+                            _INTERVALCNT_ = 0;
+                            clearInterval(_INTERVAL_);
+
+                            dialog.showErrorBox('접속 에러', '접속에 실패하였습니다. 잠시후 다시 시도해 주시고, 문제가 계속 발생시 관리자에게 문의해 주시기 바랍니다.');
+                        }
+
+                    }, 1000);
+                }, 2000);
+            }, 1000);
+        });
+
+        return;
+
+        //////////////////////////////
 
         if(process.platform === "win32") {
           if(json.password.indexOf('^') !== -1) {

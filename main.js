@@ -22,6 +22,7 @@ let mainWindow;
 
 app.commandLine.appendSwitch('--lang', 'ko');
 app.commandLine.appendSwitch('--no-sandbox');
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 
 if (process.platform === "win32") {
   app.commandLine.appendSwitch("high-dpi-support", "true");
@@ -47,6 +48,8 @@ function createWindow() {
 
   if (!isDev) {
     mainWindow.setMenu(null);
+  } else {
+    mainWindow.webContents.openDevTools();
   }
 
   let indexPath;
