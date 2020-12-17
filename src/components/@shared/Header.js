@@ -144,7 +144,7 @@ class Header extends Component {
         return (
             <Layout.Header className={styles.header}>
                 <Link to={{
-                    pathname: "/",
+                    pathname: "/home",
                     state: ""
                 }}>
                     <img className={styles.logo} src={logo}/>

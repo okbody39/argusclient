@@ -70,29 +70,31 @@ function PrivateRoute ({component: Component, ...rest}) {
 const Routes = () => (
   <HashRouter>
     <Switch>
-      <PrivateRoute exact path='/' component={Root} />
-      <PrivateRoute path='/home' component={Root} />
+        <Route exact path="/" component={Signin} />
 
-      <Route path="/signin" component={Signin} />
-      <Route path="/signup" component={Signup} />
-      <Route path="/settings" component={Settings} />
+        <PrivateRoute path='/home' component={Root} />
+        {/*<PrivateRoute path='/' component={Root} />*/}
 
-      <Route path="/diagnosis" component={Diagnosis} />
+        <Route path="/signin" component={Signin} />
+        <Route path="/signup" component={Signup} />
+        <Route path="/settings" component={Settings} />
 
-      <PrivateRoute path="/failure" component={Failure} />
-      <PrivateRoute path="/notice" component={Notice} />
-      <PrivateRoute path="/alarm" component={Alarm} />
+        <Route path="/diagnosis" component={Diagnosis} />
 
-      <PrivateRoute exact path="/change" component={Change} />
-      <PrivateRoute path="/change/password" component={ChangePassword} />
+        <PrivateRoute path="/failure" component={Failure} />
+        <PrivateRoute path="/notice" component={Notice} />
+        <PrivateRoute path="/alarm" component={Alarm} />
+
+        <PrivateRoute exact path="/change" component={Change} />
+        <PrivateRoute path="/change/password" component={ChangePassword} />
 
 
-      <PrivateRoute path="/history/change" component={HistoryChange} />
-      <PrivateRoute path="/history/failure" component={HistoryFailure} />
-      <PrivateRoute path="/history/access" component={HistoryAccess} />
+        <PrivateRoute path="/history/change" component={HistoryChange} />
+        <PrivateRoute path="/history/failure" component={HistoryFailure} />
+        <PrivateRoute path="/history/access" component={HistoryAccess} />
 
-      <PrivateRoute path="/vm/create" component={VMCreate} />
-      
+        <PrivateRoute path="/vm/create" component={VMCreate} />
+
     </Switch>
   </HashRouter>
 );

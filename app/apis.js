@@ -9,7 +9,7 @@ const isDev = require("electron-is-dev");
 const {spawn, exec} = require('child_process');
 const async = require('async');
 
-const tcpp = require('tcp-ping');
+const tcpp = require('tcp-ping');3
 const axios = require('axios');
 const https = require('https');
 
@@ -23,7 +23,7 @@ const store = new Store({
 });
 
 const __VIEWSERVER__ = 0;
-let _INTERVAL_ = null;
+let _INTERVAL_ = null;
 let _INTERVALCNT_ = 0;
 
 const crypto = require('crypto');
@@ -228,10 +228,10 @@ function checkClient() {
 // </environment-information>
 // </do-submit-authentication>
 // </broker>`;
-
+//
 //     let reqUrl = `https://${viewServer}/broker/xml`;
 //     let auth = false;
-
+//
 //     axios.post(reqUrl, sendXml, {
 //         withCredentials: true,
 //         headers: {
@@ -246,18 +246,18 @@ function checkClient() {
 //     .then((response) => {
 //         let headers = response.headers['set-cookie'];
 //         let _cookie = (headers || []).join(";");
-
+//
 //         if(_cookie) {
 //             store.set("_cookie", _cookie);
 //         }
-
+//
 //         let json = JSON.parse(convert.xml2json(response.data, options));
 //         let loginResult = json.broker["submit-authentication"];
-
+//
 //         console.log(JSON.stringify(json), serverInfo.Domain);
-
+//
 //         return loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED";
-
+//
 //     });
 // }
 
@@ -397,25 +397,25 @@ function initial(mainWindow, appVersion) {
                 wsConnect();
             }
 
-            let isLogin = checkLogin(authInfo.username, authInfo.password);
+            // let isLogin = checkLogin(authInfo.username, authInfo.password);
 
-            console.log(isLogin, authInfo);
+            // console.log(isLogin, authInfo);
 
-            event.reply('start-app', isLogin ? 'OK' : 'INVALIDSESSION');
-
+            // event.reply('start-app', isLogin ? 'OK' : 'INVALIDSESSION');
+            event.reply('start-app', 'OK');
         } else {
 
             if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0) {
                 if(authInfo.username) {
                 } else {
-                    event.reply('start-app', 'INVALIDSESSION');    
+                    event.reply('start-app', 'INVALIDSESSION');
                     return;
                 }
             } else {
 
             }
 
-            
+
             // settingThis.run(mainWindow);
 
             store.set("server-info", {});
@@ -519,107 +519,155 @@ function initial(mainWindow, appVersion) {
     });
 
     // LOGIN
-
-    
-
     ipcMain.on("login", (event, arg) => {
-        // event.returnValue = checkLogin(arg.username, arg.password);
-
         let serverInfo = store.get("server-info", {});
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-<broker version="15.0">
-<do-submit-authentication>
-    <screen>
-    <name>windows-password</name>
-    <params>
-        <param>
-        <name>username</name>
-        <values>
-            <value>${arg.username}</value>
-        </values>
-        </param>
-        <param>
-        <name>domain</name>
-        <values>
-            <value>${serverInfo.Domain}</value>
-        </values>
-        </param>
-        <param>
-        <name>password</name>
-        <values>
-            <value>${arg.password}</value>
-        </values>
-        </param>
-    </params>
-    </screen>
-    <environment-information>
-        <info name="Type">Windows</info>
-        <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-        <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-    </environment-information>
-</do-submit-authentication>
-</broker>`;
 
-        let reqUrl = `https://${viewServer}/broker/xml`;
-        let auth = false;
 
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            let headers = response.headers['set-cookie'];
-            let _cookie = (headers || []).join(";");
+        // console.log(serverInfo, arg);
 
-            if(_cookie) {
-                store.set("_cookie", _cookie);
-            }
+        if(serverInfo.serverUrl) {
 
-            let json = JSON.parse(convert.xml2json(response.data, options));
+            let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
 
-console.log(json);
+            axios.get(url)
+            .then(function (response) {
 
-            let loginResult = json.broker["submit-authentication"];
+                let decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+                let encVal = response.data;
+                let decVal = decipher.update(encVal, 'base64', 'utf8');
 
-            if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
-                store.set("auth-info", {
-                    username: arg.username,
-                    password: arg.password,
+                decVal += decipher.final('utf8');
+                let decJson = JSON.parse(decVal);
+                decJson.serverUrl = serverInfo.serverUrl;
+
+                store.set("server-info", {
+                    serverUrl: serverInfo.serverUrl,
+                    ViewServers: decJson.ViewServers,
+                    Domain: decJson.Domain,
                 });
 
-                axios({
-                    method: 'post',
-                    url: 'http://' + _ARGUS_GATE_ + '/api/login/',
-                    data: {
-                        username: arg.username,
-                        gb: "CLIENT_START",
-                        target: appVersion,
-                        content: "",
-                        // ip: "",
-                        result: JSON.stringify(__OS__),
+                // console.log(store.get("server-info"));
+
+
+                ////////////////////
+
+                let viewServer = decJson.ViewServers[__VIEWSERVER__];
+
+                let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+                    <broker version="15.0">
+                    <do-submit-authentication>
+                        <screen>
+                        <name>windows-password</name>
+                        <params>
+                            <param>
+                            <name>username</name>
+                            <values>
+                                <value>${arg.username}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>domain</name>
+                            <values>
+                                <value>${serverInfo.Domain}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>password</name>
+                            <values>
+                                <value>${arg.password}</value>
+                            </values>
+                            </param>
+                        </params>
+                        </screen>
+                        <environment-information>
+                            <info name="Type">Windows</info>
+                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+                        </environment-information>
+                    </do-submit-authentication>
+                    </broker>`;
+                let reqUrl = `https://${viewServer}/broker/xml`;
+
+                axios.post(reqUrl, sendXml, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'text/xml;charset=UTF-8',
+                        'Access-Control-Allow-Origin': '*',
+                        'Cookie': store.get("_cookie", ""),
+                    },
+                    httpsAgent: new https.Agent({
+                        rejectUnauthorized: false
+                    }),
+                })
+                .then((response) => {
+                    let headers = response.headers['set-cookie'];
+                    let _cookie = (headers || []).join(";");
+
+                    if(_cookie) {
+                        store.set("_cookie", _cookie);
                     }
+
+                    let json = JSON.parse(convert.xml2json(response.data, options));
+                    let loginResult = json.broker["submit-authentication"];
+
+                    if(loginResult.result === "partial") {
+                        loginResult.authentication.screen.params.param.map((p) => {
+                            if(p.name === "error") {
+                                event.returnValue = {
+                                    result: false,
+                                    error: p.values.value,
+                                };
+                            }
+                        });
+                        return;
+                    }
+
+                    if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
+                        store.set("auth-info", {
+                            username: arg.username,
+                            password: arg.password,
+                        });
+
+                        axios({
+                            method: 'post',
+                            url: 'http://' + _ARGUS_GATE_ + '/api/login/',
+                            data: {
+                                username: arg.username,
+                                gb: "CLIENT_START",
+                                target: appVersion,
+                                content: "",
+                                // ip: "",
+                                result: JSON.stringify(__OS__),
+                            }
+                        });
+                    }
+
+                    event.returnValue = {
+                        result: loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED",
+                        error: loginResult["user-message"]
+                    };
+
                 });
-            }
 
-            event.returnValue = loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED";
+                ////////////////////
 
-        });
+            })
+            .catch(function (error) {
+                console.log(error);
+                event.returnValue = {
+                    result: false,
+                    error: JSON.stringify(error),
+                };
+            });
+        }
 
     });
 
     ipcMain.on("logout", (event, arg) => {
 
-        
+
         let serverInfo = store.get("server-info", {});
-        
+
         let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
         let sendXml = `<?xml version='1.0' encoding='UTF-8'?>
 <broker version='15.0'>
@@ -645,11 +693,11 @@ console.log(json);
             let json = JSON.parse(convert.xml2json(response.data, options));
             let logoutResult = json.broker["logout"];
 
-            // event.returnValue = logoutResult.result === "ok";
+            event.returnValue = logoutResult.result === "ok";
 
         })
         .catch((err) =>{
-            // event.returnValue = JSON.stringify(err);
+            event.returnValue = JSON.stringify(err);
         });
 
 
@@ -678,27 +726,26 @@ console.log(json);
 
         //////////////////////////////
 
-        const child = new BrowserWindow({ 
-                    parent: mainWindow, 
-                    modal: true, 
-                    show: true, 
-                    width: 1500, 
-                    height: 1000, 
-                    webPreferences: {
-                        allowRunningInsecureContent: true
-                    } 
-                });
-child.webContents.openDevTools();
-        child.setMenu(null);
+        const child = new BrowserWindow({
+            parent: mainWindow,
+            modal: process.platform !== "darwin",
+            show: false, // isDev,
+            width: 1500,
+            height: 1000,
+            webPreferences: {
+                allowRunningInsecureContent: true
+            }
+        });
+        // child.webContents.openDevTools();
+        child.setMenu(null);
         child.loadURL(`https://${serverurl}/portal/webclient/index.html`)
-//         child.on("closed", function() {
-//             child = null;
-//         });
-        child.once('close', () => {
+        child.on("closed", function() {
+        });
+        child.once('close', () => {
             event.reply("vm-connect", "CLOSE");
 
             _INTERVALCNT_ = 0;
-            clearInterval(_INTERVAL_);
+            clearInterval(_INTERVAL_);
 
             let endTime = performance.now();
             let timeDiff = endTime - __VM_START_TIME__;
@@ -724,51 +771,60 @@ child.webContents.openDevTools();
 
             __VM_START_TIME__ = 0;
 
-            
-        });
-        child.once('ready-to-show', () => {
-        });
-        child.webContents.on('did-finish-load', () => {
-            let currentUrl = child.webContents.getURL();
-            let username = json.username +"@" + json.domainname;
-            let password = json.password;
-            
-            
-            setTimeout(() =>{
-                child.webContents.executeJavaScript(`
-                    setTimeout(() => {
-                        
-                        document.querySelector('input[name="username"]').value = '${username}'; 
-                        document.querySelector('input[name="password"]').value = '${password}';
-                                
-                        setTimeout(() => {
-                            var evt = document.createEvent("HTMLEvents"); 
-                            evt.initEvent("change", false, true); 
-                                    
-                            document.getElementById('username').dispatchEvent(evt);
-                            document.getElementById('password').dispatchEvent(evt);
 
-                            setTimeout(function() { 
-                                document.getElementById("loginButton").click(); 
-                            }, 500);
-                        }, 500);
-                    }, 500);
-                   document.querySelector('div[class="dialog-content"]').innerText;
-                `).then((result) => {
-                    dialog.showErrorBox('접속 에러', result);
+        });
+        child.once('ready-to-show', () => {
+        });
+        child.webContents.on('did-finish-load', () => {
+            let currentUrl = child.webContents.getURL();
+            let username = json.username +"@" + json.domainname;
+            let password = json.password;
+
+
+            setTimeout(() =>{
+                child.webContents.executeJavaScript(`
+                    setTimeout(() => {
+
+                        let selectedDomain = document.querySelector('.ui-selectmenu-text').innerText;
+
+                        if(selectedDomain === "*DefaultDomain*") {
+                            document.querySelector('input[name="username"]').value = '${username}';
+                        } else {
+                            document.querySelector('input[name="username"]').value = '${json.username}';
+                        }
+
+                        document.querySelector('input[name="password"]').value = '${password}';
+
+                        setTimeout(() => {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+
+                            document.getElementById('username').dispatchEvent(evt);
+                            document.getElementById('password').dispatchEvent(evt);
+
+                            document.getElementById('password').focus();
+
+                            setTimeout(function() {
+                                document.getElementById("loginButton").click();
+                            }, 500);
+                        }, 500);
+
+                    }, 500);
+                `).then((result) => {
+                    // dialog.showErrorBox('접속 에러', result);
                 }).catch((err) =>{
-                    console.log('>>>>', err);
+                    // console.log('>>>>', err);
                 });
 
-                setTimeout(() => {
-                    _INTERVAL_ = setInterval(() => {
-                        let curUrl = child.webContents.getURL();
+                setTimeout(() => {
+                    _INTERVAL_ = setInterval(() => {
+                        let curUrl = child.webContents.getURL();
                         // console.log(">>>>", curUrl);
 
-                        if(curUrl.indexOf("#/desktop") !== -1) {
-                            child.show();
+                        if(curUrl.indexOf("#/desktop") !== -1) {
+                            child.show();
                             _INTERVALCNT_ = 0;
-                            clearInterval(_INTERVAL_);
+                            clearInterval(_INTERVAL_);
                             event.reply("vm-connect", "DONE");
 
                             __VM_START_TIME__ = performance.now();
@@ -785,23 +841,46 @@ child.webContents.openDevTools();
                                     result: "",
                                 }
                             });
-                        } else if(curUrl.indexOf("#/launchitems") !== -1) {
+                        } else if(curUrl.indexOf("#/launchitems") !== -1) {
 
-                            child.webContents.executeJavaScript(`
-                                setTimeout(() => {
-                                    document.getElementById('${vmId}').click(); 
-                                }, 0);
-                            `)
+                            child.webContents.executeJavaScript(`
+                                setTimeout(() => {
+                                    document.getElementById('${vmId}').click();
+                                }, 0);
+                            `)
                             .then()
                             .catch();
-                        
+
                         } else {
                             child.webContents.executeJavaScript(`
-                                document.querySelector('div[class="alert"]').innerText;
-                            `).then((result) => {
-                                dialog.showErrorBox('접속 에러', result);
+                                try {
+                                    document.querySelector('div[class="dialog-content"]').innerText;
+                                } catch {
+                                    try {
+                                        document.querySelector('div.alert.alert-danger').innerText;
+                                    } catch {
+                                        document.querySelector('#errorMsg').innerText;
+                                    }
+                                }
+
+                            `).then((result) => {
+
+                                // console.log("["+result.replace(/\r\n/g, '').trim()+"]");
+
+                                let rslt = result.replace(/\r\n/g, '').trim();
+
+                                if(rslt) {
+                                    _INTERVALCNT_ = 0;
+                                    clearInterval(_INTERVAL_);
+                                    child.close();
+
+                                    event.reply("vm-connect", "ERROR");
+
+                                    dialog.showErrorBox('접속 에러', result);
+                                }
+
                             }).catch((err) =>{
-                                console.log('**>>>>', err);
+                                // console.log('**>>>>', err);
                             });
                         }
 
@@ -811,7 +890,7 @@ child.webContents.openDevTools();
                         if(_INTERVALCNT_ > 10) {
                             // child.show();
                             _INTERVALCNT_ = 0;
-                            clearInterval(_INTERVAL_);
+                            clearInterval(_INTERVAL_);
 
                             // child.hide();
                             child.close();
@@ -819,38 +898,38 @@ child.webContents.openDevTools();
                             event.reply("vm-connect", "ERROR");
 
                             dialog.showErrorBox('접속 에러', '접속에 실패하였습니다. 문제가 계속 발생시 관리자에게 문의해 주시기 바랍니다.');
-                            
+
                         }
 
-                    }, 2000);
-                }, 2000);
-                
-            }, 1000);
-            
-        });
+                    }, 2000);
+                }, 2000);
+
+            }, 1000);
+
+        });
 
         return;
 
         //////////////////////////////
 
         if(process.platform === "win32") {
-          if(json.password.indexOf('^') !== -1) {
-              json.password = json.password.replace(/\^/gi, '^^');
-          }
-          if(json.password.indexOf('&') !== -1) {
-              json.password = json.password.replace(/\&/gi, '^&');
-          }
-          if(json.password.indexOf('"') !== -1) {
-              json.password = json.password.replace(/\"/gi, '\"');
-          }
-          if(json.password.indexOf('>') !== -1) {
-              json.password = json.password.replace(/\>/gi, '^>');
-          }
-          if(json.password.indexOf('<') !== -1) {
-              json.password = json.password.replace(/\</gi, '^<');
-          }
+            if(json.password.indexOf('^') !== -1) {
+                json.password = json.password.replace(/\^/gi, '^^');
+            }
+            if(json.password.indexOf('&') !== -1) {
+                json.password = json.password.replace(/\&/gi, '^&');
+            }
+            if(json.password.indexOf('"') !== -1) {
+                json.password = json.password.replace(/\"/gi, '\"');
+            }
+            if(json.password.indexOf('>') !== -1) {
+                json.password = json.password.replace(/\>/gi, '^>');
+            }
+            if(json.password.indexOf('<') !== -1) {
+                json.password = json.password.replace(/\</gi, '^<');
+            }
 
-      } else {
+        } else {
             if(json.password.indexOf('\\') !== -1) {
                 json.password = json.password.replace(/\\/gi, '\\\\');
             }
@@ -884,7 +963,7 @@ child.webContents.openDevTools();
             if(json.password.indexOf(";") !== -1) {
                 json.password = json.password.replace(/\;/gi, "\\;");
             }
-      }
+        }
 
         // console.log(json);
         // .serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}
@@ -1457,7 +1536,7 @@ child.webContents.openDevTools();
         if (!forceQuit) {
             e.preventDefault();
 
-            var choice = dialog.showMessageBox(mainWindow,
+            let choice = dialog.showMessageBox(mainWindow,
                 {
                     type: 'question',
                     buttons: ['Yes', 'No'],
@@ -1466,29 +1545,60 @@ child.webContents.openDevTools();
                 });
 
             choice.then(function(res){
-                // 0 for Yes
-                if(res.response== 0){
-                    let endTime = performance.now();
-                    let timeDiff = endTime - __START_TIME__;
-                    timeDiff /= 1000;
-                    let seconds = Math.round(timeDiff);
 
-                    axios({
-                        method: 'post',
-                        url: url,
-                        data: {
-                            username: authInfo.username,
-                            gb: "CLIENT_END",
-                            target: appVersion,
-                            content: seconds,
-                            // ip: "",
-                            result: JSON.stringify(__OS__),
-                        }
+                if(res.response === 0){
+
+                    let serverInfo = store.get("server-info", {});
+
+                    let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+                    let sendXml = `<?xml version='1.0' encoding='UTF-8'?><broker version='15.0'><do-logout/></broker>`;
+
+                    let reqUrl = `https://${viewServer}/broker/xml`;
+
+                    axios.post(reqUrl, sendXml, {
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'text/xml;charset=UTF-8',
+                            'Access-Control-Allow-Origin': '*',
+                            'Cookie': store.get("_cookie", ""),
+                        },
+                        httpsAgent: new https.Agent({
+                            rejectUnauthorized: false
+                        }),
+                    })
+                    .then((response) => {
+                        store.set("_cookie", "");
+
+                    })
+                    .catch((err) =>{
+                        // event.returnValue = JSON.stringify(err);
+                    })
+                    .finally(() => {
+
+                        let endTime = performance.now();
+                        let timeDiff = endTime - __START_TIME__;
+                        timeDiff /= 1000;
+                        let seconds = Math.round(timeDiff);
+
+                        axios({
+                            method: 'post',
+                            url: url,
+                            data: {
+                                username: authInfo.username,
+                                gb: "CLIENT_END",
+                                target: appVersion,
+                                content: seconds,
+                                // ip: "",
+                                result: JSON.stringify(__OS__),
+                            }
+                        });
+                        forceQuit = true;
+                        setTimeout(() => {
+                            mainWindow.close();
+                        }, 1000);
+
                     });
-                    forceQuit = true;
-                    setTimeout(() => {
-                        mainWindow.close();
-                    }, 1000);
+
                 }
                 // 1 for No
                 if(res.response== 1){

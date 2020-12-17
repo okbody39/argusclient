@@ -51,7 +51,7 @@ class Signin extends Component {
     if(token.remember) {
       this.props.form.setFieldsValue({
         username: token.username,
-      }, () => console.log('after'));
+      });
 
     } else {
       token = "";
@@ -69,15 +69,16 @@ class Signin extends Component {
 
         let auth = window.ipcRenderer.sendSync("login", values);
 
-        if(auth) {
+        if(auth.result) {
           localStorage.setItem("ARGUS.USERTOKEN", JSON.stringify(values));
-          this.props.history.push("/");
+          this.props.history.push("/home");
         } else {
           localStorage.setItem("ARGUS.USERTOKEN", "");
           notification.error({
             message: '로그인 실패',
             description:
-              '사용자ID 또는 비밀번호를 다시 확인해 주세요.',
+                auth.error
+              // '사용자ID 또는 비밀번호를 다시 확인해 주세요.',
           });
         }
       }

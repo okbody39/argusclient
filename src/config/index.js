@@ -12,6 +12,7 @@ const IMAGES = {
 
 const ISFULLSCREEN = (path) => {
   let fullscreen = [
+    "/",
     "/signin",
     "/signup",
     "/diagnosis",
