@@ -72,28 +72,32 @@ class Access extends Component {
         let createdYYYYMM = createdAt.getFullYear() + "/" + ( createdAt.getMonth() + 1 );
         let elapseTime = parseInt(a.content || "0");
 
-        if(lastConnectDate === null && idx > 0 && a.gb === "CLIENT_START") {
-          lastConnectDate = createdAt;
+        if(a.gb.indexOf("CLIENT_") === -1) {
+            if(lastConnectDate === null && idx > 0 && a.gb === "VM_START") {
+                lastConnectDate = createdAt;
+            }
+
+            // if(lastConnectDate === null) {
+            //   let diff = new Date() - createdAt;
+            //   // console.log("====>", diff);
+            //   if(diff > 5000) {
+            //     lastConnectDate = createdAt;
+            //   }
+            // }
+
+            usedTotalTime += elapseTime;
+
+
+            if(createdYYYYMM === thisYYYYMM) {
+                usedThisMonthTime += elapseTime;
+            }
+
+            if(createdYYYYMM === beforeYYYYMM) {
+                usedBeforeMonthTime += elapseTime;
+            }
         }
 
-        // if(lastConnectDate === null) {
-        //   let diff = new Date() - createdAt;
-        //   // console.log("====>", diff);
-        //   if(diff > 5000) {
-        //     lastConnectDate = createdAt;
-        //   }
-        // }
 
-        usedTotalTime += elapseTime;
-
-
-        if(createdYYYYMM === thisYYYYMM) {
-          usedThisMonthTime += elapseTime;
-        }
-
-        if(createdYYYYMM === beforeYYYYMM) {
-          usedBeforeMonthTime += elapseTime;
-        }
 
         a.key = a.id;
 
