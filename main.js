@@ -49,7 +49,7 @@ function createWindow() {
   
 
   if (isDev) {
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.setMenu(null);
   }

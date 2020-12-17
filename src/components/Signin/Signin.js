@@ -41,7 +41,9 @@ class Signin extends Component {
     let connInfo = JSON.parse(ConnInfo);
 
     if(connInfo.serverUrl && connInfo.serverUrl.length > 0 && connInfo.serverUrl !== "undefined") {
-      window.ipcRenderer.sendSync("logout");
+      // console.log(connInfo);
+      window.ipcRenderer.send("logout");
+
     } else {
       this.props.history.push("/signup");
     }

@@ -123,8 +123,8 @@ class HelloWorld extends Component {
         }, 500);
 
         window.ipcRenderer.on("start-app", (event, arg) => {
-
             if(arg === "OK") {
+
                 window.ipcRenderer.send("vm-list", this.props.auth);
                 // window.ipcRenderer.send("vm-screenshot");
 
@@ -143,8 +143,6 @@ class HelloWorld extends Component {
         });
 
         window.ipcRenderer.on("vm-list", (event, arg) => {
-
-            // console.log(arg);
 
             if(arg.error) {
                 this.setState({
@@ -399,11 +397,10 @@ class HelloWorld extends Component {
     render() {
         return (
             <LoadingOverlay
-                    active={this.state.connectLoading}
-                    spinner={<PuffLoader size={60}
-                    color={"white"} />}
-                    // text='Connecting...'
-                    >
+                active={this.state.connectLoading}
+                spinner={ <PuffLoader size={60} color={"white"} /> }
+                // text='접속중입니다... (1분 정도 소요)'
+            >
             <div className={styles.helloWorld}>
                 
                 { this.state.error &&
