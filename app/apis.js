@@ -98,24 +98,23 @@ let options = {
     textFn: removeJsonTextAttribute
 };
 
-const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
+let __TMPDIR__ = process.env.TMPDIR
+    || process.env.TMP
+    || process.env.TEMP
+    || ( process.platform === "win32"
+        ? "c:\\windows\\temp"
+        : "/tmp" );
 
+const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 let _ARGUS_GATE_ = ""; //"211.232.94.235:8000";
 
 // Web socket
-
 const WebSocket = require('ws');
 let ws = null;
-
-const props = {
-    name: 'file',
-    multiple: true,
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-};
+let __WS_CONNECT__ = true;
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
-// const settingThis = require('./setting');
 
 function autoUpdateCheck(mainWindow, isCheck) {
     autoUpdater.init(mainWindow, isCheck);
@@ -123,7 +122,7 @@ function autoUpdateCheck(mainWindow, isCheck) {
 
 let __START_TIME__ = performance.now();
 
-let __VM_START_TIME__ = null;
+let __VM_START_TIME__ = 0;
 
 let cpus = os.cpus();
 let networkInterfaces = os.networkInterfaces();
@@ -276,8 +275,6 @@ function init(mainWindow, appVersion) {
 
 }
 
-let __CONNECT__ = true;
-
 function initial(mainWindow, appVersion) {
     let serverInfo = store.get("server-info", {});
     let authInfo = store.get("auth-info", {});
@@ -318,7 +315,7 @@ function initial(mainWindow, appVersion) {
             // console.log('socket error');
         });
         ws.on('close', function() {
-            __CONNECT__ = false;
+            __WS_CONNECT__ = false;
             mainWindow.webContents.send("connect-message", "DISCONNECT");
             dialog.showMessageBox(mainWindow, {
                 type: 'error',
@@ -370,15 +367,15 @@ function initial(mainWindow, appVersion) {
     };
 
     ipcMain.on("connect-message-sync", (event, arg) => {
-        // mainWindow.webContents.send("connect-message", __CONNECT__ ? "CONNECT" : "DISCONNECT");
+        // mainWindow.webContents.send("connect-message", __WS_CONNECT__ ? "CONNECT" : "DISCONNECT");
 
-        if(__CONNECT__) {
+        if(__WS_CONNECT__) {
             //
         } else {
             // wsConnect();
         }
 
-        event.returnValue = __CONNECT__ ? "CONNECT" : "DISCONNECT";
+        event.returnValue = __WS_CONNECT__ ? "CONNECT" : "DISCONNECT";
 
     });
 
@@ -739,10 +736,37 @@ function initial(mainWindow, appVersion) {
         // child.webContents.openDevTools();
         child.setMenu(null);
         child.loadURL(`https://${serverurl}/portal/webclient/index.html`)
-        child.on("closed", function() {
-        });
-        child.once('close', () => {
+        // child.on("closed", async() => {
+        //     await child.webContents.capturePage().then( image => {
+        //
+        //         fs.writeFileSync('test.png', image.toPNG(), (err) => {
+        //             if (err) throw err
+        //         });
+        //
+        //         console.log('It\'s saved!')
+        //         // return image.toDataURL()
+        //
+        //     });
+        //
+        // });
+        child.once('close', async() => {
             event.reply("vm-connect", "CLOSE");
+
+            if(__VM_START_TIME__) {
+                await child.webContents.capturePage().then(image => {
+                    let vmImageFile = path.join(__TMPDIR__, vmName + '.png');
+
+                    console.log(vmImageFile);
+
+                    fs.writeFileSync(vmImageFile, image.toPNG(), (err) => {
+                        if (err) throw err
+                    });
+
+                    // console.log('It\'s saved!')
+                    // return image.toDataURL()
+
+                });
+            }
 
             _INTERVALCNT_ = 0;
             clearInterval(_INTERVAL_);
@@ -766,7 +790,7 @@ function initial(mainWindow, appVersion) {
                     }
                 });
             } else {
-
+                //
             }
 
             __VM_START_TIME__ = 0;
@@ -965,110 +989,7 @@ function initial(mainWindow, appVersion) {
             }
         }
 
-        // console.log(json);
-        // .serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}
-        // event.returnValue = 'connect: ' + vmName;
-
-        if(osver === "darwin") {
-            const psList = require('ps-list');
-            psList().then((ps) => {
-                // console.log(ps);
-                let isExist = false;
-                ps.map((p) => {
-                    if(p.cmd.indexOf('VMware Horizon Client') != -1) {
-                        console.log(p);
-                        isExist = true;
-                    }
-                });
-
-                if(isExist) {
-                    let nextCmd = `osascript -e 'quit app "VMware Horizon Client"'`;
-                    exec(nextCmd, (err, stdout, stderr) => {
-                        dialog.showErrorBox('정보', `다시 시도해 주세요.`);
-                    });
-
-                } else {
-
-                    let fpath = "/Applications/VMware\\ Horizon\\ Client.app/Contents/MacOS/vmware-view";
-                    let cmd = `${fpath} --serverURL="${json.serverurl}" --userName="${json.username}" --password="${json.password}" --domainName="${json.domainname}" --desktopName="${json.desktopname}" --standAlone`;
-
-                    exec(cmd, (err, stdout, stderr) => {
-                        if (err) {
-                            console.error(err);
-                            dialog.showErrorBox('에러', `실행 중 에러가 발생했습니다.. \n${err}\n${cmd}`);
-                            return;
-                        }
-                    });
-
-                    let password = json.password.replace(/\\/gi, "");
-                    let nextCmd = `osascript `+
-                        // `-e 'delay 1' `+
-                        `-e 'tell app "System Events"' ` +
-                        // `-e   'if exists (window 1 of process "vmware-view") then' `+
-                        // `-e     'tell process "vmware-view" to quit' ` +
-                        // `-e   'end if' ` +
-                        `-e   'delay 1' `+
-                        `-e   'tell process "vmware-view"' `+
-                        `-e     'click button 2 of sheet 1 of window 1' ` +
-                        `-e     'delay 1' `+
-                        `-e     'set value of text field 2 of group 1 of window 1 to "${json.username}"' ` +
-                        `-e     'set value of text field 1 of group 1 of window 1 to "${password}"' ` +
-                        `-e     'tell app "VMware Horizon Client" to activate' ` +
-                        `-e     'delay 1' `+
-                        `-e     'click button 1 of window 1' ` +
-                        `-e ' end tell' ` +
-                        `-e 'end tell' `;
-
-                    let nextCmd2 = `osascript `+
-                        `-e 'tell app "System Events"' ` +
-                        `-e   'delay 1' `+
-                        `-e   'tell process "vmware-view"' `+
-                        `-e     'set value of text field "brokerAddressTextField" of group 1 of window 1 to "${json.serverurl}"' ` +
-                        `-e     'click button 1 of window 1' ` +
-                        `-e     'delay 1' `+
-                        `-e     'click button 2 of sheet 1 of window 1' ` +
-                        `-e     'delay 1' `+
-                        // `-e     'set value of text field "UsernameTextField" of group 1 of window 1 to "${password}"' ` +
-                        // `-e     'set value of text field "PasswordTextField" of group 1 of window 1 to "222"' ` +
-                        // `-e     'delay 5' `+
-                        `-e     'set focused of text field "UsernameTextField" of group 1 of window 1 to true' ` +
-                        `-e     'set value of attribute "AXValue" of text field "UsernameTextField" of group 1 of window 1 to "${json.username}"' ` +
-                        `-e     'delay 0.2' `+
-                        `-e     'set focused of text field "PasswordTextField" of group 1 of window 1 to true' ` +
-                        `-e     'set value of attribute "AXValue" of text field "PasswordTextField" of group 1 of window 1 to "${password}"' ` +
-                        // `-e     'delay 0.2' `+
-                        // `-e     'set focused of pop up button "DomainPopupButton" of group 1 of window 1 to true' ` +
-                        // `-e     'set value of attribute "AXValue" of pop up button "DomainPopupButton" of group 1 of window 1 to "SEED02"' ` +
-                        // `-e     'click button 1 of window 1' ` +
-                        // `-e     'set value of text field "UsernameTextField" of group 1 of window 1 to "${json.username}"' ` +
-                        // `-e     'set value of attribute "AXValue" of text field "PasswordTextField" of group 1 of window 1 to ""' ` +
-                        // `-e     'delay 1' `+
-                        // `-e     'set value of text field "PasswordTextField" of group 1 of window 1 to "${password}"' ` +
-                        `-e     'delay 0.5' `+
-                        `-e     'tell app "VMware Horizon Client" to activate' ` +
-                        `-e     'click button 1 of window 1' ` +
-                        `-e   'end tell' ` +
-                        `-e 'end tell' `;
-
-                    exec(nextCmd, (err, stdout, stderr) => {
-                        if (err) {
-                            exec(nextCmd2, (err, stdout, stderr) => {
-                                // console.log(nextCmd2);
-                                // dialog.showErrorBox('에러', "접속창을 닫으시고 다시 접속을 시도해주세요.");
-                                if (err) {
-                                    console.error(err);
-                                    // dialog.showErrorBox('에러', "다시 접속을 시도해주세요.");
-                                    return;
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-
-            ///////// WINDOWS ///////////
-
-        } else if(osver === "win32") {
+        if(osver === "win32") {
             let vmwarePath = '\\VmWare\\VMware Horizon View Client\\vmware-view.exe';
             let findPath = [
                 path.join(process.env['ProgramFiles(x86)'] || '', vmwarePath),
@@ -1206,9 +1127,8 @@ function initial(mainWindow, appVersion) {
                 for(let i in vms) {
                     let vm = vms[i];
 
-                    // console.log(vm);
-
                     vmlist.push({
+                        // image: imgSrcString,
                         statusColor: "",
                         basicState: typeof vm.type === "object" ? "" : vm.type,
                         operatingSystem:"",
@@ -1259,29 +1179,49 @@ function initial(mainWindow, appVersion) {
     });
 
     ipcMain.on("vm-screenshot", (event, arg) => {
-        let url = 'http://' + _ARGUS_GATE_ + '/api/vms/image/';
         let vmList = store.get("vm-list") || [];
 
         vmList.map((vm) => {
-            axios.get(url + vm.id, {})
-            .then(function (response) {
-                let retJson = {
-                    id: vm.id,
-                    image: response.data,
-                };
 
-                event.reply('vm-screenshot', retJson);
+            let vmImageFile = path.join(__TMPDIR__, vm.name + ".png");
+            let imgSrcString = null;
+            if(fs.existsSync(vmImageFile)) {
+                let data = fs.readFileSync(vmImageFile);
+                let base64Image = Buffer.from(data, 'binary').toString('base64');
+                imgSrcString = `data:image/png;base64,${base64Image}`;
+            } else {
+                // data = fs.readFileSync("../src/assets/images/preview/windows_3.png");
+                imgSrcString = BlackScreen;
+            }
 
-            })
-            .catch(function (error) {
-                let retJson = {
-                    id: vm.id,
-                    image: BlackScreen,
-                };
-                event.reply('vm-screenshot', retJson);
-            })
-            .then(function () {
-            });
+            // console.log(imgSrcString);
+
+            let retJson = {
+                id: vm.id,
+                image: imgSrcString,
+            };
+
+            event.reply('vm-screenshot', retJson);
+
+            // axios.get(url + vm.id, {})
+            // .then(function (response) {
+            //     let retJson = {
+            //         id: vm.id,
+            //         image: response.data,
+            //     };
+            //
+            //     event.reply('vm-screenshot', retJson);
+            //
+            // })
+            // .catch(function (error) {
+            //     let retJson = {
+            //         id: vm.id,
+            //         image: BlackScreen,
+            //     };
+            //     event.reply('vm-screenshot', retJson);
+            // })
+            // .then(function () {
+            // });
         });
     });
 

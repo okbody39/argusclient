@@ -20,7 +20,7 @@ import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
 
 // import win1 from '@/assets/images/preview/windows_1.png';
 // import win2 from '@/assets/images/preview/windows_2.png';
-import win3 from '@/assets/images/preview/windows_3.png';
+// import win3 from '@/assets/images/preview/windows_3.png';
 
 const props = {
     name: 'file',
@@ -72,23 +72,6 @@ class HelloWorld extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            files: [
-                {
-                    key: 'cat.png',
-                    modified: new Date(),
-                    size: 1.5 * 1024 * 1024,
-                },
-                {
-                    key: 'kitten.png',
-                    modified: new Date(),
-                    size: 545 * 1024,
-                },
-                {
-                    key: 'elephant.png',
-                    modified: new Date(),
-                    size: 52 * 1024,
-                },
-            ],
             visible: false,
             fileUploadervisible: false,
             fileList: [],
@@ -126,7 +109,7 @@ class HelloWorld extends Component {
             if(arg === "OK") {
 
                 window.ipcRenderer.send("vm-list", this.props.auth);
-                // window.ipcRenderer.send("vm-screenshot");
+                window.ipcRenderer.send("vm-screenshot");
 
                 this.setState({
                     loading: true,
@@ -134,7 +117,7 @@ class HelloWorld extends Component {
 
             } else if(arg === "INVALIDSESSION") {
                 this.props.history.push('/signin');
-               
+
 
             } else if(arg === "INVALIDSETTING") {
                 this.props.history.push('/settings');
@@ -180,7 +163,7 @@ class HelloWorld extends Component {
                 this.setState({
                     connectLoading: false,
                 });
-               
+
             } else {
                 this.setState({
                     connectLoading: false,
@@ -402,7 +385,7 @@ class HelloWorld extends Component {
                 // text='접속중입니다... (1분 정도 소요)'
             >
             <div className={styles.helloWorld}>
-                
+
                 { this.state.error &&
                 <Alert
                     message={this.state.error.title}
@@ -427,7 +410,7 @@ class HelloWorld extends Component {
                                         cover={
                                             <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
                                                 <Image
-                                                    source={win3}
+                                                    source={this.state.vmScreenShot[vm.id]}
                                                 />
                                                 <Caption className={`header`}>
                                                     <Title>{vm.displayName}</Title>
