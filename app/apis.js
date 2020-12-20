@@ -25,6 +25,8 @@ const store = new Store({
 const __VIEWSERVER__ = 0;
 let _INTERVAL_ = null;
 let _INTERVALCNT_ = 0;
+const __INTERVAL_TERM__ = 2000;
+const __INTERVAL_MAX__ = 30;
 
 const crypto = require('crypto');
 
@@ -911,7 +913,7 @@ function initial(mainWindow, appVersion) {
                         _INTERVALCNT_ ++;
 
                         // INTERVAL Count 초과시 에러 발생
-                        if(_INTERVALCNT_ > 10) {
+                        if(_INTERVALCNT_ > __INTERVAL_MAX__) {
                             // child.show();
                             _INTERVALCNT_ = 0;
                             clearInterval(_INTERVAL_);
@@ -925,7 +927,8 @@ function initial(mainWindow, appVersion) {
 
                         }
 
-                    }, 2000);
+                    }, __INTERVAL_TERM__);
+
                 }, 2000);
 
             }, 1000);
@@ -1121,9 +1124,18 @@ function initial(mainWindow, appVersion) {
             let json = JSON.parse(convert.xml2json(response.data, options));
 
             let itemsResult = json.broker["launch-items"];
+
+            // console.log(JSON.stringify(itemsResult));
+
             let vmlist = [];
             try {
                 let vms = itemsResult.desktops.desktop;
+
+                if(vms.length) {
+                } else {
+                    vms = [vms];
+                }
+
                 for(let i in vms) {
                     let vm = vms[i];
 
@@ -1181,6 +1193,8 @@ function initial(mainWindow, appVersion) {
     ipcMain.on("vm-screenshot", (event, arg) => {
         let vmList = store.get("vm-list") || [];
 
+        console.log(">>> VM_SCREENSHOT <<<");
+
         vmList.map((vm) => {
 
             let vmImageFile = path.join(__TMPDIR__, vm.name + ".png");
@@ -1190,8 +1204,11 @@ function initial(mainWindow, appVersion) {
                 let base64Image = Buffer.from(data, 'binary').toString('base64');
                 imgSrcString = `data:image/png;base64,${base64Image}`;
             } else {
-                // data = fs.readFileSync("../src/assets/images/preview/windows_3.png");
-                imgSrcString = BlackScreen;
+                // let data = fs.readFileSync("/src/assets/images/preview/windows_3.png");
+                // let base64Image = Buffer.from(data, 'binary').toString('base64');
+                // imgSrcString = `data:image/png;base64,${base64Image}`;
+
+                imgSrcString = ""; // BlackScreen;
             }
 
             // console.log(imgSrcString);

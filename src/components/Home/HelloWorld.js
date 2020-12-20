@@ -20,7 +20,7 @@ import { Caption, Figure, Image, SubTitle, Title } from '../@shared/Tile';
 
 // import win1 from '@/assets/images/preview/windows_1.png';
 // import win2 from '@/assets/images/preview/windows_2.png';
-// import win3 from '@/assets/images/preview/windows_3.png';
+import win3 from '@/assets/images/preview/windows_3.png';
 
 const props = {
     name: 'file',
@@ -410,7 +410,7 @@ class HelloWorld extends Component {
                                         cover={
                                             <Figure height={150} onClick={this.showDrawer.bind(this, vm)}>
                                                 <Image
-                                                    source={this.state.vmScreenShot[vm.id]}
+                                                    source={ this.state.vmScreenShot[vm.id] || win3 }
                                                 />
                                                 <Caption className={`header`}>
                                                     <Title>{vm.displayName}</Title>
