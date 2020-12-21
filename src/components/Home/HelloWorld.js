@@ -79,8 +79,15 @@ class HelloWorld extends Component {
             connectLoading: false,
             loading: false,
             vmName: 'W10-INETRNETVM',
-            selectedVm:{},
+            selectedVm:{
+                vcDetail: {
+                    config: {},
+                    runtime: {},
+                    guest: {}
+                }
+            },
             vmlist: [],
+            vmInfo: [],
             vmScreenShot: [],
             isFlushed: false,
             error: null,
@@ -184,6 +191,17 @@ class HelloWorld extends Component {
             });
         });
 
+        // window.ipcRenderer.on("vm-info", (event, arg) => {
+        //
+        //     console.log(":::VMINFO:::", arg);
+        //
+        //     vmInfo[arg.id] = arg;
+        //
+        //     this.setState({
+        //         vmInfo: vmInfo,
+        //     });
+        // });
+
         window.ipcRenderer.on("reload-sig", (event, arg) => {
 
             window.ipcRenderer.send("vm-screenshot");
@@ -228,6 +246,7 @@ class HelloWorld extends Component {
         // clearInterval(_TIMER_);
         window.ipcRenderer.removeAllListeners('start-app');
         window.ipcRenderer.removeAllListeners('vm-list');
+        // window.ipcRenderer.removeAllListeners('vm-info');
         window.ipcRenderer.removeAllListeners('vm-screenshot');
         window.ipcRenderer.removeAllListeners('pong');
         window.ipcRenderer.removeAllListeners('reload-sig');
@@ -264,18 +283,33 @@ class HelloWorld extends Component {
         // "디스크 사용량 임계치 도달 (95% 이상)"
         let selectedVmError = "";
 
-        if(selectedVm.state != "running") {
-            selectedVmError = "VM이 꺼져있습니다.";
+        let vmInfo = window.ipcRenderer.sendSync("vm-info", selectedVm.vmId);
+
+        if(vmInfo.guest) {
+            //
+        } else {
+            vmInfo = {
+                guest: {},
+                runtime: {},
+                config: {}
+            };
         }
 
-        selectedVm.disk.map((disk) => {
-            let per = (disk.Capacity - disk.FreeSpace) / disk.Capacity * 100;
+        console.log(vmInfo);
 
-            if(per > 95) {
-                selectedVmError = "디스크 사용량 임계치 도달 (95% 이상)";
-            }
+        selectedVm.vcDetail = vmInfo;
 
-        });
+        // if(selectedVm.state != "running") {
+        //     selectedVmError = "VM이 꺼져있습니다.";
+        // }
+        //
+        // selectedVm.disk.map((disk) => {
+        //     let per = (disk.Capacity - disk.FreeSpace) / disk.Capacity * 100;
+        //
+        //     if(per > 95) {
+        //         selectedVmError = "디스크 사용량 임계치 도달 (95% 이상)";
+        //     }
+        // });
 
         this.setState({
             selectedVm: selectedVm,
@@ -471,15 +505,8 @@ class HelloWorld extends Component {
                     <Alert message={this.state.selectedVmError} type="error" style={{marginBottom: 15}} />
                     }
                     <Descriptions bordered title="VM 상태" size="small" column={2}>
-                        <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
-                        {
-                            this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
-                                return (
-                                    <Descriptions.Item span={2} key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{((disk.Capacity - disk.FreeSpace) / disk.Capacity * 100).toFixed(1)}%</Descriptions.Item>
-                                );
-                            })
-                        }
-                        <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.bootTime || "-"}</Descriptions.Item>
+                        <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.vcDetail.runtime.powerState || "UNKNOWN").toUpperCase()}</Descriptions.Item>
+                        <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.vcDetail.runtime.bootTime || "-"}</Descriptions.Item>
                     </Descriptions>
 
                     <div className={styles.btngroup}>
@@ -515,19 +542,13 @@ class HelloWorld extends Component {
                     <Divider />
 
                     <Descriptions bordered title="VM 정보" size="small" column={2}>
-                        <Descriptions.Item label="Host name" span={2}>{this.state.selectedVm.hostName}</Descriptions.Item>
-                        <Descriptions.Item label="CPU">{this.state.selectedVm.numCore} Core</Descriptions.Item>
-                        <Descriptions.Item label="Memory">{displaySize(this.state.selectedVm.memory * 1024 * 1024)}</Descriptions.Item>
-                        {
-                            this.state.selectedVm.disk && this.state.selectedVm.disk.map((disk) => {
-                                return (
-                                    <Descriptions.Item key={disk.DiskPath} label={"Disk("+disk.DiskPath.substr(0,2)+")"}>{displaySize(disk.Capacity)}</Descriptions.Item>
-                                );
-                            })
-                        }
-                        <Descriptions.Item label="Network" span={2}>{this.state.selectedVm.ipAddress}</Descriptions.Item>
+                        <Descriptions.Item label="Host name" span={2}>{this.state.selectedVm.vcDetail.guest.hostName}</Descriptions.Item>
+                        <Descriptions.Item label="CPU">{this.state.selectedVm.vcDetail.config.numCpu} Core</Descriptions.Item>
+                        <Descriptions.Item label="Memory">{displaySize(parseInt(this.state.selectedVm.vcDetail.config.memorySizeMB)*1024*1024)}</Descriptions.Item>
+
+                        <Descriptions.Item label="Network" span={2}>{this.state.selectedVm.vcDetail.guest.ipAddress}</Descriptions.Item>
                         {/*<Descriptions.Item label="Subnet">F.F.F.F</Descriptions.Item>*/}
-                        <Descriptions.Item label="OS ver" span={2}>{this.state.selectedVm.fullName}</Descriptions.Item>
+                        <Descriptions.Item label="OS ver" span={2}>{this.state.selectedVm.vcDetail.guest.guestFullName}</Descriptions.Item>
                     </Descriptions>
 
                     <div className={styles.btngroup}>

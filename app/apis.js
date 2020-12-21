@@ -1125,13 +1125,14 @@ function initial(mainWindow, appVersion) {
 
             let itemsResult = json.broker["launch-items"];
 
-            // console.log(JSON.stringify(itemsResult));
+            // console.log(itemsResult.desktops.desktop);
 
             let vmlist = [];
             try {
                 let vms = itemsResult.desktops.desktop;
 
                 if(vms.length) {
+                    //
                 } else {
                     vms = [vms];
                 }
@@ -1152,6 +1153,7 @@ function initial(mainWindow, appVersion) {
                         memory: 1,
                         vmId: vm.id,
                         id: vm.id,
+                        detail: vm,
                     });
                 }
 
@@ -1193,7 +1195,7 @@ function initial(mainWindow, appVersion) {
     ipcMain.on("vm-screenshot", (event, arg) => {
         let vmList = store.get("vm-list") || [];
 
-        console.log(">>> VM_SCREENSHOT <<<");
+        // console.log(">>> VM_SCREENSHOT <<<");
 
         vmList.map((vm) => {
 
@@ -1239,6 +1241,28 @@ function initial(mainWindow, appVersion) {
             // })
             // .then(function () {
             // });
+        });
+    });
+
+    ipcMain.on("vm-info", (event, arg) => {
+        let url = 'http://' + _ARGUS_GATE_ + '/api/vminfo';
+        let vmId = arg.split(",")[0].substr(3);
+        console.log(vmId);
+
+        axios.post(url, {
+            vmId: vmId
+        })
+        .then(function (response) {
+            let retJson = response.data;
+
+            // event.reply('vm-info', retJson);
+            event.returnValue = retJson;
+        })
+        .catch(function (error) {
+            console.error(error);
+            event.returnValue = {};
+        })
+        .then(function () {
         });
     });
 
