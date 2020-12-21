@@ -57,3 +57,6 @@ ehthumbs.db
 #####################
 *.lnk
 *.lock
+
+.localStorage
+yarn.lock
