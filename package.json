@@ -59,7 +59,7 @@
     "react-feather": "^2.0.3",
     "react-highlight-words": "^0.16.0",
     "react-keyed-file-browser": "^1.7.0",
-    "react-loading-overlay": "^1.0.1",
+    "react-loading-overlay": "https://github.com/okbody39/react-loading-overlay.git",
     "react-moment": "^0.9.7",
     "react-resize-layout": "^0.2.3",
     "react-router-dom": "^5.1.2",

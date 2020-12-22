@@ -27,6 +27,9 @@ let _INTERVAL_ = null;
 let _INTERVALCNT_ = 0;
 const __INTERVAL_TERM__ = 2000;
 const __INTERVAL_MAX__ = 30;
+let __INTERVAL_STR__ = "............................................................".substr(0, __INTERVAL_MAX__);
+
+
 
 const crypto = require('crypto');
 
@@ -702,6 +705,100 @@ function initial(mainWindow, appVersion) {
 
     });
 
+    ipcMain.on("vm-reset", (event, arg) => {
+        let serverInfo = store.get("server-info", {});
+
+        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let sendXml = `<?xml version="1.0"?>
+        <broker version="2.0">
+            <reset-desktop>
+            <desktop-id>${arg}</desktop-id>
+            </reset-desktop>
+        </broker>`;
+
+        let reqUrl = `https://${viewServer}/broker/xml`;
+
+        axios.post(reqUrl, sendXml, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Cookie': store.get("_cookie", ""),
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            }),
+        })
+        .then((response) => {
+            store.set("_cookie", "");
+
+            let json = JSON.parse(convert.xml2json(response.data, options));
+            let resetResult = json.broker["reset-desktop"];
+
+            // console.log(resetResult);
+
+            if(resetResult.result === "ok") {
+                event.returnValue = "ok";
+            } else {
+                event.returnValue = resetResult["user-message"];
+            }
+
+        })
+        .catch((err) =>{
+            event.returnValue = JSON.stringify(err);
+        });
+
+
+    });
+
+    ipcMain.on("session-kill", (event, arg) => {
+        let serverInfo = store.get("server-info", {});
+
+        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let sendXml = `<?xml version="1.0"?>
+        <broker version="1.0">
+          <kill-session>
+            <session-id>${arg}</session-id>
+          </kill-session>
+        </broker>`;
+
+        let reqUrl = `https://${viewServer}/broker/xml`;
+
+        axios.post(reqUrl, sendXml, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Cookie': store.get("_cookie", ""),
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            }),
+        })
+        .then((response) => {
+            store.set("_cookie", "");
+
+            let json = JSON.parse(convert.xml2json(response.data, options));
+            let resetResult = json.broker["kill-session"];
+
+            // console.log(resetResult);
+
+            if(resetResult.result === "ok") {
+                event.returnValue = "ok";
+            } else {
+                event.returnValue = resetResult["user-message"];
+            }
+
+        })
+        .catch((err) =>{
+            event.returnValue = JSON.stringify(err);
+        });
+
+
+    });
+
+
+
     ipcMain.on("vm-connect", (event, arg) => {
         let vm = arg;
         let vmName = vm.name
@@ -807,7 +904,7 @@ function initial(mainWindow, appVersion) {
             let password = json.password;
 
 
-            setTimeout(() =>{
+            setTimeout(() => {
                 child.webContents.executeJavaScript(`
                     setTimeout(() => {
 
@@ -838,6 +935,7 @@ function initial(mainWindow, appVersion) {
                     }, 500);
                 `).then((result) => {
                     // dialog.showErrorBox('접속 에러', result);
+                    event.reply("vm-connecting", "접속시도 중입니다.");
                 }).catch((err) =>{
                     // console.log('>>>>', err);
                 });
@@ -868,6 +966,7 @@ function initial(mainWindow, appVersion) {
                                 }
                             });
                         } else if(curUrl.indexOf("#/launchitems") !== -1) {
+
 
                             child.webContents.executeJavaScript(`
                                 setTimeout(() => {
@@ -927,7 +1026,11 @@ function initial(mainWindow, appVersion) {
 
                         }
 
+                        event.reply("vm-connecting", "접속시도 중입니다.." + __INTERVAL_STR__.substr(0, _INTERVALCNT_));
+
                     }, __INTERVAL_TERM__);
+
+
 
                 }, 2000);
 
@@ -1247,7 +1350,7 @@ function initial(mainWindow, appVersion) {
     ipcMain.on("vm-info", (event, arg) => {
         let url = 'http://' + _ARGUS_GATE_ + '/api/vminfo';
         let vmId = arg.split(",")[0].substr(3);
-        console.log(vmId);
+        // console.log(vmId);
 
         axios.post(url, {
             vmId: vmId

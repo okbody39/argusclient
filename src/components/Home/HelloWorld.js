@@ -8,6 +8,7 @@ import {
 const { Text } = Typography;
 const { Dragger } = Upload;
 // const { Meta } = Card;
+
 import LoadingOverlay from 'react-loading-overlay';
 import BounceLoader from 'react-spinners/BounceLoader'
 import PuffLoader from 'react-spinners/PuffLoader'
@@ -62,6 +63,7 @@ const displaySize = (size) => {
 // Styles
 import styles from "./HelloWorld.scss";
 
+
 /**
  * HelloWorld
  *
@@ -77,9 +79,12 @@ class HelloWorld extends Component {
             fileList: [],
 
             connectLoading: false,
+            loadingText: "접속준비 중입니다...",
+
             loading: false,
             vmName: 'W10-INETRNETVM',
             selectedVm:{
+                detail: {},
                 vcDetail: {
                     config: {},
                     runtime: {},
@@ -179,6 +184,12 @@ class HelloWorld extends Component {
 
         });
 
+        window.ipcRenderer.on("vm-connecting", (event, arg) => {
+            this.setState({
+                loadingText: arg,
+            });
+        });
+
         window.ipcRenderer.on("vm-screenshot", (event, arg) => {
             let vmScreenShot = this.state.vmScreenShot;
 
@@ -252,28 +263,28 @@ class HelloWorld extends Component {
         window.ipcRenderer.removeAllListeners('reload-sig');
     }
 
-    fileUploader = (vmName) => {
-        this.setState({
-            vmName: vmName,
-            fileUploadervisible: true,
-            fileList: [],
-        });
-    };
+    // fileUploader = (vmName) => {
+    //     this.setState({
+    //         vmName: vmName,
+    //         fileUploadervisible: true,
+    //         fileList: [],
+    //     });
+    // };
 
-    handleOk = e => {
-        // console.log(e);
-        // alert(JSON.stringify(this.state.fileList));
-        this.setState({
-            fileUploadervisible: false,
-        });
-    };
-
-    handleCancel = e => {
-        // console.log(e);
-        this.setState({
-            fileUploadervisible: false,
-        });
-    };
+    // handleOk = e => {
+    //     // console.log(e);
+    //     // alert(JSON.stringify(this.state.fileList));
+    //     this.setState({
+    //         fileUploadervisible: false,
+    //     });
+    // };
+    //
+    // handleCancel = e => {
+    //     // console.log(e);
+    //     this.setState({
+    //         fileUploadervisible: false,
+    //     });
+    // };
 
     showDrawer = (selectedVm) => {
         // console.log(selectedVm);
@@ -295,7 +306,7 @@ class HelloWorld extends Component {
             };
         }
 
-        console.log(vmInfo);
+        // console.log(vmInfo);
 
         selectedVm.vcDetail = vmInfo;
 
@@ -327,10 +338,10 @@ class HelloWorld extends Component {
 
     onReset = () => {
         //console.log(this.state.selectedVm);
-        let result = window.ipcRenderer.sendSync("vm-reset", this.state.selectedVm.machineId);
+        let result = window.ipcRenderer.sendSync("vm-reset", this.state.selectedVm.id);
         // alert(result);
 
-        if(result.result) {
+        if(result === "ok") {
             notification.success({
                 message: 'VM 리셋 성공',
                 description:
@@ -340,7 +351,42 @@ class HelloWorld extends Component {
             notification.error({
                 message: 'VM 리셋 실패',
                 description:
-                    '리셋에 실패하였습니다. 잠시후 다시 시도해주세요. - ' + result.error,
+                    '리셋에 실패하였습니다. 잠시후 다시 시도해주세요. - ' + result,
+            });
+        }
+
+        this.setState({
+            visible: false,
+        });
+    };
+
+    onKillSession = () => {
+        let sessionId= this.state.selectedVm["session-id"];
+
+        if(sessionId) {
+            //
+        } else {
+            notification.error({
+                message: '세션 끊기 실패',
+                description:
+                    '설정된 세션이 없습니다.',
+            });
+            return;
+        }
+
+        let result = window.ipcRenderer.sendSync("session-kill", this.state.selectedVm["session-id"]);
+
+        if(result === "ok") {
+            notification.success({
+                message: '세션 끊기 성공',
+                description:
+                    '정상적으로 끊어졌습니다.',
+            });
+        } else {
+            notification.error({
+                message: '세션 끊기 실패',
+                description:
+                    '세션을 끊지 못했습니다. 잠시후 다시 시도해주세요. - ' + result,
             });
         }
 
@@ -416,7 +462,7 @@ class HelloWorld extends Component {
             <LoadingOverlay
                 active={this.state.connectLoading}
                 spinner={ <PuffLoader size={60} color={"white"} /> }
-                // text='접속중입니다... (1분 정도 소요)'
+                text={<div style={{marginTop: 15}}>{this.state.loadingText}</div>}
             >
             <div className={styles.helloWorld}>
 
@@ -505,7 +551,7 @@ class HelloWorld extends Component {
                     <Alert message={this.state.selectedVmError} type="error" style={{marginBottom: 15}} />
                     }
                     <Descriptions bordered title="VM 상태" size="small" column={2}>
-                        <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.vcDetail.runtime.powerState || "UNKNOWN").toUpperCase()}</Descriptions.Item>
+                        <Descriptions.Item label="Status" span={2}>{(this.state.selectedVm.state || "UNKNOWN").toUpperCase()}</Descriptions.Item>
                         <Descriptions.Item span={2} label="Uptime">{this.state.selectedVm.vcDetail.runtime.bootTime || "-"}</Descriptions.Item>
                     </Descriptions>
 
@@ -523,14 +569,14 @@ class HelloWorld extends Component {
                         </Popconfirm>
 
                         <Popconfirm
-                            title="데이터 소실 우려가 있습니다. 그래도 재시작하시겠습니까?"
-                            onConfirm={this.onRestart}
+                            title="데이터 소실 우려가 있습니다. 그래도 세션을 정리하시겠습니까?"
+                            onConfirm={this.onKillSession}
                             //onCancel={this.onClose}
                             okText="Yes"
                             cancelText="No"
                         >
                             <Button type="secondary" size="small">
-                                재시작
+                                세션 정리
                             </Button>
                         </Popconfirm>
 
@@ -556,12 +602,16 @@ class HelloWorld extends Component {
                             변경 신청
                         </Button>
                         {/* <Button type="secondary" size="small" onClick={this.onChange}>
-              사용기간 연장
-            </Button> */}
+                          사용기간 연장
+                        </Button> */}
                         <Button type="secondary" size="small" onClick={this.onHistoryChange}>
                             변경 이력
                         </Button>
                     </div>
+
+                    {/*<div>*/}
+                    {/*    {JSON.stringify(this.state.selectedVm.detail)}*/}
+                    {/*</div>*/}
 
                     <div
                         style={{
@@ -589,51 +639,51 @@ class HelloWorld extends Component {
 
                 </Drawer>
 
-                <Modal
-                    title={`File Upload to ${this.state.vmName}`}
-                    visible={this.state.fileUploadervisible}
-                    onOk={this.handleOk.bind(this)}
-                    onCancel={this.handleCancel.bind(this)}
-                >
-                    {/* <div style={{height: 200}}> */}
-                    <Dragger {...props}
-                             fileList={this.state.fileList}
-                             onChange = {(info) => {
-                                 const { status } = info.file;
-                                 if (status !== 'uploading') {
-                                     // console.log(info.file, info.fileList);
+          {/*      <Modal*/}
+          {/*          title={`File Upload to ${this.state.vmName}`}*/}
+          {/*          visible={this.state.fileUploadervisible}*/}
+          {/*          onOk={this.handleOk.bind(this)}*/}
+          {/*          onCancel={this.handleCancel.bind(this)}*/}
+          {/*      >*/}
+          {/*          /!* <div style={{height: 200}}> *!/*/}
+          {/*          <Dragger {...props}*/}
+          {/*                   fileList={this.state.fileList}*/}
+          {/*                   onChange = {(info) => {*/}
+          {/*                       const { status } = info.file;*/}
+          {/*                       if (status !== 'uploading') {*/}
+          {/*                           // console.log(info.file, info.fileList);*/}
 
-                                 }
-                                 if (status === 'done') {
+          {/*                       }*/}
+          {/*                       if (status === 'done') {*/}
 
-                                     // message.success(`${info.file.name} file uploaded successfully.`);
-                                 } else if (status === 'error') {
-                                     message.error(`${info.file.name} file upload failed.`);
-                                 }
+          {/*                           // message.success(`${info.file.name} file uploaded successfully.`);*/}
+          {/*                       } else if (status === 'error') {*/}
+          {/*                           message.error(`${info.file.name} file upload failed.`);*/}
+          {/*                       }*/}
 
-                                 this.setState({
-                                     fileList: info.fileList,
-                                 });
-                             }}
-                    >
-                        <p className="ant-upload-drag-icon">
-                            <Icon type="inbox" />
-                        </p>
-                        <p className="ant-upload-text">파일 업로더</p>
-                        <p className="ant-upload-hint">
-                            VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.
-                        </p>
-                    </Dragger>
-                    {/* </div> */}
+          {/*                       this.setState({*/}
+          {/*                           fileList: info.fileList,*/}
+          {/*                       });*/}
+          {/*                   }}*/}
+          {/*          >*/}
+          {/*              <p className="ant-upload-drag-icon">*/}
+          {/*                  <Icon type="inbox" />*/}
+          {/*              </p>*/}
+          {/*              <p className="ant-upload-text">파일 업로더</p>*/}
+          {/*              <p className="ant-upload-hint">*/}
+          {/*                  VM 전송을 위한 한개 또는 여러개의 파일을 업로드 합니다.*/}
+          {/*              </p>*/}
+          {/*          </Dragger>*/}
+          {/*          /!* </div> *!/*/}
 
-                    {/* <FileBrowser
-            files={this.state.files}
-            canFilter={false}
-          /> */}
+          {/*          /!* <FileBrowser*/}
+          {/*  files={this.state.files}*/}
+          {/*  canFilter={false}*/}
+          {/*/> *!/*/}
 
-                </Modal>
+          {/*      </Modal>*/}
             </div>
-                </LoadingOverlay>
+        </LoadingOverlay>
 
         );
     }
