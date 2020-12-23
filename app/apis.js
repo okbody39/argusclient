@@ -218,54 +218,22 @@ function sendVCS(sendXml) {
         .then((response) => {
             let headers = response.headers['set-cookie'];
             let _cookie = (headers || []).join(";");
-    
+
             if(_cookie) {
                 store.set("_cookie", _cookie);
             }
-    
+
             let json = JSON.parse(convert.xml2json(response.data, options));
 
-            // if(loginResult.result === "partial") {
-            //     loginResult.authentication.screen.params.param.map((p) => {
-            //         if(p.name === "error") {
-            //             event.returnValue = {
-            //                 result: false,
-            //                 error: p.values.value,
-            //             };
-            //         }
-            //     });
-            //     return;
-            // }
-
-            // if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
-            //     store.set("auth-info", {
-            //         username: arg.username,
-            //         password: arg.password,
-            //     });
-
-            //     axios({
-            //         method: 'post',
-            //         url: 'http://' + _ARGUS_GATE_ + '/api/login/',
-            //         data: {
-            //             username: arg.username,
-            //             gb: "CLIENT_START",
-            //             target: appVersion,
-            //             content: "",
-            //             // ip: "",
-            //             result: JSON.stringify(__OS__),
-            //         }
-            //     });
-            // }
-    
             resolve(json);
-    
+
         })
         .catch((err) => {
             reject(err);
         });
       });
 
-    
+
 }
 
 // console.log(vmwareClient);
@@ -561,7 +529,7 @@ function initial(mainWindow, appVersion) {
                         // securid-passcode : SecurID
                         // cert-auth : Cert
                         // disclaimer
-                        
+
                     }
 
                     console.log(screenName);
@@ -765,7 +733,7 @@ function initial(mainWindow, appVersion) {
                             };
                         }
                     });
-                    
+
                 }
             } else {
                 event.returnValue = {
@@ -865,7 +833,7 @@ function initial(mainWindow, appVersion) {
                             };
                         }
                     });
-                    
+
                 }
             } else {
                 event.returnValue = {
