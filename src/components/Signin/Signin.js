@@ -58,6 +58,8 @@ class Signin extends Component {
     }
 
     localStorage.setItem("ARGUS.USERTOKEN", "");
+
+    let loginConf = window.ipcRenderer.sendSync("login-config");
   }
 
   handleSubmit(event) {

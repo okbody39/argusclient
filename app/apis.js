@@ -120,6 +120,7 @@ let __WS_CONNECT__ = true;
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
+const { resolve } = require('path');
 
 function autoUpdateCheck(mainWindow, isCheck) {
     autoUpdater.init(mainWindow, isCheck);
@@ -196,74 +197,76 @@ function checkClient() {
     }
 }
 
-// function checkLogin(username, password) {
-//     let serverInfo = store.get("server-info", {});
-//     let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-//     let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-// <broker version="15.0">
-// <do-submit-authentication>
-// <screen>
-// <name>windows-password</name>
-// <params>
-//     <param>
-//     <name>username</name>
-//     <values>
-//         <value>${username}</value>
-//     </values>
-//     </param>
-//     <param>
-//     <name>domain</name>
-//     <values>
-//         <value>${serverInfo.Domain}</value>
-//     </values>
-//     </param>
-//     <param>
-//     <name>password</name>
-//     <values>
-//         <value>${password}</value>
-//     </values>
-//     </param>
-// </params>
-// </screen>
-// <environment-information>
-//     <info name="Type">Windows</info>
-//     <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-//     <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-// </environment-information>
-// </do-submit-authentication>
-// </broker>`;
-//
-//     let reqUrl = `https://${viewServer}/broker/xml`;
-//     let auth = false;
-//
-//     axios.post(reqUrl, sendXml, {
-//         withCredentials: true,
-//         headers: {
-//             'Content-Type': 'text/xml;charset=UTF-8',
-//             'Access-Control-Allow-Origin': '*',
-//             'Cookie': store.get("_cookie", ""),
-//         },
-//         httpsAgent: new https.Agent({
-//             rejectUnauthorized: false
-//         }),
-//     })
-//     .then((response) => {
-//         let headers = response.headers['set-cookie'];
-//         let _cookie = (headers || []).join(";");
-//
-//         if(_cookie) {
-//             store.set("_cookie", _cookie);
-//         }
-//
-//         let json = JSON.parse(convert.xml2json(response.data, options));
-//         let loginResult = json.broker["submit-authentication"];
-//
-//         console.log(JSON.stringify(json), serverInfo.Domain);
-//
-//         return loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED";
-//
-//     });
-// }
+function sendVCS(sendXml) {
+    let serverInfo = store.get("server-info", {});
+    let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+
+    let reqUrl = `https://${viewServer}/broker/xml`;
+
+    return new Promise(function(resolve, reject) {
+        axios.post(reqUrl, sendXml, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Cookie': store.get("_cookie", ""),
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            }),
+        })
+        .then((response) => {
+            let headers = response.headers['set-cookie'];
+            let _cookie = (headers || []).join(";");
+    
+            if(_cookie) {
+                store.set("_cookie", _cookie);
+            }
+    
+            let json = JSON.parse(convert.xml2json(response.data, options));
+
+            // if(loginResult.result === "partial") {
+            //     loginResult.authentication.screen.params.param.map((p) => {
+            //         if(p.name === "error") {
+            //             event.returnValue = {
+            //                 result: false,
+            //                 error: p.values.value,
+            //             };
+            //         }
+            //     });
+            //     return;
+            // }
+
+            // if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
+            //     store.set("auth-info", {
+            //         username: arg.username,
+            //         password: arg.password,
+            //     });
+
+            //     axios({
+            //         method: 'post',
+            //         url: 'http://' + _ARGUS_GATE_ + '/api/login/',
+            //         data: {
+            //             username: arg.username,
+            //             gb: "CLIENT_START",
+            //             target: appVersion,
+            //             content: "",
+            //             // ip: "",
+            //             result: JSON.stringify(__OS__),
+            //         }
+            //     });
+            // }
+    
+            resolve(json);
+    
+        })
+        .catch((err) => {
+            reject(err);
+        });
+      });
+
+    
+}
 
 // console.log(vmwareClient);
 // process.exit(0);
@@ -520,12 +523,8 @@ function initial(mainWindow, appVersion) {
         event.reply('pong', 'Hello!'); // async
     });
 
-    // LOGIN
-    ipcMain.on("login", (event, arg) => {
+    ipcMain.on("login-config", (event, arg) => {
         let serverInfo = store.get("server-info", {});
-
-
-        // console.log(serverInfo, arg);
 
         if(serverInfo.serverUrl) {
 
@@ -548,14 +547,57 @@ function initial(mainWindow, appVersion) {
                     Domain: decJson.Domain,
                 });
 
-                // console.log(store.get("server-info"));
+                let sendXml = `<?xml version="1.0"?><broker version="1.0"><get-configuration/></broker>`;
+
+                sendVCS(sendXml).then((json) => {
+                    let loginConfResult = json.broker["configuration"];
+                    let screenName = null;
+
+                    if(loginConfResult.result === "ok") {
+                        screenName = loginConfResult.authentication.screen.name;
+
+                        // windows-password --> PASSCDOE - PASSWORD
+                        // securid-nexttokencode --> PASSWORD - PASSCODE
+                        // securid-passcode : SecurID
+                        // cert-auth : Cert
+                        // disclaimer
+                        
+                    }
+
+                    console.log(screenName);
+
+                    event.returnValue = {
+                        result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
+                        screen: screenName,
+                        error: loginConfResult["user-message"]
+                    };
+
+                }).catch((err) => {
+                    console.error(err);
+                    event.returnValue = {
+                        result: false,
+                        screen: null,
+                        error: JSON.stringify(error),
+                    };
+                });
+
+            })
+            .catch(function (error) {
+                console.log(error);
+                event.returnValue = {
+                    result: false,
+                    screen: null,
+                    error: JSON.stringify(error),
+                };
+            });
+        }
+    });
 
 
-                ////////////////////
+    // LOGIN - Password only
+    ipcMain.on("login", (event, arg) => {
 
-                let viewServer = decJson.ViewServers[__VIEWSERVER__];
-
-                let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
                     <broker version="15.0">
                     <do-submit-authentication>
                         <screen>
@@ -588,80 +630,254 @@ function initial(mainWindow, appVersion) {
                         </environment-information>
                     </do-submit-authentication>
                     </broker>`;
-                let reqUrl = `https://${viewServer}/broker/xml`;
 
-                axios.post(reqUrl, sendXml, {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'text/xml;charset=UTF-8',
-                        'Access-Control-Allow-Origin': '*',
-                        'Cookie': store.get("_cookie", ""),
-                    },
-                    httpsAgent: new https.Agent({
-                        rejectUnauthorized: false
-                    }),
-                })
-                .then((response) => {
-                    let headers = response.headers['set-cookie'];
-                    let _cookie = (headers || []).join(";");
+        sendVCS(sendXml).then((json) => {
+            let loginResult = json.broker["submit-authentication"];
 
-                    if(_cookie) {
-                        store.set("_cookie", _cookie);
+            if(loginResult.result === "partial") {
+                loginResult.authentication.screen.params.param.map((p) => {
+                    if(p.name === "error") {
+                        event.returnValue = {
+                            result: false,
+                            error: p.values.value,
+                        };
                     }
+                });
+                return;
+            }
 
-                    let json = JSON.parse(convert.xml2json(response.data, options));
-                    let loginResult = json.broker["submit-authentication"];
-
-                    if(loginResult.result === "partial") {
-                        loginResult.authentication.screen.params.param.map((p) => {
-                            if(p.name === "error") {
-                                event.returnValue = {
-                                    result: false,
-                                    error: p.values.value,
-                                };
-                            }
-                        });
-                        return;
-                    }
-
-                    if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
-                        store.set("auth-info", {
-                            username: arg.username,
-                            password: arg.password,
-                        });
-
-                        axios({
-                            method: 'post',
-                            url: 'http://' + _ARGUS_GATE_ + '/api/login/',
-                            data: {
-                                username: arg.username,
-                                gb: "CLIENT_START",
-                                target: appVersion,
-                                content: "",
-                                // ip: "",
-                                result: JSON.stringify(__OS__),
-                            }
-                        });
-                    }
-
-                    event.returnValue = {
-                        result: loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED",
-                        error: loginResult["user-message"]
-                    };
-
+            if(loginResult.result === "ok" || loginResult["error-code"] === "ALREADY_AUTHENTICATED") {
+                store.set("auth-info", {
+                    username: arg.username,
+                    password: arg.password,
                 });
 
-                ////////////////////
+                axios({
+                    method: 'post',
+                    url: 'http://' + _ARGUS_GATE_ + '/api/login/',
+                    data: {
+                        username: arg.username,
+                        gb: "CLIENT_START",
+                        target: appVersion,
+                        content: "",
+                        // ip: "",
+                        result: JSON.stringify(__OS__),
+                    }
+                });
+            }
 
-            })
-            .catch(function (error) {
-                console.log(error);
+            event.returnValue = {
+                result: loginResult.result === "ok"  || loginResult["error-code"] === "ALREADY_AUTHENTICATED",
+                error: loginResult["user-message"]
+            };
+
+        }).catch((err) => {
+            console.error(err);
+            event.returnValue = {
+                result: false,
+                error: JSON.stringify(error),
+            };
+        });
+
+    });
+
+    // LOGIN - Passcode --> Password
+    ipcMain.on("login-mode1", (event, arg) => {
+        let serverInfo = store.get("server-info", {});
+
+        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+                    <broker version="15.0">
+                    <do-submit-authentication>
+                        <screen>
+                        <name>securid-passcode</name>
+                        <params>
+                            <param>
+                            <name>username</name>
+                            <values>
+                                <value>${arg.username}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>domain</name>
+                            <values>
+                                <value>${serverInfo.Domain}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>passcode</name>
+                            <values>
+                                <value>${arg.password}</value>
+                            </values>
+                            </param>
+                        </params>
+                        </screen>
+                        <environment-information>
+                            <info name="Type">Windows</info>
+                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+                        </environment-information>
+                    </do-submit-authentication>
+                    </broker>`;
+        let reqUrl = `https://${viewServer}/broker/xml`;
+
+        axios.post(reqUrl, sendXml, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Cookie': store.get("_cookie", ""),
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            }),
+        })
+        .then((response) => {
+            let headers = response.headers['set-cookie'];
+            let _cookie = (headers || []).join(";");
+
+            if(_cookie) {
+                store.set("_cookie", _cookie);
+            }
+
+            let json = JSON.parse(convert.xml2json(response.data, options));
+            let loginResult = json.broker["submit-authentication"];
+
+            if(loginResult.result === "partial") {
+                // windows-password --> PASSCDOE - PASSWORD
+                // securid-nexttokencode --> PASSWORD - PASSCODE
+                if(loginResult.authentication.screen.name === "windows-password") {
+
+                    // 2차 인증
+                    event.returnValue = {
+                        result: true,
+                        screen: "windows-password",
+                        error: null,
+                    };
+
+                } else {
+                    loginResult.authentication.screen.params.param.map((p) => {
+                        if(p.name === "error") {
+                            event.returnValue = {
+                                result: false,
+                                screen: null,
+                                error: p.values.value,
+                            };
+                        }
+                    });
+                    
+                }
+            } else {
                 event.returnValue = {
                     result: false,
-                    error: JSON.stringify(error),
+                    screen: null,
+                    error: null,
                 };
-            });
-        }
+            }
+
+            return;
+
+        });
+
+    });
+
+    // LOGIN - Password --> Passcode
+    ipcMain.on("login-mode2", (event, arg) => {
+        let serverInfo = store.get("server-info", {});
+
+        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+                    <broker version="15.0">
+                    <do-submit-authentication>
+                        <screen>
+                        <name>securid-passcode</name>
+                        <params>
+                            <param>
+                            <name>username</name>
+                            <values>
+                                <value>${arg.username}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>domain</name>
+                            <values>
+                                <value>${serverInfo.Domain}</value>
+                            </values>
+                            </param>
+                            <param>
+                            <name>passcode</name>
+                            <values>
+                                <value>${arg.password}</value>
+                            </values>
+                            </param>
+                        </params>
+                        </screen>
+                        <environment-information>
+                            <info name="Type">Windows</info>
+                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+                        </environment-information>
+                    </do-submit-authentication>
+                    </broker>`;
+        let reqUrl = `https://${viewServer}/broker/xml`;
+
+        axios.post(reqUrl, sendXml, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Cookie': store.get("_cookie", ""),
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            }),
+        })
+        .then((response) => {
+            let headers = response.headers['set-cookie'];
+            let _cookie = (headers || []).join(";");
+
+            if(_cookie) {
+                store.set("_cookie", _cookie);
+            }
+
+            let json = JSON.parse(convert.xml2json(response.data, options));
+            let loginResult = json.broker["submit-authentication"];
+
+            if(loginResult.result === "partial") {
+                // windows-password --> PASSCDOE - PASSWORD
+                // securid-nexttokencode --> PASSWORD - PASSCODE
+                if(loginResult.authentication.screen.name === "securid-nexttokencode") {
+
+                    // 2차 인증
+                    event.returnValue = {
+                        result: true,
+                        screen: "securid-nexttokencode",
+                        error: null,
+                    };
+
+                } else {
+                    loginResult.authentication.screen.params.param.map((p) => {
+                        if(p.name === "error") {
+                            event.returnValue = {
+                                result: false,
+                                screen: null,
+                                error: p.values.value,
+                            };
+                        }
+                    });
+                    
+                }
+            } else {
+                event.returnValue = {
+                    result: false,
+                    screen: null,
+                    error: null,
+                };
+            }
+
+            return;
+
+        });
 
     });
 
