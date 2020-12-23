@@ -231,7 +231,7 @@ function sendVCS(sendXml) {
         .catch((err) => {
             reject(err);
         });
-      });
+    });
 
 
 }
@@ -444,6 +444,7 @@ function initial(mainWindow, appVersion) {
                     serverUrl: arg.serverUrl,
                     ViewServers: decJson.ViewServers,
                     Domain: decJson.Domain,
+                    AuthType: decJson.AuthType,
                 });
 
                 // event.returnValue = true;
@@ -513,6 +514,7 @@ function initial(mainWindow, appVersion) {
                     serverUrl: serverInfo.serverUrl,
                     ViewServers: decJson.ViewServers,
                     Domain: decJson.Domain,
+                    AuthType: decJson.AuthType,
                 });
 
                 let sendXml = `<?xml version="1.0"?><broker version="1.0"><get-configuration/></broker>`;
@@ -532,31 +534,55 @@ function initial(mainWindow, appVersion) {
 
                     }
 
-                    console.log(screenName);
-
-                    event.returnValue = {
+                    event.reply("login-config", {
                         result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
                         screen: screenName,
+                        authType: serverInfo.AuthType,
                         error: loginConfResult["user-message"]
-                    };
+                    });
+                    // event.returnValue = {
+                    //     result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
+                    //     screen: screenName,
+                    //     error: loginConfResult["user-message"]
+                    // };
 
                 }).catch((err) => {
                     console.error(err);
-                    event.returnValue = {
+                    event.reply("login-config", {
                         result: false,
                         screen: null,
+                        authType: serverInfo.AuthType,
                         error: JSON.stringify(error),
-                    };
+                    });
+                    // event.returnValue = {
+                    //     result: false,
+                    //     screen: null,
+                    //     error: JSON.stringify(error),
+                    // };
                 });
 
             })
             .catch(function (error) {
                 console.log(error);
-                event.returnValue = {
+                event.reply("login-config", {
                     result: false,
                     screen: null,
+                    authType: serverInfo.AuthType,
                     error: JSON.stringify(error),
-                };
+                });
+                // event.returnValue = {
+                //     result: false,
+                //     screen: null,
+                //     error: JSON.stringify(error),
+                // };
+            });
+        } else {
+            console.log("#####3", serverInfo);
+            event.reply("login-config", {
+                result: false,
+                screen: null,
+                authType: serverInfo.AuthType,
+                error: "",
             });
         }
     });
@@ -564,7 +590,7 @@ function initial(mainWindow, appVersion) {
 
     // LOGIN - Password only
     ipcMain.on("login", (event, arg) => {
-
+        let serverInfo = store.get("server-info", {});
         let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
                     <broker version="15.0">
                     <do-submit-authentication>
@@ -650,10 +676,10 @@ function initial(mainWindow, appVersion) {
     });
 
     // LOGIN - Passcode --> Password
-    ipcMain.on("login-mode1", (event, arg) => {
-        let serverInfo = store.get("server-info", {});
+    ipcMain.on("login-cp", (event, arg) => {
+        console.log(arg);
 
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let serverInfo = store.get("server-info", {});
         let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
                     <broker version="15.0">
                     <do-submit-authentication>
@@ -667,15 +693,9 @@ function initial(mainWindow, appVersion) {
                             </values>
                             </param>
                             <param>
-                            <name>domain</name>
-                            <values>
-                                <value>${serverInfo.Domain}</value>
-                            </values>
-                            </param>
-                            <param>
                             <name>passcode</name>
                             <values>
-                                <value>${arg.password}</value>
+                                <value>${arg.passcode}</value>
                             </values>
                             </param>
                         </params>
@@ -687,73 +707,125 @@ function initial(mainWindow, appVersion) {
                         </environment-information>
                     </do-submit-authentication>
                     </broker>`;
-        let reqUrl = `https://${viewServer}/broker/xml`;
 
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            let headers = response.headers['set-cookie'];
-            let _cookie = (headers || []).join(";");
-
-            if(_cookie) {
-                store.set("_cookie", _cookie);
-            }
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
+        sendVCS(sendXml).then((json) => {
             let loginResult = json.broker["submit-authentication"];
 
             if(loginResult.result === "partial") {
-                // windows-password --> PASSCDOE - PASSWORD
-                // securid-nexttokencode --> PASSWORD - PASSCODE
                 if(loginResult.authentication.screen.name === "windows-password") {
 
                     // 2차 인증
-                    event.returnValue = {
-                        result: true,
-                        screen: "windows-password",
-                        error: null,
-                    };
+                    sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+                        <broker version="15.0">
+                          <do-submit-authentication>
+                            <screen>
+                              <name>windows-password</name>
+                              <params>
+                                <param>
+                                  <name>username</name>
+                                  <values>
+                                    <value>${arg.username}</value>
+                                  </values>
+                                </param>
+                                <param>
+                                  <name>domain</name>
+                                  <values>
+                                    <value>${serverInfo.Domain}</value>
+                                  </values>
+                                </param>
+                                <param>
+                                  <name>password</name>
+                                  <values>
+                                    <value>${arg.password}</value>
+                                  </values>
+                                </param>
+                              </params>
+                            </screen>
+                            <environment-information>
+                              <info name="Type">Windows</info>
+                              <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+                              <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+                            </environment-information>
+                          </do-submit-authentication>
+                        </broker>`;
+
+                    sendVCS(sendXml).then((json) => {
+                        let loginResult2 = json.broker["submit-authentication"];
+
+                        if(loginResult2.result === "partial") {
+                            loginResult2.authentication.screen.params.param.map((p) => {
+                                if(p.name === "error") {
+                                    event.returnValue = {
+                                        result: false,
+                                        error: p.values.value,
+                                    };
+                                }
+                            });
+                            return;
+                        }
+
+                        if(loginResult2.result === "ok" || loginResult2["error-code"] === "ALREADY_AUTHENTICATED") {
+                            store.set("auth-info", {
+                                username: arg.username,
+                                password: arg.password,
+                            });
+
+                            axios({
+                                method: 'post',
+                                url: 'http://' + _ARGUS_GATE_ + '/api/login/',
+                                data: {
+                                    username: arg.username,
+                                    gb: "CLIENT_START",
+                                    target: appVersion,
+                                    content: "",
+                                    // ip: "",
+                                    result: JSON.stringify(__OS__),
+                                }
+                            });
+                        }
+
+                        event.returnValue = {
+                            result: loginResult2.result === "ok"  || loginResult2["error-code"] === "ALREADY_AUTHENTICATED",
+                            error: loginResult2["user-message"]
+                        };
+
+                    }).catch((err) => {
+                        event.returnValue = {
+                            result: false,
+                            error: err,
+                        };
+                    });
 
                 } else {
                     loginResult.authentication.screen.params.param.map((p) => {
                         if(p.name === "error") {
                             event.returnValue = {
                                 result: false,
-                                screen: null,
                                 error: p.values.value,
                             };
                         }
                     });
-
                 }
             } else {
                 event.returnValue = {
                     result: false,
-                    screen: null,
                     error: null,
                 };
             }
 
-            return;
-
+        }).catch((err) => {
+            event.returnValue = {
+                result: false,
+                error: err,
+            };
         });
+
 
     });
 
-    // LOGIN - Password --> Passcode
-    ipcMain.on("login-mode2", (event, arg) => {
-        let serverInfo = store.get("server-info", {});
-
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+    // LOGIN - Password --> PassCode
+    ipcMain.on("login-pc", (event, arg) => {
+        // let serverInfo = store.get("server-info", {});
         let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
                     <broker version="15.0">
                     <do-submit-authentication>
@@ -764,12 +836,6 @@ function initial(mainWindow, appVersion) {
                             <name>username</name>
                             <values>
                                 <value>${arg.username}</value>
-                            </values>
-                            </param>
-                            <param>
-                            <name>domain</name>
-                            <values>
-                                <value>${serverInfo.Domain}</value>
                             </values>
                             </param>
                             <param>
@@ -787,65 +853,122 @@ function initial(mainWindow, appVersion) {
                         </environment-information>
                     </do-submit-authentication>
                     </broker>`;
-        let reqUrl = `https://${viewServer}/broker/xml`;
 
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            let headers = response.headers['set-cookie'];
-            let _cookie = (headers || []).join(";");
-
-            if(_cookie) {
-                store.set("_cookie", _cookie);
-            }
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
+        sendVCS(sendXml).then((json) => {
             let loginResult = json.broker["submit-authentication"];
 
+            console.log("####1", JSON.stringify(loginResult));
+
+
             if(loginResult.result === "partial") {
-                // windows-password --> PASSCDOE - PASSWORD
-                // securid-nexttokencode --> PASSWORD - PASSCODE
                 if(loginResult.authentication.screen.name === "securid-nexttokencode") {
 
                     // 2차 인증
-                    event.returnValue = {
-                        result: true,
-                        screen: "securid-nexttokencode",
-                        error: null,
-                    };
+                    sendXml = `<?xml version="1.0" encoding="UTF-8"?>
+                        <broker version="15.0">
+                          <do-submit-authentication>
+                            <screen>
+                              <name>securid-nexttokencode</name>
+                              <params>
+                                <param>
+                                  <name>tokencode</name>
+                                  <values>
+                                    <value>${arg.passcode}</value>
+                                  </values>
+                                </param>
+                              </params>
+                            </screen>
+                            <environment-information>
+                              <info name="Type">Windows</info>
+                              <info name="MAC_Address">${__OS__.nics[0].mac}</info>
+                              <info name="Device_UUID">${__OS__.nics[0].mac}</info>
+                            </environment-information>
+                          </do-submit-authentication>
+                        </broker>`;
+
+                    sendVCS(sendXml).then((json) => {
+                        let loginResult2 = json.broker["submit-authentication"];
+
+                        console.log("####2", JSON.stringify(loginResult2), arg);
+
+
+                        if(loginResult2.result === "partial") {
+                            if(loginResult2.authentication.screen.name === "windows-password") {
+                                event.returnValue = {
+                                    result: false,
+                                    error: "관리자에게 문의 해주세요... (VCS 설정 오류 - 인증서버 옵션)",
+                                };
+                            } else {
+                                loginResult2.authentication.screen.params.param.map((p) => {
+                                    if(p.name === "error") {
+                                        event.returnValue = {
+                                            result: false,
+                                            error: p.values.value,
+                                        };
+                                    }
+                                });
+                            }
+
+                            return;
+                        }
+
+                        if(loginResult2.result === "ok" || loginResult2["error-code"] === "ALREADY_AUTHENTICATED") {
+                            store.set("auth-info", {
+                                username: arg.username,
+                                password: arg.password,
+                            });
+
+                            axios({
+                                method: 'post',
+                                url: 'http://' + _ARGUS_GATE_ + '/api/login/',
+                                data: {
+                                    username: arg.username,
+                                    gb: "CLIENT_START",
+                                    target: appVersion,
+                                    content: "",
+                                    // ip: "",
+                                    result: JSON.stringify(__OS__),
+                                }
+                            });
+                        }
+
+                        event.returnValue = {
+                            result: loginResult2.result === "ok"  || loginResult2["error-code"] === "ALREADY_AUTHENTICATED",
+                            error: loginResult2["user-message"]
+                        };
+
+                    }).catch((err) => {
+                        event.returnValue = {
+                            result: false,
+                            error: err,
+                        };
+                    });
 
                 } else {
                     loginResult.authentication.screen.params.param.map((p) => {
                         if(p.name === "error") {
                             event.returnValue = {
                                 result: false,
-                                screen: null,
                                 error: p.values.value,
                             };
                         }
                     });
-
                 }
             } else {
                 event.returnValue = {
                     result: false,
-                    screen: null,
                     error: null,
                 };
             }
 
-            return;
-
+        }).catch((err) => {
+            console.log(err);
+            event.returnValue = {
+                result: false,
+                error: err,
+            };
         });
+
 
     });
 
@@ -855,10 +978,7 @@ function initial(mainWindow, appVersion) {
         let serverInfo = store.get("server-info", {});
 
         let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-        let sendXml = `<?xml version='1.0' encoding='UTF-8'?>
-<broker version='15.0'>
-    <do-logout/>
-</broker>`;
+        let sendXml = `<?xml version='1.0' encoding='UTF-8'?><broker version='15.0'><do-logout/></broker>`;
 
         let reqUrl = `https://${viewServer}/broker/xml`;
 
