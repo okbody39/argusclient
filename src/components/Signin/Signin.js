@@ -1,7 +1,7 @@
 // Libs
 import React, {Component, useReducer} from "react";
 import { Button, Checkbox, Form, Input, message, Row, Card, notification } from 'antd';
-import { Eye, Mail, Triangle, User, Share2 } from 'react-feather';
+import { Eye, Mail, Triangle, User, Shield } from 'react-feather';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
@@ -10,6 +10,9 @@ const Content = styled.div`
   z-index: 2;
   min-width: 300px;
 `;
+import LoadingOverlay from 'react-loading-overlay';
+import BounceLoader from 'react-spinners/BounceLoader'
+import PuffLoader from 'react-spinners/PuffLoader'
 
 const { Meta } = Card;
 
@@ -43,8 +46,12 @@ class Signin extends Component {
         let token = JSON.parse(userToken);
         let connInfo = JSON.parse(ConnInfo);
 
+        this.setState({
+            loading: true,
+        });
+
         setTimeout(() => {
-            window.ipcRenderer.send("logout");
+            window.ipcRenderer.sendSync("logout-sync");
             window.ipcRenderer.send("login-config");
         }, 500);
 
@@ -71,23 +78,38 @@ class Signin extends Component {
 
             console.log(arg);
 
-            // if(arg.screen === "windows-password") {
-            //     if(arg.authType !== "") {
-            //         // 설정 오류!!!
-            //         notification.error({
-            //             message: '설정 오류',
-            //             description: '관리자에게 문의해주세요. (2FA 설정오류)'
-            //         });
-            //         this.setState({
-            //             blockLogin: true
-            //         });
-            //         return;
-            //     }
-            // }
+            if(arg.result) {
+                //
+            } else {
+                //
+                notification.error({
+                    message: '접속 오류',
+                    description: '종료 후 다시 실행해 주세요. -' + arg.error
+                });
+                this.setState({
+                    blockLogin: true,
+                    loading: false,
+                });
+                return;
+            }
+
+            if(arg.screen === "windows-password") {
+                if(arg.authType !== "") {
+                    // 설정 오류!!!
+                    notification.error({
+                        message: '설정 오류',
+                        description: '관리자에게 문의해주세요. (2FA 설정오류)'
+                    });
+                    this.setState({
+                        blockLogin: true,
+                        loading: false,
+                    });
+                    return;
+                }
+            }
 
             this.setState({
-                // vmlist: JSON.parse(arg),
-                // loading: false,
+                loading: false,
                 screen: arg.screen,
                 authType: arg.authType,
             });
@@ -140,6 +162,11 @@ class Signin extends Component {
         // const { getFieldDecorator } = form;
 
         return (
+            <LoadingOverlay
+                active={this.state.loading}
+                spinner={ <PuffLoader size={60} color={"white"} /> }
+                // text={<div style={{marginTop: 15}}>{this.state.loadingText}</div>}
+            >
             <Row
                 type="flex"
                 align="middle"
@@ -204,14 +231,14 @@ class Signin extends Component {
                             )}
                         </FormItem>
                         {
-                            this.state.screen === "windows-password" ? <div style={{ marginBottom: 16 }}></div> :
+                            this.state.authType === "" ? <div style={{ marginBottom: 16 }}></div> :
                                 <FormItem label="인증코드">
                                     {form.getFieldDecorator('passcode', {
                                         rules: [{ required: true, message: '인증코드를 입력하세요!' }]
                                     })(
                                         <Input
                                             prefix={
-                                                <Eye
+                                                <Shield
                                                     size={16}
                                                     strokeWidth={1}
                                                     style={{ color: 'rgba(0,0,0,.25)' }}
@@ -266,6 +293,7 @@ class Signin extends Component {
                     </Form>
                 </Content>
             </Row>
+            </LoadingOverlay>
         );
     }
 }

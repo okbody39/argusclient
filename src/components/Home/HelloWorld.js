@@ -453,8 +453,21 @@ class HelloWorld extends Component {
     };
 
     onChangeVmName = vmName => {
-        // console.log('Content change:', str);
-        this.setState({ vmName });
+
+        let selectedVm = this.state.selectedVm;
+
+        selectedVm.displayName = vmName;
+
+        // console.log(selectedVm);
+
+        this.setState({
+            selectedVm
+        });
+
+        window.ipcRenderer.send("change-vmname", {
+            id: selectedVm.vmId,
+            displayName: vmName,
+        });
     };
 
     render() {
@@ -538,7 +551,7 @@ class HelloWorld extends Component {
 
                 <Drawer
                     title={
-                        <Text editable={{ onChange: this.onChangeVmName }}>{this.state.vmName}</Text>
+                        <Text editable={{ onChange: this.onChangeVmName }}>{this.state.selectedVm.displayName}</Text>
                     }
                     width={520}
                     placement="right"
@@ -626,7 +639,7 @@ class HelloWorld extends Component {
                             borderRadius: '0 0 4px 4px',
                         }}
                     >
-                        기본 VM 설정 <Switch defaultChecked className="mr-3"/>
+                        {/*기본 VM 설정 <Switch defaultChecked className="mr-3"/>*/}
 
                         <Button onClick={this.onConnect.bind(this, this.state.selectedVm )} type="success">
                             접속

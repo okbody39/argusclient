@@ -9,7 +9,7 @@ const isDev = require("electron-is-dev");
 const {spawn, exec} = require('child_process');
 const async = require('async');
 
-const tcpp = require('tcp-ping');3
+const tcpp = require('tcp-ping');
 const axios = require('axios');
 const https = require('https');
 
@@ -22,56 +22,47 @@ const store = new Store({
     encryptionKey: "oiV30mOp5lOwKnaFESjrWq2xFByNOvNj",
 });
 
-const __VIEWSERVER__ = 0;
-let _INTERVAL_ = null;
-let _INTERVALCNT_ = 0;
-const __INTERVAL_TERM__ = 2000;
-const __INTERVAL_MAX__ = 30;
-let __INTERVAL_STR__ = "............................................................".substr(0, __INTERVAL_MAX__);
-
-
-
 const crypto = require('crypto');
 
 const ENC_KEY = "bf3c199c2470cb1759907b1e0905c17b";
 const IV = "5185207c72eec9e4";
 
-function encryptStr(val) {
-    const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
-    let value = null;
-
-    if (typeof val === 'object') { // JSON
-        value = JSON.stringify(val);
-    } else {
-        value = '' + val;
-    }
-
-    let encVal = cipher.update(value, 'utf8', 'base64');
-    encVal += cipher.final('base64');
-
-    return encVal;
-
-}
-
-function decryptStr(encVal, defaultVal) {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
-    let decVal = decipher.update(encVal, 'base64', 'utf8');
-    decVal += decipher.final('utf8');
-    let retVal = null;
-
-    if (typeof defaultVal === 'object') {
-        retVal = JSON.parse(decVal);
-    } else if (typeof defaultVal === 'number') {
-        retVal = parseInt(decVal);
-    } else if (typeof defaultVal === 'boolean') {
-        retVal = (decVal == 'true');
-    } else {
-        retVal = '' + decVal;
-    }
-
-    return retVal;
-
-}
+// function encryptStr(val) {
+//     const cipher = crypto.createCipheriv('aes-256-cbc', ENC_KEY, IV);
+//     let value = null;
+//
+//     if (typeof val === 'object') { // JSON
+//         value = JSON.stringify(val);
+//     } else {
+//         value = '' + val;
+//     }
+//
+//     let encVal = cipher.update(value, 'utf8', 'base64');
+//     encVal += cipher.final('base64');
+//
+//     return encVal;
+//
+// }
+//
+// function decryptStr(encVal, defaultVal) {
+//     const decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+//     let decVal = decipher.update(encVal, 'base64', 'utf8');
+//     decVal += decipher.final('utf8');
+//     let retVal = null;
+//
+//     if (typeof defaultVal === 'object') {
+//         retVal = JSON.parse(decVal);
+//     } else if (typeof defaultVal === 'number') {
+//         retVal = parseInt(decVal);
+//     } else if (typeof defaultVal === 'boolean') {
+//         retVal = (decVal == 'true');
+//     } else {
+//         retVal = '' + decVal;
+//     }
+//
+//     return retVal;
+//
+// }
 
 const removeJsonTextAttribute = function(value, parentElement) {
     try {
@@ -110,7 +101,7 @@ let __TMPDIR__ = process.env.TMPDIR
         ? "c:\\windows\\temp"
         : "/tmp" );
 
-const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
+// const BlackScreen = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAACWCAIAAADxBcILAAAAlElEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAiwH65QABlzjV7QAAAABJRU5ErkJggg==';
 let _ARGUS_GATE_ = ""; //"211.232.94.235:8000";
 
 // Web socket
@@ -120,15 +111,16 @@ let __WS_CONNECT__ = true;
 
 const aboutThis = require('./about');
 const autoUpdater = require('./updater');
-const { resolve } = require('path');
+// const { resolve } = require('path');
 
 function autoUpdateCheck(mainWindow, isCheck) {
     autoUpdater.init(mainWindow, isCheck);
 }
 
-let __START_TIME__ = performance.now();
+const connect = require('./connect');
+const sendXML = require('./sendXML');
 
-let __VM_START_TIME__ = 0;
+let __START_TIME__ = performance.now();
 
 let cpus = os.cpus();
 let networkInterfaces = os.networkInterfaces();
@@ -145,6 +137,8 @@ for (var key in networkInterfaces) {
         }
     });
 }
+
+const __VIEWSERVER__ = 0; //nics[0].split(".")[3];
 
 let vmwareClient = "-";
 let __OS__ = {
@@ -197,11 +191,39 @@ function checkClient() {
     }
 }
 
+function sendServer(url) {
+    let decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
+
+    return new Promise(function(resolve, reject) {
+        let returnValue = null;
+
+        axios.get(url)
+        .then(function (response) {
+
+            let encVal = response.data;
+            let decVal = decipher.update(encVal, 'base64', 'utf8');
+
+            decVal += decipher.final('utf8');
+
+            resolve(JSON.parse(decVal));
+
+        })
+        .catch(err => {
+            reject('서버에 접속할 수없습니다.');
+        });
+
+    });
+
+
+}
+
 function sendVCS(sendXml) {
     let serverInfo = store.get("server-info", {});
     let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
 
     let reqUrl = `https://${viewServer}/broker/xml`;
+
+    // console.log(sendXml, reqUrl)
 
     return new Promise(function(resolve, reject) {
         axios.post(reqUrl, sendXml, {
@@ -234,6 +256,33 @@ function sendVCS(sendXml) {
     });
 
 
+}
+
+function setDisplayVmName(vmId, vmName, isOverwrite) {
+    let dispNames = store.get("vm-displayname", {});
+
+    if(isOverwrite) {
+        dispNames[vmId] = vmName;
+    } else {
+        if(dispNames[vmId]) {
+            // SKIP
+        } else {
+            dispNames[vmId] = vmName;
+        }
+    }
+
+    // console.log(vmId, vmName, dispNames);
+
+    store.set("vm-displayname", dispNames);
+
+}
+
+function getDisplayVmName(vmId, defaultValue) {
+    let dispNames = store.get("vm-displayname", {});
+
+    // console.log(vmId, dispNames, dispNames[vmId] || defaultValue);
+
+    return dispNames[vmId] || defaultValue;
 }
 
 // console.log(vmwareClient);
@@ -304,6 +353,8 @@ function initial(mainWindow, appVersion) {
         });
         ws.on('message', (data) => {
             let jsonData = JSON.parse(data);
+
+            // console.log(jsonData);
 
             if(jsonData.action === "USER_VM_REFRESH") {
                 mainWindow.webContents.send("reload-sig");
@@ -412,6 +463,13 @@ function initial(mainWindow, appVersion) {
         aboutThis.run(mainWindow);
     });
 
+    ipcMain.on("failure-code", (event, arg) => {
+        let serverInfo = store.get("server-info");
+
+        event.returnValue = serverInfo.Codes;
+
+    });
+
     ipcMain.on("setting", (event, arg) => {
         // 현재 셋팅을 보낸다.
 
@@ -419,55 +477,51 @@ function initial(mainWindow, appVersion) {
 
     });
 
+    ipcMain.on("setting-update-sync", (event, arg) => {
+        let url = "http://" + arg.serverUrl + "/api/conninfo";
+        sendServer(url).then((decJson) => {
+            decJson.serverUrl = arg.serverUrl;
+
+            store.set("server-info", {
+                serverUrl: arg.serverUrl,
+                ViewServers: decJson.ViewServers,
+                Domain: decJson.Domain,
+                AuthType: decJson.AuthType,
+                Codes: decJson.Codes,
+            });
+
+            event.returnValue = decJson;
+
+        }).catch(err => {
+            console.error(err);
+            event.returnValue = false;
+        });
+    });
+
     ipcMain.on("setting-update", (event, arg) => {
-        let decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
         // Setting 값이 유효한지 확인 한다
         // 셋팅이 유효하면 store에 입력후 재기동 한다.
         // 유효하지 않으면 다시 입력
 
-        // console.log(arg);
+        let serverInfo = store.get("server-info", {});
+        let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
 
-        if(arg.serverUrl) {
-            let url = "http://" + arg.serverUrl + "/api/conninfo";
+        sendServer(url).then((decJson) => {
+            decJson.serverUrl = arg.serverUrl;
 
-            axios.get(url)
-            .then(function (response) {
-
-                let encVal = response.data;
-                let decVal = decipher.update(encVal, 'base64', 'utf8');
-
-                decVal += decipher.final('utf8');
-                let decJson = JSON.parse(decVal);
-                decJson.serverUrl = arg.serverUrl;
-
-                store.set("server-info", {
-                    serverUrl: arg.serverUrl,
-                    ViewServers: decJson.ViewServers,
-                    Domain: decJson.Domain,
-                    AuthType: decJson.AuthType,
-                });
-
-                // event.returnValue = true;
-
-                // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
-                // app.exit(0);
-
-                event.reply('setting-update', decJson);
-
-            })
-            .catch(function (error) {
-                console.error(error);
-                // console.log(arg);
-                event.reply('setting-update', false);
-            })
-            .then(function () {
+            store.set("server-info", {
+                serverUrl: arg.serverUrl,
+                ViewServers: decJson.ViewServers,
+                Domain: decJson.Domain,
+                AuthType: decJson.AuthType,
+                Codes: decJson.Codes,
             });
-        } else {
-            // alert('ERROR');
+
+            event.reply('setting-update', decJson);
+
+        }).catch(err => {
             event.reply('setting-update', false);
-        }
-
-
+        });
 
     });
 
@@ -494,136 +548,78 @@ function initial(mainWindow, appVersion) {
 
     ipcMain.on("login-config", (event, arg) => {
         let serverInfo = store.get("server-info", {});
+        let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
 
-        if(serverInfo.serverUrl) {
+        sendServer(url).then((decJson) => {
+            decJson.serverUrl = serverInfo.serverUrl;
 
-            let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
+            // console.log(decJson);
 
-            axios.get(url)
-            .then(function (response) {
+            store.set("server-info", {
+                serverUrl: serverInfo.serverUrl,
+                ViewServers: decJson.ViewServers,
+                Domain: decJson.Domain,
+                AuthType: decJson.AuthType,
+                Codes: decJson.Codes,
+            });
 
-                let decipher = crypto.createDecipheriv('aes-256-cbc', ENC_KEY, IV);
-                let encVal = response.data;
-                let decVal = decipher.update(encVal, 'base64', 'utf8');
+            let sendXml = sendXML.get("login-config");
 
-                decVal += decipher.final('utf8');
-                let decJson = JSON.parse(decVal);
-                decJson.serverUrl = serverInfo.serverUrl;
+            sendVCS(sendXml).then((json) => {
+                let loginConfResult = json.broker["configuration"];
+                let screenName = null;
 
-                store.set("server-info", {
-                    serverUrl: serverInfo.serverUrl,
-                    ViewServers: decJson.ViewServers,
-                    Domain: decJson.Domain,
-                    AuthType: decJson.AuthType,
+                if(loginConfResult.result === "ok") {
+                    screenName = loginConfResult.authentication.screen.name;
+
+                    // windows-password --> PASSCDOE - PASSWORD
+                    // securid-nexttokencode --> PASSWORD - PASSCODE
+                    // securid-passcode : SecurID
+                    // cert-auth : Cert
+                    // disclaimer
+
+                }
+
+                event.reply("login-config", {
+                    result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
+                    screen: screenName,
+                    authType: decJson.AuthType,
+                    error: loginConfResult["user-message"]
                 });
 
-                let sendXml = `<?xml version="1.0"?><broker version="1.0"><get-configuration/></broker>`;
-
-                sendVCS(sendXml).then((json) => {
-                    let loginConfResult = json.broker["configuration"];
-                    let screenName = null;
-
-                    if(loginConfResult.result === "ok") {
-                        screenName = loginConfResult.authentication.screen.name;
-
-                        // windows-password --> PASSCDOE - PASSWORD
-                        // securid-nexttokencode --> PASSWORD - PASSCODE
-                        // securid-passcode : SecurID
-                        // cert-auth : Cert
-                        // disclaimer
-
-                    }
-
-                    event.reply("login-config", {
-                        result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
-                        screen: screenName,
-                        authType: serverInfo.AuthType,
-                        error: loginConfResult["user-message"]
-                    });
-                    // event.returnValue = {
-                    //     result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
-                    //     screen: screenName,
-                    //     error: loginConfResult["user-message"]
-                    // };
-
-                }).catch((err) => {
-                    console.error(err);
-                    event.reply("login-config", {
-                        result: false,
-                        screen: null,
-                        authType: serverInfo.AuthType,
-                        error: JSON.stringify(error),
-                    });
-                    // event.returnValue = {
-                    //     result: false,
-                    //     screen: null,
-                    //     error: JSON.stringify(error),
-                    // };
-                });
-
-            })
-            .catch(function (error) {
-                console.log(error);
+            }).catch((err) => {
+                console.error(err);
                 event.reply("login-config", {
                     result: false,
                     screen: null,
                     authType: serverInfo.AuthType,
-                    error: JSON.stringify(error),
+                    error: err,
                 });
-                // event.returnValue = {
-                //     result: false,
-                //     screen: null,
-                //     error: JSON.stringify(error),
-                // };
             });
-        } else {
-            console.log("#####3", serverInfo);
+
+
+        }).catch(err => {
+            console.error(err);
             event.reply("login-config", {
                 result: false,
                 screen: null,
                 authType: serverInfo.AuthType,
-                error: "",
+                error: JSON.stringify(err),
             });
-        }
+        });
+
     });
 
 
     // LOGIN - Password only
     ipcMain.on("login", (event, arg) => {
         let serverInfo = store.get("server-info", {});
-        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-                    <broker version="15.0">
-                    <do-submit-authentication>
-                        <screen>
-                        <name>windows-password</name>
-                        <params>
-                            <param>
-                            <name>username</name>
-                            <values>
-                                <value>${arg.username}</value>
-                            </values>
-                            </param>
-                            <param>
-                            <name>domain</name>
-                            <values>
-                                <value>${serverInfo.Domain}</value>
-                            </values>
-                            </param>
-                            <param>
-                            <name>password</name>
-                            <values>
-                                <value>${arg.password}</value>
-                            </values>
-                            </param>
-                        </params>
-                        </screen>
-                        <environment-information>
-                            <info name="Type">Windows</info>
-                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-                        </environment-information>
-                    </do-submit-authentication>
-                    </broker>`;
+        let sendXml = sendXML.get("login", {
+            username: arg.username,
+            domain: serverInfo.Domain,
+            password: arg.password,
+            mac: __OS__.nics[0].mac,
+        });
 
         sendVCS(sendXml).then((json) => {
             let loginResult = json.broker["submit-authentication"];
@@ -680,33 +676,11 @@ function initial(mainWindow, appVersion) {
         console.log(arg);
 
         let serverInfo = store.get("server-info", {});
-        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-                    <broker version="15.0">
-                    <do-submit-authentication>
-                        <screen>
-                        <name>securid-passcode</name>
-                        <params>
-                            <param>
-                            <name>username</name>
-                            <values>
-                                <value>${arg.username}</value>
-                            </values>
-                            </param>
-                            <param>
-                            <name>passcode</name>
-                            <values>
-                                <value>${arg.passcode}</value>
-                            </values>
-                            </param>
-                        </params>
-                        </screen>
-                        <environment-information>
-                            <info name="Type">Windows</info>
-                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-                        </environment-information>
-                    </do-submit-authentication>
-                    </broker>`;
+        let sendXml = sendXML.get("login-cp", {
+            username: arg.username,
+            passcode: arg.passcode,
+            mac: __OS__.nics[0].mac,
+        });
 
         sendVCS(sendXml).then((json) => {
             let loginResult = json.broker["submit-authentication"];
@@ -715,39 +689,12 @@ function initial(mainWindow, appVersion) {
                 if(loginResult.authentication.screen.name === "windows-password") {
 
                     // 2차 인증
-                    sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-                        <broker version="15.0">
-                          <do-submit-authentication>
-                            <screen>
-                              <name>windows-password</name>
-                              <params>
-                                <param>
-                                  <name>username</name>
-                                  <values>
-                                    <value>${arg.username}</value>
-                                  </values>
-                                </param>
-                                <param>
-                                  <name>domain</name>
-                                  <values>
-                                    <value>${serverInfo.Domain}</value>
-                                  </values>
-                                </param>
-                                <param>
-                                  <name>password</name>
-                                  <values>
-                                    <value>${arg.password}</value>
-                                  </values>
-                                </param>
-                              </params>
-                            </screen>
-                            <environment-information>
-                              <info name="Type">Windows</info>
-                              <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-                              <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-                            </environment-information>
-                          </do-submit-authentication>
-                        </broker>`;
+                    sendXml = sendXML.get("login-cp2", {
+                        username: arg.username,
+                        domain: serverInfo.Domain,
+                        password: arg.password,
+                        mac: __OS__.nics[0].mac,
+                    });
 
                     sendVCS(sendXml).then((json) => {
                         let loginResult2 = json.broker["submit-authentication"];
@@ -826,33 +773,11 @@ function initial(mainWindow, appVersion) {
     // LOGIN - Password --> PassCode
     ipcMain.on("login-pc", (event, arg) => {
         // let serverInfo = store.get("server-info", {});
-        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-                    <broker version="15.0">
-                    <do-submit-authentication>
-                        <screen>
-                        <name>securid-passcode</name>
-                        <params>
-                            <param>
-                            <name>username</name>
-                            <values>
-                                <value>${arg.username}</value>
-                            </values>
-                            </param>
-                            <param>
-                            <name>passcode</name>
-                            <values>
-                                <value>${arg.password}</value>
-                            </values>
-                            </param>
-                        </params>
-                        </screen>
-                        <environment-information>
-                            <info name="Type">Windows</info>
-                            <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-                            <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-                        </environment-information>
-                    </do-submit-authentication>
-                    </broker>`;
+        let sendXml = sendXML.get("login-pc", {
+            username: arg.username,
+            password: arg.password,
+            mac: __OS__.nics[0].mac,
+        });
 
         sendVCS(sendXml).then((json) => {
             let loginResult = json.broker["submit-authentication"];
@@ -864,33 +789,14 @@ function initial(mainWindow, appVersion) {
                 if(loginResult.authentication.screen.name === "securid-nexttokencode") {
 
                     // 2차 인증
-                    sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-                        <broker version="15.0">
-                          <do-submit-authentication>
-                            <screen>
-                              <name>securid-nexttokencode</name>
-                              <params>
-                                <param>
-                                  <name>tokencode</name>
-                                  <values>
-                                    <value>${arg.passcode}</value>
-                                  </values>
-                                </param>
-                              </params>
-                            </screen>
-                            <environment-information>
-                              <info name="Type">Windows</info>
-                              <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-                              <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-                            </environment-information>
-                          </do-submit-authentication>
-                        </broker>`;
+                    sendXml = sendXML.get("login-pc2", {
+                        username: arg.username,
+                        passcode: arg.passcode,
+                        mac: __OS__.nics[0].mac,
+                    });
 
                     sendVCS(sendXml).then((json) => {
                         let loginResult2 = json.broker["submit-authentication"];
-
-                        console.log("####2", JSON.stringify(loginResult2), arg);
-
 
                         if(loginResult2.result === "partial") {
                             if(loginResult2.authentication.screen.name === "windows-password") {
@@ -972,74 +878,26 @@ function initial(mainWindow, appVersion) {
 
     });
 
-    ipcMain.on("logout", (event, arg) => {
+    ipcMain.on("logout-sync", (event, arg) => {
+        let sendXml = sendXML.get("logout");
 
-
-        let serverInfo = store.get("server-info", {});
-
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-        let sendXml = `<?xml version='1.0' encoding='UTF-8'?><broker version='15.0'><do-logout/></broker>`;
-
-        let reqUrl = `https://${viewServer}/broker/xml`;
-
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            store.set("_cookie", "");
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
+        sendVCS(sendXml).then((json) => {
             let logoutResult = json.broker["logout"];
-
             event.returnValue = logoutResult.result === "ok";
-
-        })
-        .catch((err) =>{
+        }).catch(err => {
             event.returnValue = JSON.stringify(err);
         });
 
 
     });
 
+
+
     ipcMain.on("vm-reset", (event, arg) => {
-        let serverInfo = store.get("server-info", {});
+        let sendXml = sendXML.get("vm-reset", arg);
 
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-        let sendXml = `<?xml version="1.0"?>
-        <broker version="2.0">
-            <reset-desktop>
-            <desktop-id>${arg}</desktop-id>
-            </reset-desktop>
-        </broker>`;
-
-        let reqUrl = `https://${viewServer}/broker/xml`;
-
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            store.set("_cookie", "");
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
+        sendVCS(sendXml).then((json) => {
             let resetResult = json.broker["reset-desktop"];
-
-            // console.log(resetResult);
 
             if(resetResult.result === "ok") {
                 event.returnValue = "ok";
@@ -1047,42 +905,16 @@ function initial(mainWindow, appVersion) {
                 event.returnValue = resetResult["user-message"];
             }
 
-        })
-        .catch((err) =>{
+        }).catch(err => {
             event.returnValue = JSON.stringify(err);
         });
-
 
     });
 
     ipcMain.on("session-kill", (event, arg) => {
-        let serverInfo = store.get("server-info", {});
+        let sendXml = sendXML.get("session-kill", arg);
 
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
-        let sendXml = `<?xml version="1.0"?>
-        <broker version="1.0">
-          <kill-session>
-            <session-id>${arg}</session-id>
-          </kill-session>
-        </broker>`;
-
-        let reqUrl = `https://${viewServer}/broker/xml`;
-
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            store.set("_cookie", "");
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
+        sendVCS(sendXml).then((json) => {
             let resetResult = json.broker["kill-session"];
 
             // console.log(resetResult);
@@ -1092,12 +924,9 @@ function initial(mainWindow, appVersion) {
             } else {
                 event.returnValue = resetResult["user-message"];
             }
-
-        })
-        .catch((err) =>{
+        }).catch(err => {
             event.returnValue = JSON.stringify(err);
         });
-
 
     });
 
@@ -1117,285 +946,67 @@ function initial(mainWindow, appVersion) {
         let serverurl = serverInfo.ViewServers[__VIEWSERVER__];
 
         let json = {
-            serverurl: serverurl,
+            vcsurl: serverurl,
+            serverurl: _ARGUS_GATE_,
             username: authInfo.username,
             password: authInfo.password,
+            passwordCmd: authInfo.password,
             domainname: serverInfo.Domain,
-            desktopname: vmName,
+            vmId: vmId,
+            vmName: vmName,
         };
 
-        //////////////////////////////
-
-        const child = new BrowserWindow({
-            parent: mainWindow,
-            modal: process.platform !== "darwin",
-            show: false, // isDev,
-            width: 1500,
-            height: 1000,
-            webPreferences: {
-                allowRunningInsecureContent: true
-            }
-        });
-        // child.webContents.openDevTools();
-        child.setMenu(null);
-        child.loadURL(`https://${serverurl}/portal/webclient/index.html`)
-        // child.on("closed", async() => {
-        //     await child.webContents.capturePage().then( image => {
-        //
-        //         fs.writeFileSync('test.png', image.toPNG(), (err) => {
-        //             if (err) throw err
-        //         });
-        //
-        //         console.log('It\'s saved!')
-        //         // return image.toDataURL()
-        //
-        //     });
-        //
-        // });
-        child.once('close', async() => {
-            event.reply("vm-connect", "CLOSE");
-
-            if(__VM_START_TIME__) {
-                await child.webContents.capturePage().then(image => {
-                    let vmImageFile = path.join(__TMPDIR__, vmName + '.png');
-
-                    console.log(vmImageFile);
-
-                    fs.writeFileSync(vmImageFile, image.toPNG(), (err) => {
-                        if (err) throw err
-                    });
-
-                    // console.log('It\'s saved!')
-                    // return image.toDataURL()
-
-                });
-            }
-
-            _INTERVALCNT_ = 0;
-            clearInterval(_INTERVAL_);
-
-            let endTime = performance.now();
-            let timeDiff = endTime - __VM_START_TIME__;
-            timeDiff /= 1000;
-            let seconds = Math.round(timeDiff);
-
-            if(__VM_START_TIME__) {
-                axios({
-                    method: 'post',
-                    url: 'http://' + _ARGUS_GATE_ + '/api/access/',
-                    data: {
-                        username: authInfo.username,
-                        gb: "VM_END",
-                        target: vmName,
-                        content: seconds,
-                        // ip: "",
-                        result: "",
-                    }
-                });
-            } else {
-                //
-            }
-
-            __VM_START_TIME__ = 0;
-
-
-        });
-        child.once('ready-to-show', () => {
-        });
-        child.webContents.on('did-finish-load', () => {
-            let currentUrl = child.webContents.getURL();
-            let username = json.username +"@" + json.domainname;
-            let password = json.password;
-
-
-            setTimeout(() => {
-                child.webContents.executeJavaScript(`
-                    setTimeout(() => {
-
-                        let selectedDomain = document.querySelector('.ui-selectmenu-text').innerText;
-
-                        if(selectedDomain === "*DefaultDomain*") {
-                            document.querySelector('input[name="username"]').value = '${username}';
-                        } else {
-                            document.querySelector('input[name="username"]').value = '${json.username}';
-                        }
-
-                        document.querySelector('input[name="password"]').value = '${password}';
-
-                        setTimeout(() => {
-                            var evt = document.createEvent("HTMLEvents");
-                            evt.initEvent("change", false, true);
-
-                            document.getElementById('username').dispatchEvent(evt);
-                            document.getElementById('password').dispatchEvent(evt);
-
-                            document.getElementById('password').focus();
-
-                            setTimeout(function() {
-                                document.getElementById("loginButton").click();
-                            }, 500);
-                        }, 500);
-
-                    }, 500);
-                `).then((result) => {
-                    // dialog.showErrorBox('접속 에러', result);
-                    event.reply("vm-connecting", "접속시도 중입니다.");
-                }).catch((err) =>{
-                    // console.log('>>>>', err);
-                });
-
-                setTimeout(() => {
-                    _INTERVAL_ = setInterval(() => {
-                        let curUrl = child.webContents.getURL();
-                        // console.log(">>>>", curUrl);
-
-                        if(curUrl.indexOf("#/desktop") !== -1) {
-                            child.show();
-                            _INTERVALCNT_ = 0;
-                            clearInterval(_INTERVAL_);
-                            event.reply("vm-connect", "DONE");
-
-                            __VM_START_TIME__ = performance.now();
-
-                            axios({
-                                method: 'post',
-                                url: 'http://' + _ARGUS_GATE_ + '/api/access/',
-                                data: {
-                                    username: authInfo.username,
-                                    gb: "VM_START",
-                                    target: vmName,
-                                    content: "",
-                                    // ip: "",
-                                    result: "",
-                                }
-                            });
-                        } else if(curUrl.indexOf("#/launchitems") !== -1) {
-
-
-                            child.webContents.executeJavaScript(`
-                                setTimeout(() => {
-                                    document.getElementById('${vmId}').click();
-                                }, 0);
-                            `)
-                            .then()
-                            .catch();
-
-                        } else {
-                            child.webContents.executeJavaScript(`
-                                try {
-                                    document.querySelector('div[class="dialog-content"]').innerText;
-                                } catch {
-                                    try {
-                                        document.querySelector('div.alert.alert-danger').innerText;
-                                    } catch {
-                                        document.querySelector('#errorMsg').innerText;
-                                    }
-                                }
-
-                            `).then((result) => {
-
-                                // console.log("["+result.replace(/\r\n/g, '').trim()+"]");
-
-                                let rslt = result.replace(/\r\n/g, '').trim();
-
-                                if(rslt) {
-                                    _INTERVALCNT_ = 0;
-                                    clearInterval(_INTERVAL_);
-                                    child.close();
-
-                                    event.reply("vm-connect", "ERROR");
-
-                                    dialog.showErrorBox('접속 에러', result);
-                                }
-
-                            }).catch((err) =>{
-                                // console.log('**>>>>', err);
-                            });
-                        }
-
-                        _INTERVALCNT_ ++;
-
-                        // INTERVAL Count 초과시 에러 발생
-                        if(_INTERVALCNT_ > __INTERVAL_MAX__) {
-                            // child.show();
-                            _INTERVALCNT_ = 0;
-                            clearInterval(_INTERVAL_);
-
-                            // child.hide();
-                            child.close();
-
-                            event.reply("vm-connect", "ERROR");
-
-                            dialog.showErrorBox('접속 에러', '접속에 실패하였습니다. 문제가 계속 발생시 관리자에게 문의해 주시기 바랍니다.');
-
-                        }
-
-                        event.reply("vm-connecting", "접속시도 중입니다.." + __INTERVAL_STR__.substr(0, _INTERVALCNT_));
-
-                    }, __INTERVAL_TERM__);
-
-
-
-                }, 2000);
-
-            }, 1000);
-
-        });
-
-        return;
-
-        //////////////////////////////
 
         if(process.platform === "win32") {
             if(json.password.indexOf('^') !== -1) {
-                json.password = json.password.replace(/\^/gi, '^^');
+                json.passwordCmd = json.password.replace(/\^/gi, '^^');
             }
             if(json.password.indexOf('&') !== -1) {
-                json.password = json.password.replace(/\&/gi, '^&');
+                json.passwordCmd = json.password.replace(/\&/gi, '^&');
             }
             if(json.password.indexOf('"') !== -1) {
-                json.password = json.password.replace(/\"/gi, '\"');
+                json.passwordCmd = json.password.replace(/\"/gi, '\"');
             }
             if(json.password.indexOf('>') !== -1) {
-                json.password = json.password.replace(/\>/gi, '^>');
+                json.passwordCmd = json.password.replace(/\>/gi, '^>');
             }
             if(json.password.indexOf('<') !== -1) {
-                json.password = json.password.replace(/\</gi, '^<');
+                json.passwordCmd = json.password.replace(/\</gi, '^<');
             }
 
         } else {
             if(json.password.indexOf('\\') !== -1) {
-                json.password = json.password.replace(/\\/gi, '\\\\');
+                json.passwordCmd = json.password.replace(/\\/gi, '\\\\');
             }
             if(json.password.indexOf("`") !== -1) {
-                json.password = json.password.replace(/\`/gi, "\\`");
+                json.passwordCmd = json.password.replace(/\`/gi, "\\`");
             }
             if(json.password.indexOf("$") !== -1) {
-                json.password = json.password.replace(/\$/gi, "\\$");
+                json.passwordCmd = json.password.replace(/\$/gi, "\\$");
             }
             if(json.password.indexOf('"') !== -1) {
-                json.password = json.password.replace(/\"/gi, '\\"');
+                json.passwordCmd = json.password.replace(/\"/gi, '\\"');
             }
             if(json.password.indexOf('&') !== -1) {
-                json.password = json.password.replace(/\&/gi, '\\&');
+                json.passwordCmd = json.password.replace(/\&/gi, '\\&');
             }
             if(json.password.indexOf("'") !== -1) {
-                json.password = json.password.replace(/\'/gi, "\\'");
+                json.passwordCmd = json.password.replace(/\'/gi, "\\'");
             }
             if(json.password.indexOf("(") !== -1) {
-                json.password = json.password.replace(/\(/gi, "\\(");
+                json.passwordCmd = json.password.replace(/\(/gi, "\\(");
             }
             if(json.password.indexOf(")") !== -1) {
-                json.password = json.password.replace(/\)/gi, "\\)");
+                json.passwordCmd = json.password.replace(/\)/gi, "\\)");
             }
             if(json.password.indexOf("<") !== -1) {
-                json.password = json.password.replace(/\</gi, "\\<");
+                json.passwordCmd = json.password.replace(/\</gi, "\\<");
             }
             if(json.password.indexOf(">") !== -1) {
-                json.password = json.password.replace(/\>/gi, "\\>");
+                json.passwordCmd = json.password.replace(/\>/gi, "\\>");
             }
             if(json.password.indexOf(";") !== -1) {
-                json.password = json.password.replace(/\;/gi, "\\;");
+                json.passwordCmd = json.password.replace(/\;/gi, "\\;");
             }
         }
 
@@ -1411,7 +1022,7 @@ function initial(mainWindow, appVersion) {
             findPath.some((fpath) => {
                 if(fs.existsSync(fpath)) {
 
-                    let cmd = `"${fpath}" --serverURL "${json.serverurl}" --userName "${json.username}" --password "${json.password}" --domainName "${json.domainname}" --desktopName "${json.desktopname}" --standAlone`;
+                    let cmd = `"${fpath}" --serverURL "${json.vcsurl}" --userName "${json.username}" --password "${json.passwordCmd}" --domainName "${json.domainname}" --desktopName "${json.desktopname}" --standAlone`;
 
                     exec(cmd, (err, stdout, stderr) => {
                         if (err) {
@@ -1427,12 +1038,13 @@ function initial(mainWindow, appVersion) {
             });
 
             if(!isInstalled) { // 미설치
-                dialog.showErrorBox('소프트웨어 미설치', 'VMWare Horizon View Client가 설치되지 않았습니다.')
+                // dialog.showErrorBox('소프트웨어 미설치', 'VMWare Horizon View Client가 설치되지 않았습니다.')
+                connect.execute(mainWindow, event, json);
             }
 
-        } else {
+        } else if(osver === "linux") {
             let fpath = "vmware-view";
-            let cmd = `"${fpath}" --nonInteractive --serverURL="${json.serverurl}" --userName="${json.username}" --password="${json.password}" --domainName="${json.domainname}" --desktopName="${json.desktopname}"`;
+            let cmd = `"${fpath}" --nonInteractive --serverURL="${json.vcsurl}" --userName="${json.username}" --password="${json.passwordCmd}" --domainName="${json.domainname}" --desktopName="${json.desktopname}"`;
 
             exec(cmd, (err, stdout, stderr) => {
                 if (err) {
@@ -1441,95 +1053,18 @@ function initial(mainWindow, appVersion) {
                     return;
                 }
             });
+        } else {
+            connect.execute(mainWindow, event, json);
         }
     });
 
     ipcMain.on("vm-list", (event, arg) => {
-        let sendXml = `<?xml version="1.0" encoding="UTF-8"?>
-<broker version="15.0">
-  <get-tunnel-connection>
-    <certificate-thumbprint-algorithms>
-      <algorithm>SHA-1</algorithm>
-      <algorithm>SHA-256</algorithm>
-    </certificate-thumbprint-algorithms>
-  </get-tunnel-connection>
-  <get-user-global-preferences/>
-  <get-launch-items>
-    <desktops>
-      <supported-protocols>
-        <protocol>
-          <name>PCOIP</name>
-        </protocol>
-        <protocol>
-          <name>RDP</name>
-        </protocol>
-        <protocol>
-          <name>BLAST</name>
-        </protocol>
-      </supported-protocols>
-    </desktops>
-    <applications>
-      <supported-types>
-        <type>
-          <name>remote</name>
-          <supported-protocols>
-            <protocol>
-              <name>PCOIP</name>
-            </protocol>
-            <protocol>
-              <name>BLAST</name>
-            </protocol>
-          </supported-protocols>
-        </type>
-      </supported-types>
-    </applications>
-    <application-sessions/>
-    <shadow-sessions>
-      <supported-protocols>
-        <protocol>
-          <name>BLAST</name>
-        </protocol>
-      </supported-protocols>
-    </shadow-sessions>
-    <environment-information>
-      <info name="IP_Address">${__OS__.nics[0].address}</info>
-      <info name="MAC_Address">${__OS__.nics[0].mac}</info>
-      <info name="Device_UUID">${__OS__.nics[0].mac}</info>
-      <info name="Machine_Domain">WORKGROUP</info>
-      <info name="Machine_Name">DESKTOP-TEST</info>
-      <info name="Client_ID"></info>
-      <info name="Type">Windows</info>
-      <info name="Machine_FQDN"></info>
-      <info name="Client_Version">8.0.0-16531419</info>
-    </environment-information>
-  </get-launch-items>
-</broker>`;
-        let serverInfo = store.get("server-info", {});
-        let viewServer = serverInfo.ViewServers[__VIEWSERVER__];
+        let sendXml = sendXML.get("vm-list", {
+            address: __OS__.nics[0].address,
+            mac: __OS__.nics[0].mac,
+        });
 
-        let reqUrl = `https://${viewServer}/broker/xml`;
-
-        axios.post(reqUrl, sendXml, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'text/xml;charset=UTF-8',
-                'Access-Control-Allow-Origin': '*',
-                'Cookie': store.get("_cookie", ""),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            }),
-        })
-        .then((response) => {
-            let headers = response.headers['set-cookie'];
-            let _cookie = (headers || []).join(";");
-
-            if(_cookie) {
-                store.set("_cookie", _cookie);
-            }
-
-            let json = JSON.parse(convert.xml2json(response.data, options));
-
+        sendVCS(sendXml).then((json) => {
             let itemsResult = json.broker["launch-items"];
 
             // console.log(itemsResult.desktops.desktop);
@@ -1552,7 +1087,7 @@ function initial(mainWindow, appVersion) {
                         statusColor: "",
                         basicState: typeof vm.type === "object" ? "" : vm.type,
                         operatingSystem:"",
-                        displayName: vm.name,
+                        displayName: getDisplayVmName(vm.id, vm.name),
                         name: vm.name,
                         state: typeof vm.state === "object" ? "no session" : vm.state,
                         disk: [],
@@ -1562,14 +1097,19 @@ function initial(mainWindow, appVersion) {
                         id: vm.id,
                         detail: vm,
                     });
+
+                    setDisplayVmName(vm.id, vm.name, false);
                 }
 
                 store.set("vm-list", vmlist);
                 event.reply('vm-list', vmlist);
 
             } catch {
-                event.reply('vm-list', {error: itemsResult["error-message"]});
+                event.reply('vm-list', { error: itemsResult["error-message"] });
             }
+
+        }).catch(err => {
+            event.reply('vm-list', { error: err });
         });
 
     });
@@ -1606,7 +1146,7 @@ function initial(mainWindow, appVersion) {
 
         vmList.map((vm) => {
 
-            let vmImageFile = path.join(__TMPDIR__, vm.name + ".png");
+            let vmImageFile = path.join(__TMPDIR__, vm.id + ".png");
             let imgSrcString = null;
             if(fs.existsSync(vmImageFile)) {
                 let data = fs.readFileSync(vmImageFile);
@@ -1671,6 +1211,10 @@ function initial(mainWindow, appVersion) {
         })
         .then(function () {
         });
+    });
+
+    ipcMain.on("change-vmname", (event, arg) => {
+        setDisplayVmName(arg.id, arg.displayName, true);
     });
 
 
@@ -1840,25 +1384,34 @@ function initial(mainWindow, appVersion) {
                 break;
 
             case 2: // VM
-                let url = 'http://' + _ARGUS_GATE_ + '/api/vms/' + arg.auth;
+                // let url = 'http://' + _ARGUS_GATE_ + '/api/vms/' + arg.auth;
+                //
+                // axios.get(url)
+                // .then(function (response) {
+                //     retJson = response.data;
+                //     event.returnValue = retJson;
+                // })
+                // .catch(function (error) {
+                //     event.returnValue = {};
+                // });
 
-                axios.get(url)
-                .then(function (response) {
-                    retJson = response.data;
-                    event.returnValue = retJson;
-                })
-                .catch(function (error) {
-                    event.returnValue = {};
-                });
+                event.returnValue = store.get("vm-list", []);
+
                 break;
 
             case 3: // SRV
+                let serverInfo = store.get("server-info", {});
 
+                let vcsServer = serverInfo.ViewServers[__VIEWSERVER__];
                 let srvAddress = _ARGUS_GATE_.split(":");
 
-                tcpp.ping({ address: srvAddress[0], port: srvAddress[1] }, function(err, data) {
-                    // console.log(data);
-                    event.returnValue = data;
+                tcpp.ping({ address: vcsServer, port: 443 }, function(err, data) {
+                    let returnValue = [data];
+                    tcpp.ping({ address: srvAddress[0], port: srvAddress[1] }, function(err, data2) {
+                        // console.log(data);
+                        returnValue.push(data2);
+                        event.returnValue = returnValue;
+                    });
                 });
 
                 // tcpp.probe(srvAddress[0], srvAddress[1], function(err, available) {
