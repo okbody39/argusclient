@@ -6,6 +6,7 @@ import Root from "@/screens/Root/Root";
 import Home from "@/screens/Home/Home";
 
 import Signin from "@/screens/Signin/Signin";
+import Logout from "@/screens/Logout/Logout";
 import Signup from "@/screens/Signup/Signup";
 import Failure from "@/screens/Failure/Failure";
 import Diagnosis from "@/screens/Failure/Failure";
@@ -76,6 +77,7 @@ const Routes = () => (
         {/*<PrivateRoute path='/' component={Root} />*/}
 
         <Route path="/signin" component={Signin} />
+        <Route path="/logout" component={Logout} />
         <Route path="/signup" component={Signup} />
         <Route path="/settings" component={Settings} />
 

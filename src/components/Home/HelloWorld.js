@@ -113,6 +113,8 @@ class HelloWorld extends Component {
 
     componentDidMount() {
 
+        document.title = localStorage.getItem("ARGUS.TITLE") || "";
+
         setTimeout(() => {
             window.ipcRenderer.send("start-app");
         }, 500);

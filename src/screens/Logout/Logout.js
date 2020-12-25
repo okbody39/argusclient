@@ -1,19 +1,19 @@
 // Libs
 import React, { Component } from "react";
 // Styles
-import styles from "./Signin.scss";
+import styles from "./Logout.scss";
 // Layouts
 import Layout from "@/layouts/App";
 // Components
-import SigninCompo from "@/components/Signin/Signin";
+import LogoutCompo from "@/components/Logout/Logout";
 
 /**
  * Logout
  *
- * @class Signin
+ * @class Logout
  * @extends {Component}
  */
-class Signin extends Component {
+class Logout extends Component {
   constructor(props) {
     super(props);
   }
@@ -22,11 +22,11 @@ class Signin extends Component {
     return (
       <Layout>
         <div className={styles.home}>
-          <SigninCompo />
+          <LogoutCompo />
         </div>
       </Layout>
     );
   }
 }
 
-export default Signin;
+export default Logout;

@@ -1,6 +1,6 @@
 // Libs
 import React, {Component, useReducer} from "react";
-import { Button, Checkbox, Form, Input, message, Row, Card, notification } from 'antd';
+import { Button, Checkbox, Form, Input, message, Row, Col, Card, notification } from 'antd';
 import { Eye, Mail, Triangle, User, Shield } from 'react-feather';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
@@ -37,6 +37,7 @@ class Signin extends Component {
             screen: "windows-password",
             authType: "",
             blockLogin: false,
+            logofile: localStorage.getItem("ARGUS.LOGO"),
         };
     }
 
@@ -46,14 +47,18 @@ class Signin extends Component {
         let token = JSON.parse(userToken);
         let connInfo = JSON.parse(ConnInfo);
 
+
+
         this.setState({
             loading: true,
         });
 
         setTimeout(() => {
-            window.ipcRenderer.sendSync("logout-sync");
+            // window.ipcRenderer.sendSync("logout-sync");
             window.ipcRenderer.send("login-config");
         }, 500);
+
+        // console.log(connInfo);
 
         if(connInfo.serverUrl && connInfo.serverUrl.length > 0 && connInfo.serverUrl !== "undefined") {
             // console.log(connInfo);
@@ -76,10 +81,13 @@ class Signin extends Component {
             // securid-passcode
             // windows-password
 
-            console.log(arg);
+            // console.log(arg);
 
             if(arg.result) {
                 //
+                localStorage.setItem("ARGUS.LOGO", arg.logofile);
+                localStorage.setItem("ARGUS.TITLE", arg.owner);
+                document.title = arg.owner || "";
             } else {
                 //
                 notification.error({
@@ -112,6 +120,7 @@ class Signin extends Component {
                 loading: false,
                 screen: arg.screen,
                 authType: arg.authType,
+                logofile: arg.logofile,
             });
 
         });
@@ -175,16 +184,16 @@ class Signin extends Component {
                 style={{ minHeight: 'calc(100vh - 30px)' }}
             >
                 <Content>
-                    <div className="text-center mb-0">
+                    <Row type="flex" justify="center" >
                         {/*<a className="brand mr-0">*/}
                         {/*<Link to="/">*/}
                         {/*<Triangle size={32} strokeWidth={1} />*/}
-                        <img src={logo} className={styles.logo}/>
+                        <img src={ this.state.logofile } className={styles.logo} onError={(e)=>{e.target.onerror = null; e.target.src=logo;}} />
                         {/*</Link>*/}
                         {/*</a>*/}
                         {/*<h5 className="mb-0 mt-3">SeedADM</h5>*/}
                         {/*<p className="text-muted">get started with our service</p>*/}
-                    </div>
+                    </Row>
 
                     <Form
                         layout="vertical"

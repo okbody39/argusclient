@@ -40,6 +40,7 @@ class Signup extends Component {
             // password: "",
             loading: false,
             serverUrl: connInfo.serverUrl,
+            logofile: localStorage.getItem("ARGUS.LOGO"),
         };
 
         // this.history = useHistory();
@@ -109,6 +110,8 @@ class Signup extends Component {
                 if(arg) {
                     let value = arg;
 
+                    // console.log(value);
+
                     localStorage.setItem("ARGUS.CONNINFO", JSON.stringify(value));
                     this.props.history.push('/');
 
@@ -142,16 +145,16 @@ class Signup extends Component {
                     style={{ minHeight: 'calc(100vh - 30px)' }}
                 >
                     <Content>
-                        <div className="text-center mb-0">
+                        <Row type="flex" justify="center" >
                             {/*<a className="brand mr-0">*/}
                             {/*<Link to="/">*/}
                             {/*<Triangle size={32} strokeWidth={1} />*/}
-                            <img src={logo} className={styles.logo}/>
+                            <img src={ this.state.logofile } className={styles.logo} onError={(e)=>{e.target.onerror = null; e.target.src=logo;}} />
                             {/*</Link>*/}
                             {/*</a>*/}
                             {/*<h5 className="mb-0 mt-3">SeedADM</h5>*/}
                             {/*<p className="text-muted">get started with our service</p>*/}
-                        </div>
+                        </Row>
 
                         <Form
                             layout="vertical"

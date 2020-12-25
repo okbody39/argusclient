@@ -27,12 +27,18 @@ class Header extends Component {
             alarmCount: 0,
             alarmList: [],
             connect: "CONNECT",
+            logofile: null,
         }
     }
 
     componentDidMount() {
 
         let noti = localStorage.getItem("ARGUS.NOTIFICATION");
+        let logofile = localStorage.getItem("ARGUS.LOGO");
+
+        this.setState({
+            logofile
+        });
 
         if(noti) {
 
@@ -147,7 +153,7 @@ class Header extends Component {
                     pathname: "/home",
                     state: ""
                 }}>
-                    <img className={styles.logo} src={logo}/>
+                    <img className={styles.logo} src={ this.state.logofile } onError={(e)=>{e.target.onerror = null; e.target.src=logo;}} />
                 </Link>
 
                 <Menu
@@ -281,7 +287,7 @@ class Header extends Component {
 
 
                         <Menu.Item>
-                            <Link to="/signin">
+                            <Link to="/logout">
                                 <Icon type="logout" />
                                 <span>로그아웃</span>
                             </Link>

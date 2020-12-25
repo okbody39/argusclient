@@ -551,6 +551,8 @@ function initial(mainWindow, appVersion) {
         let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
 
         sendServer(url).then((decJson) => {
+            let logourl = "http://" + serverInfo.serverUrl + decJson.LogoFile.replace("public", "");
+
             decJson.serverUrl = serverInfo.serverUrl;
 
             // console.log(decJson);
@@ -561,6 +563,8 @@ function initial(mainWindow, appVersion) {
                 Domain: decJson.Domain,
                 AuthType: decJson.AuthType,
                 Codes: decJson.Codes,
+                LogoFile: logourl,
+                Owner: decJson.Owner,
             });
 
             let sendXml = sendXML.get("login-config");
@@ -584,7 +588,9 @@ function initial(mainWindow, appVersion) {
                     result: loginConfResult.result === "ok"  || loginConfResult["error-code"] === "ALREADY_AUTHENTICATED",
                     screen: screenName,
                     authType: decJson.AuthType,
-                    error: loginConfResult["user-message"]
+                    error: loginConfResult["user-message"],
+                    logofile: logourl,
+                    owner: decJson.Owner,
                 });
 
             }).catch((err) => {
@@ -592,8 +598,10 @@ function initial(mainWindow, appVersion) {
                 event.reply("login-config", {
                     result: false,
                     screen: null,
-                    authType: serverInfo.AuthType,
+                    authType: decJson.AuthType,
                     error: err,
+                    logofile: logourl,
+                    owner: decJson.Owner,
                 });
             });
 
@@ -605,6 +613,8 @@ function initial(mainWindow, appVersion) {
                 screen: null,
                 authType: serverInfo.AuthType,
                 error: JSON.stringify(err),
+                logofile: null,
+                owner: decJson.Owner,
             });
         });
 
