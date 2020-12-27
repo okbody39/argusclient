@@ -304,7 +304,11 @@ function initial(mainWindow, appVersion) {
     let serverInfo = store.get("server-info", {});
     let authInfo = store.get("auth-info", {});
 
+
+
     _ARGUS_GATE_ = serverInfo.serverUrl;
+
+    // console.log(_ARGUS_GATE_, serverInfo, authInfo);
 
     if(_ARGUS_GATE_ && _ARGUS_GATE_.length > 0 && authInfo.username) {
 
@@ -551,11 +555,13 @@ function initial(mainWindow, appVersion) {
         let url = "http://" + serverInfo.serverUrl + "/api/conninfo";
 
         sendServer(url).then((decJson) => {
-            let logourl = "http://" + serverInfo.serverUrl + decJson.LogoFile.replace("public", "");
+            let logourl = "";
+
+            if(decJson.LogoFile) {
+                logourl = "http://" + serverInfo.serverUrl + decJson.LogoFile.replace("public", "");
+            }
 
             decJson.serverUrl = serverInfo.serverUrl;
-
-            // console.log(decJson);
 
             store.set("server-info", {
                 serverUrl: serverInfo.serverUrl,
@@ -612,9 +618,9 @@ function initial(mainWindow, appVersion) {
                 result: false,
                 screen: null,
                 authType: serverInfo.AuthType,
-                error: JSON.stringify(err),
+                error: err,
                 logofile: null,
-                owner: decJson.Owner,
+                owner: null,
             });
         });
 

@@ -47,8 +47,6 @@ class Signin extends Component {
         let token = JSON.parse(userToken);
         let connInfo = JSON.parse(ConnInfo);
 
-
-
         this.setState({
             loading: true,
         });
@@ -56,7 +54,7 @@ class Signin extends Component {
         setTimeout(() => {
             // window.ipcRenderer.sendSync("logout-sync");
             window.ipcRenderer.send("login-config");
-        }, 500);
+        }, 1000);
 
         // console.log(connInfo);
 

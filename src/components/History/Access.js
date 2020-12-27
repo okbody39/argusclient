@@ -293,7 +293,7 @@ class Access extends Component {
           </Col>
           <Col span={6}>
             <div className={styles.stat}>
-              <Statistic title="최종접속" prefix={<Moment fromNow locale="ko">{this.state.lastConnectDate}</Moment>} value=" "/>
+              <Statistic title="최종접속" prefix={this.state.lastConnectDate ? <Moment fromNow locale="ko">{this.state.lastConnectDate}</Moment> : "-"} value=" "/>
             </div>
           </Col>
         </Row>

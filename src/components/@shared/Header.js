@@ -282,7 +282,7 @@ class Header extends Component {
 
                         <Menu.Item onClick={this.about.bind(this)}>
                             <Icon type="question-circle" />
-                            <span>About SeedClient</span>
+                            <span>About</span>
                         </Menu.Item>
 
 
