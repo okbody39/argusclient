@@ -6,8 +6,8 @@ const KEY_JWT = "ABC123456";
 
 // Example Images
 const IMAGES = {
-  LOGO: require("../assets/images/seedclient_logo.png"),
-  ICON: require("../assets/images/seedclient_icon.png"),
+  LOGO: require("../assets/images/argusclient-logo.png"),
+  ICON: require("../assets/images/argus-icon.png"),
 };
 
 const ISFULLSCREEN = (path) => {

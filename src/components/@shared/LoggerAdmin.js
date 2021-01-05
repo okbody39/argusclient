@@ -7,8 +7,6 @@ import { Link, withRouter } from 'react-router-dom';
 import styles from "./Logger.scss";
 // Config
 import { ISFULLSCREEN } from "@/config";
-import icon from "@/assets/images/seedclient_icon.png"
-// import logo from "@/assets/images/seedclient_logo.png"
 
 Date.prototype.format = function(f) {
   if (!this.valueOf()) return " ";

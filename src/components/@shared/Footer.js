@@ -7,8 +7,7 @@ import { Link, withRouter } from 'react-router-dom';
 import styles from "./Footer.scss";
 // Config
 import { ISFULLSCREEN } from "@/config";
-import icon from "@/assets/images/seedclient_icon.png"
-// import logo from "@/assets/images/seedclient_logo.png"
+import icon from "@/assets/images/argus-icon.png"
 
 /**
  * Footer
@@ -30,7 +29,7 @@ class Footer extends Component {
     return (
       <Layout.Footer className={styles.footer}>
         <img alt="" className={styles.logo} src={icon} />
-         SeedClient ©2019
+         the Argus ©2019
       </Layout.Footer>
     );
   }

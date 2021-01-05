@@ -7,15 +7,13 @@ import { Link, withRouter } from 'react-router-dom';
 import styles from "./Logger.scss";
 // Config
 import { ISFULLSCREEN } from "@/config";
-import icon from "@/assets/images/seedclient_icon.png"
-// import logo from "@/assets/images/seedclient_logo.png"
 
 Date.prototype.format = function(f) {
   if (!this.valueOf()) return " ";
 
   var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
   var d = this;
-   
+
   return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
       switch ($1) {
           case "yyyy": return d.getFullYear();
@@ -47,7 +45,7 @@ class Footer extends Component {
     super(props);
 
     // localStorage.removeItem("ARGUS.LOGS");
-    
+
     this.state = {
       logs: JSON.parse(localStorage.getItem("ARGUS.LOGS")) || [],
     };
@@ -57,7 +55,7 @@ class Footer extends Component {
 
     window.ipcRenderer.on("log-message", (event, arg) => {
       let log = new Date().format("yyyy-MM-dd HH:mm:ss") + " - " + arg;
-      
+
       this.setState({
         logs: [log, ...this.state.logs],
       });
@@ -71,7 +69,7 @@ class Footer extends Component {
 
       //  console.log(localStorage.getItem("ARGUS.LOGS"));
       // this.logViewer.style.background = "transparent";
-    
+
       this.newData.scrollIntoView({ behavior: "smooth" });
     });
 

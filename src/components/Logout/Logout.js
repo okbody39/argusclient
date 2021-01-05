@@ -18,7 +18,6 @@ const { Meta } = Card;
 
 // Styles
 import styles from "./Logout.scss";
-import logo from '@/assets/images/seedclient_logo_l.png';
 
 /**
  * Logout

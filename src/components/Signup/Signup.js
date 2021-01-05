@@ -20,7 +20,7 @@ const { Meta } = Card;
 // Styles
 import styles from "./Signup.scss";
 
-import logo from '@/assets/images/seedclient_logo_l.png';
+import logo from '@/assets/images/argusclient-logo.png';
 
 /**
  * Signup
@@ -40,7 +40,7 @@ class Signup extends Component {
             // password: "",
             loading: false,
             serverUrl: connInfo.serverUrl,
-            logofile: localStorage.getItem("ARGUS.LOGO"),
+            logofile: localStorage.getItem("ARGUS.LOGO") || logo,
         };
 
         // this.history = useHistory();
@@ -152,7 +152,6 @@ class Signup extends Component {
                             <img src={ this.state.logofile } className={styles.logo} onError={(e)=>{e.target.onerror = null; e.target.src=logo;}} />
                             {/*</Link>*/}
                             {/*</a>*/}
-                            {/*<h5 className="mb-0 mt-3">SeedADM</h5>*/}
                             {/*<p className="text-muted">get started with our service</p>*/}
                         </Row>
 

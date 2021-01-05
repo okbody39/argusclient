@@ -1,7 +1,7 @@
 {
-  "name": "SeedConnector",
+  "name": "ArgusClient",
   "version": "1.0.1",
-  "description": "SeedVDI, SeedCloud",
+  "description": "",
   "license": "UNLICENSE",
   "private": true,
   "author": {
@@ -132,8 +132,8 @@
     "url": "https://raw.githubusercontent.com/okbody39/argusclient/master/updates/{platform}-{arch}-{channel}.json"
   },
   "build": {
-    "productName": "SeedClient",
-    "appId": "net.dfocus.seedclient",
+    "productName": "ArgusClient",
+    "appId": "kr.co.cielcloud.argusclient",
     "asar": true,
     "files": [
       "dist",
@@ -154,11 +154,11 @@
           "NSAllowsArbitraryLoads": true
         }
       },
-      "icon": "./resources/icons/seedclient_icon.icns"
+      "icon": "./resources/icons/argus-icon.icns"
     },
     "dmg": {
-      "title": "SeedClient",
-      "icon": "./resources/icons/seedclient_icon.icns"
+      "title": "ArgusClient",
+      "icon": "./resources/icons/argus-icon.icns"
     },
     "win": {
       "target": [
@@ -166,12 +166,12 @@
         "nsis",
         "zip"
       ],
-      "icon": "./resources/icons/seedclient_icon.ico",
+      "icon": "./resources/icons/argus-icon.ico",
       "certificateFile": "./resources/www.dfocus.net.pfx",
       "certificatePassword": "dfocus123!"
     },
     "squirrelWindows": {
-      "iconUrl": "http://211.232.94.233:1338/seed.ico"
+      "iconUrl": "http://argus.cielcloud.co.kr:9000/img/argus-icon.png"
     },
     "linux": {
       "target": [

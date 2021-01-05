@@ -378,7 +378,7 @@ function initial(mainWindow, appVersion) {
 
             if(jsonData.notification) {
 
-                let iconAddress = path.join(__dirname, "../resources/icons/seedclient_icon.ico");
+                let iconAddress = path.join(__dirname, "../resources/icons/argus-icon.ico");
                 const notif={
                     title: jsonData.notification.title,
                     body: jsonData.notification.body,

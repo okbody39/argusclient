@@ -9,7 +9,7 @@ const { SubMenu } = Menu;
 // Styles
 import styles from "./Header.scss";
 
-import logo from "@/assets/images/seedclient_logo.png"
+import logo from "@/assets/images/argusclient-logo.png"
 import { ISFULLSCREEN } from "@/config";
 
 const notifications = [
@@ -210,10 +210,6 @@ class Header extends Component {
 
           {/*  <Menu.Divider />*/}
 
-          {/*  <Menu.Item onClick={this.about.bind(this)}>*/}
-          {/*    <Icon type="download" />*/}
-          {/*    <span>About SeedClient</span>*/}
-          {/*  </Menu.Item>*/}
 
           {/*  <Menu.Item>*/}
           {/*    <Link to="/settings">*/}
