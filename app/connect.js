@@ -7,7 +7,8 @@ const fs = require('fs');
 const { performance } = require('perf_hooks');
 
 const __INTERVAL_TERM__ = 2000;
-const __INTERVAL_MAX__ = 30;
+const __INTERVAL_MAX__ = 10;
+
 const __TMPDIR__ = process.env.TMPDIR
     || process.env.TMP
     || process.env.TEMP
